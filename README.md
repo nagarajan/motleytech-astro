@@ -1,46 +1,38 @@
-# Astro Starter Kit: Basics
+# MotleyTech Astro Migration
 
-```sh
-npm create astro@latest -- --template basics
-```
+This project is the Astro migration of the original Pelican blog.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Local development
 
-## 🚀 Project Structure
+- Install dependencies: `npm install`
+- Start dev server: `npm run dev`
+- Build static site: `npm run build`
+- Preview local build: `npm run preview`
 
-Inside of your Astro project, you'll see the following folders and files:
+## Content layout
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+- Blog posts: `src/content/blog`
+- Pages: `src/content/pages`
+- Legacy JS apps wrapped as React components: `src/components/apps`
+- Shared layouts: `src/layouts`
+- Public assets (images/js/css/fonts): `public`
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## Deployment options
 
-## 🧞 Commands
+### Netlify
 
-All commands are run from the root of the project, from a terminal:
+- Config file: `netlify.toml`
+- Build command: `npm run build`
+- Publish directory: `dist`
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+### Vercel
 
-## 👀 Want to learn more?
+- Config file: `vercel.json`
+- Framework preset: Astro
+- Output directory: `dist`
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+### GitHub Pages
+
+- Workflow file: `.github/workflows/deploy-gh-pages.yml`
+- Trigger: push to `main`
+- Deployment target: GitHub Pages static hosting

@@ -1,11 +1,22 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPostSlug, getPublicPosts } from '../lib/content';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const posts = await getPublicPosts();
+const featured = posts.slice(0, 10);
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout title="MotleyTech" description="Variegated technical notes and interactive demos">
+  <h1>Latest posts</h1>
+  <p>Selected topics from programming, mathematics, physics, and puzzle solving.</p>
+  <ul class="list-group">
+    {featured.map((post) => (
+      <li class="list-group-item">
+        <a href={`/blog/${getPostSlug(post)}`}>{post.data.title}</a>
+        <small style="display:block;color:var(--color-text);opacity:0.78;">
+          {post.data.pubDate.toDateString()} - {post.data.category}
+        </small>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>

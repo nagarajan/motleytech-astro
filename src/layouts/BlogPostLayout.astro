@@ -1,0 +1,44 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import DisqusComments from '../components/DisqusComments.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  pubDate: Date;
+  tags?: string[];
+  category?: string;
+  disqusIdentifier?: string;
+}
+
+const {
+  title,
+  description,
+  pubDate,
+  tags = [],
+  category = 'Blog',
+  disqusIdentifier,
+} = Astro.props;
+---
+
+<BaseLayout title={`${title} | MotleyTech`} description={description}>
+  <article class="post-content">
+    <h1>{title}</h1>
+    <p class="post-meta">
+      <time datetime={pubDate.toISOString()}>{pubDate.toDateString()}</time>
+      <span> in </span>
+      <a href={`/categories/${category.toLowerCase()}`}>{category}</a>
+    </p>
+    {tags.length > 0 && (
+      <div class="post-tags">
+        {tags.map((tag) => (
+          <a class="tag" href={`/tags/${encodeURIComponent(tag.toLowerCase())}`}>{tag}</a>
+        ))}
+      </div>
+    )}
+    <slot />
+    {disqusIdentifier && (
+      <DisqusComments identifier={disqusIdentifier} title={title} />
+    )}
+  </article>
+</BaseLayout>

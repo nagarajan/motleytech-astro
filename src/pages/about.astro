@@ -1,0 +1,27 @@
+---
+import { getCollection, render } from 'astro:content';
+import PageLayout from '../layouts/PageLayout.astro';
+
+const pages = await getCollection('pages');
+const aboutPage =
+  pages.find((page) => page.data.slug === 'landing-page-about-hidden') ??
+  pages[0];
+
+if (!aboutPage) {
+  throw new Error('No page content found for about page');
+}
+
+const { Content } = await render(aboutPage);
+---
+
+<PageLayout title={aboutPage.data.title} description={aboutPage.data.description}>
+  <figure style="margin: 0 0 1.5rem; text-align: center;">
+    <img
+      src="/images/motleytech-collage.png"
+      alt="Mosaic collage inspired by the blog topics"
+      style="max-width: 100%; height: auto; border: 1px solid var(--color-border); border-radius: 0.4rem;"
+    />
+  </figure>
+  <Content />
+  <p style="margin-top: 1rem;">Built with Astro.</p>
+</PageLayout>

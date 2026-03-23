@@ -1,0 +1,115 @@
+:root {
+  --transition-time: 1s;
+}
+
+.treeContainer {
+  margin: 20px 0;
+  border: 1px solid lightgray;
+  line-height: 1em;
+}
+
+.treeContainer > div {
+    overflow: hidden;
+}
+
+.tree {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  min-width: 600px;
+  min-height: 500px;
+  font-size: small;
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 10px;
+}
+
+.node, .head {
+  position: absolute;
+  transition: top var(--transition-time) ease-out, left var(--transition-time) ease-out;
+  left: 2%;
+  top: 5%;
+}
+
+.head {
+  left: 40%;
+  top: 15%;
+}
+
+.tree svg {
+  z-index: 0;
+  position: absolute;
+  width: 0;
+  height: 0;
+  transition: transform var(--transition-time), width var(--transition-time), height var(--transition-time), left var(--transition-time), top var(--transition-time);
+}
+
+.tree .node,
+.tree .head {
+  z-index: 1;
+}
+
+.nodeTooltip {
+  position: absolute;
+  background-color: rgb(68, 68, 68);
+  color: white;
+  border-radius: 3px;
+  padding: 0.75em 1em;
+  top: -3.5em;
+  transform: translate(-50%, -50%);
+  display: none;
+  width: max-content;
+  z-index: 2;
+}
+
+.tooltipArrow {
+  position: absolute;
+  left: 0;
+  border-top: 10px solid rgb(68, 68, 68);
+  border-right: 10px solid transparent;
+  top: -2rem;
+  border-left: 10px solid transparent;
+  display: none;
+  transform: translate(-50%, 0);
+}
+
+.nodeLabel, .headlabel {
+  display: inline-block;
+  border: 3px solid lightgrey;
+  background-color: lightskyblue;
+  border-radius: 0.5em;
+  padding: 0.5em 1em;
+  transform: translate(-50%, -50%);
+}
+
+.inputField {
+  width: 100%;
+  padding: 3px 0 3px 7px;
+  border-radius: 3px;
+  border: 1px solid lightgray;
+  background-color: palegoldenrod;
+}
+
+.headlabel {
+  background-color: rgb(190, 144, 233);
+}
+
+.inline-input {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid lightgray;
+}
+
+.flex-item1 {
+  padding: 8px 16px 8px 8px;
+  flex: 1;
+  border-right: 1px solid lightgray;
+}
+
+.flex-item2 {
+  padding: 8px;
+}
+
+.inline-input label {
+  font-size: 0.65em;
+  margin-bottom: 2px;
+}

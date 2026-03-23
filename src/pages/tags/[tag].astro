@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPostSlug, getPublicPosts, getUniqueTags } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const posts = await getPublicPosts();
+  return getUniqueTags(posts).map((tag) => ({
+    params: { tag: tag.toLowerCase() },
+    props: { tag, posts },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+const filtered = posts.filter((post) =>
+  (post.data.tags || []).some((currTag: string) => currTag.toLowerCase() === tag.toLowerCase()),
+);
+---
+
+<BaseLayout title={`Tag: ${tag} | MotleyTech`}>
+  <h1>Tag: {tag}</h1>
+  <ul>
+    {filtered.map((post) => (
+      <li><a href={`/blog/${getPostSlug(post)}`}>{post.data.title}</a></li>
+    ))}
+  </ul>
+</BaseLayout>

@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPostSlug, getPublicPosts, getUniqueCategories } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const posts = await getPublicPosts();
+  return getUniqueCategories(posts).map((category) => ({
+    params: { category: category.toLowerCase() },
+    props: { category, posts },
+  }));
+}
+
+const { category, posts } = Astro.props;
+const filtered = posts.filter(
+  (post) => post.data.category.toLowerCase() === category.toLowerCase(),
+);
+---
+
+<BaseLayout title={`Category: ${category} | MotleyTech`}>
+  <h1>Category: {category}</h1>
+  <ul>
+    {filtered.map((post) => (
+      <li><a href={`/blog/${getPostSlug(post)}`}>{post.data.title}</a></li>
+    ))}
+  </ul>
+</BaseLayout>

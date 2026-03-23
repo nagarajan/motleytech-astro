@@ -1,0 +1,27 @@
+---
+interface Props {
+  identifier: string;
+  title: string;
+}
+
+const { identifier, title } = Astro.props;
+---
+
+<section id="comments" style="margin-top:2rem;">
+  <h2>Comments</h2>
+  <div id="disqus_thread"></div>
+  <script is:inline define:vars={{ identifier, title }}>
+    var disqus_config = function () {
+      this.page.identifier = identifier;
+      this.page.title = title;
+      this.page.url = window.location.href;
+    };
+    (function () {
+      var d = document;
+      var s = d.createElement('script');
+      s.src = 'https://motleytech.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', String(+new Date()));
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+</section>

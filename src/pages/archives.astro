@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPostSlug, getPublicPosts } from '../lib/content';
+
+const posts = await getPublicPosts();
+---
+
+<BaseLayout title="All posts | MotleyTech">
+  <h1>All posts</h1>
+  <p>All published articles.</p>
+  <ul>
+    {posts.map((post) => (
+      <li>
+        <a href={`/blog/${getPostSlug(post)}`}>{post.data.title}</a>
+        {' '}({post.data.pubDate.toISOString().slice(0, 10)})
+      </li>
+    ))}
+  </ul>
+</BaseLayout>

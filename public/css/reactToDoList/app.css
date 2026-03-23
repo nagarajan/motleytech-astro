@@ -1,0 +1,78 @@
+.board {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 5px;
+  padding: 5px;
+  border: 2px solid rgb(255, 206, 116);
+}
+
+.itemContent {
+  text-align: center;
+}
+
+.todos {
+  display: grid;
+  grid-template-columns: 0fr 1fr 0fr 0fr;
+  border-left: 1px solid lightgray;
+  border-bottom: 1px solid lightgray;
+  border-right: 1px solid lightgray;
+}
+
+.header {
+  border: 1px solid lightgray;
+}
+
+.item p {
+  margin: 0;
+  font-size: 12px;
+  padding: 5px;
+  line-height: 1.15em;
+}
+
+.arrow {
+  min-width: 1.2em;
+  display: flex;
+  background-color: #e5edff;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow p {
+  cursor: pointer;
+}
+
+.board .header .itemContent p {
+  font-weight: bold;
+  line-height: 2em;
+}
+
+.itemList:nth-child(1) .header {
+  background-color: rgb(186, 169, 214);
+
+}
+
+.itemList:nth-child(2) .header {
+  background-color: #9fe4bc;
+}
+
+.itemList:nth-child(3) .header {
+  background-color: #bbbbbb;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: gray;
+}
+
+.toolbar div:last-child {
+  text-align: end;
+  color: #f94747;
+}
+
+.item div:nth-child(4) {
+  color: red;
+  background-color: white;
+}
