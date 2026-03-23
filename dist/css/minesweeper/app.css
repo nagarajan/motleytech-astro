@@ -1,0 +1,148 @@
+@font-face {
+    font-family: "D7MB";
+    src: url("/fonts/DSEG7Modern-Bold.woff") format('woff');
+}
+
+.minefield {
+    display: flex;
+    flex-wrap: wrap;
+    border-top: 5px solid #8a8d93;
+    border-left: 5px solid #8a8d93;
+    border-right: 5px solid #fdfeff;
+    border-bottom: 5px solid #fdfeff;
+    cursor: default;
+}
+
+.minefield div {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    box-sizing: border-box;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-right: 1px solid #8a8d93;
+    border-bottom: 1px solid #8a8d93;
+    border-top: 0;
+    border-left: 0;
+    cursor: default;
+}
+
+.minefield button {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    box-sizing: border-box;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 3px solid #8a8d93;
+    border-right: 3px solid #8a8d93;
+    border-left: 3px solid #fdfeff;
+    border-top: 3px solid #fdfeff;
+    background-color: #c3c6cc;
+    cursor: default;
+}
+
+.gameControls {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+    border-top: 5px solid #8a8d93;
+    border-left: 5px solid #8a8d93;
+    border-right: 5px solid #fdfeff;
+    border-bottom: 5px solid #fdfeff;
+    padding: 5px 5px;
+}
+
+.gameControls > div:first-child {
+    flex: 1;
+}
+
+.gameControls > div:last-child {
+    flex: 1;
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.gameCenteringDiv {
+    display: flex;
+    justify-content: center;
+}
+
+.gameOuterWrapper {
+    display: flex;
+    border: 1px solid black;
+}
+
+.gameWrapper {
+    display: inline-block;
+    border-bottom: 5px solid #8a8d93;
+    border-right: 5px solid #8a8d93;
+    border-left: 5px solid #fdfeff;
+    border-top: 5px solid #fdfeff;
+    padding: 10px;
+    background-color: #c3c6cc;
+}
+
+.buttonsContainer {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 10px;
+}
+
+.buttonsContainer button {
+    max-width: 300px;
+    margin: 0 5px 0 0;
+    padding: 5px 8px;
+}
+
+.redMine {
+    background-color: red;
+}
+
+.resetButton {
+    border-bottom: 3px solid #8a8d93;
+    border-right: 3px solid #8a8d93;
+    border-left: 3px solid #fdfeff;
+    border-top: 3px solid #fdfeff;
+    padding: 2px;
+    background-color: #c3c6cc;
+    font-size: 20px;
+}
+
+.remainingMines, .timer {
+    position: relative;
+    border-top: 1px solid #8a8d93;
+    border-left: 1px solid #8a8d93;
+    border-right: 1px solid #fdfeff;
+    border-bottom: 1px solid #fdfeff;
+    background-color: black;
+    height: 28px;
+    width: 51px;
+}
+
+.remainingMines > span:first-child, .timer > span:first-child {
+    z-index: 50;
+    position: absolute;
+    top: -2px;
+    left: 1px;
+    color: rgba(255, 0, 0, 0.3);
+    font-family: D7MB;
+    font-size: 20px;
+}
+
+.remainingMines > span:last-child, .timer > span:last-child {
+    z-index: 100;
+    position: absolute;
+    top: -2px;
+    left: 1px;
+    color: rgba(255, 0, 0, 1);
+    font-size: 20px;
+    font-family: D7MB;
+}

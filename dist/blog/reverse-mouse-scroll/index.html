@@ -1,0 +1,178 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v6.0.8"><meta name="description" content="A python 3 based script to reverse the direction of mouse wheel scroll in Windows 10+."><link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script async src="https://www.googletagmanager.com/gtag/js?id=G-V8WZYM91B4"></script><script>(function(){const gaId = "G-V8WZYM91B4";
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', gaId);
+    })();</script><title>Reverse Mouse Scroll Direction | MotleyTech</title><style>:root{--color-bg: #f1faf5;--color-text: #24332c;--color-surface: #ffffff;--color-border: #cfe2d6;--color-header-bg: #dcf3e5;--color-header-text: #1e3a2f;--color-link: #1f5b57;--color-tag-bg: #eef9f1}body{margin:0;color:var(--color-text);background:var(--color-bg);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.65}.site-header{border-bottom:1px solid var(--color-border);background:var(--color-header-bg);color:var(--color-header-text)}.topbar{display:flex;justify-content:space-between;align-items:center;gap:.8rem;position:relative}.topbar-main{display:flex;align-items:center;gap:1rem;min-width:0}.brand-row{display:flex;align-items:center;gap:.85rem}.site-title{font-size:1.7rem;font-weight:700;text-decoration:none;color:var(--color-header-text);display:inline-block;margin-right:.4rem}.theme-row{display:flex;flex-direction:column;align-items:center;gap:.35rem}.theme-label{font-size:.9rem;color:var(--color-header-text);align-self:flex-start}.theme-select{min-width:220px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);border-radius:.3rem;padding:.2rem .45rem}.nav-toggle{display:inline-flex;align-items:center;justify-content:center;width:2.05rem;height:2.05rem;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);border-radius:.3rem;padding:0;line-height:1}.hamburger-icon{display:inline-flex;flex-direction:column;justify-content:space-between;width:18px;height:14px}.hamburger-icon span{display:block;width:100%;height:2px;flex:0 0 auto;margin:0;background:var(--color-text);border-radius:999px}.site-nav{display:flex;align-items:center;gap:.85rem}.site-nav a{text-decoration:none;color:var(--color-header-text);position:relative;padding:.35rem .6rem;border-radius:.3rem;transition:background-color .14s ease,color .14s ease,transform 80ms ease}.site-nav a:after{content:"";position:absolute;left:.5rem;right:.5rem;bottom:.12rem;height:2px;background:var(--color-link);transform:scaleX(0);transform-origin:center;transition:transform .16s ease}.site-nav a:hover{background:var(--color-tag-bg)}.site-nav a:hover:after{transform:scaleX(1)}.site-nav a:active{transform:translateY(1px)}.menu-nav a{position:relative;padding:.2rem .25rem;border-radius:.3rem;transition:background-color .14s ease,color .14s ease,transform 80ms ease}.menu-panel{display:none;position:absolute;top:100%;right:0;margin-top:.4rem;width:min(92vw,340px);background:var(--color-surface);border:1px solid var(--color-border);border-radius:.4rem;padding:.8rem;z-index:20;box-shadow:0 8px 20px #0000001f}.site-header.menu-open .menu-panel{display:block}.menu-nav{display:none}.menu-nav a{color:var(--color-text);text-decoration:none}.menu-nav a:hover{background:var(--color-tag-bg)}.menu-nav a:active{transform:translateY(1px)}.site-footer{color:var(--color-text);border-top:1px solid var(--color-border)}.post-content,.page-content{background:var(--color-surface);padding:1.4rem;border:1px solid var(--color-border);border-radius:.35rem}.post-meta{color:var(--color-text);font-size:.95rem}.post-tags{margin-bottom:1rem}.tag{display:inline-block;margin-right:.4rem;margin-bottom:.4rem;padding:.2rem .55rem;font-size:.84rem;border:1px solid var(--color-border);background:var(--color-tag-bg);color:var(--color-text);border-radius:1rem;text-decoration:none}a{color:var(--color-link)}img{max-width:100%;height:auto}.list-group{border-radius:.4rem;overflow:hidden}.list-group-item{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}.list-group-item a{color:var(--color-link)}@media(max-width:799px){.topbar-main{width:100%}.site-title{margin-right:0}.theme-select{min-width:0;width:100%}.site-nav{display:none}.menu-panel{width:min(94vw,360px)}.menu-nav{display:flex;margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--color-border);flex-direction:column;align-items:flex-start;gap:.6rem}}
+</style></head> <body> <header class="site-header"> <div class="container py-3 topbar"> <div class="topbar-main"> <div class="brand-row"> <a href="/" class="site-title">MotleyTech</a> </div> <nav id="site-nav" class="site-nav"> <a href="/">Home</a> <a href="/archives">All posts</a> <a href="/about">About</a> </nav> </div> <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-controls="menu-panel" aria-expanded="false"> <span class="hamburger-icon" aria-hidden="true"> <span></span> <span></span> <span></span> </span> </button> <div id="menu-panel" class="menu-panel"> <div class="theme-row"> <label for="theme-select" class="theme-label">Theme</label> <select id="theme-select" class="theme-select" aria-label="Select theme"> <optgroup label="Pastel"> <option value="pastel-mint">Pastel Mint</option> <option value="pastel-lavender">Pastel Lavender</option> <option value="pastel-peach">Pastel Peach</option> <option value="pastel-sky">Pastel Sky</option> <option value="pastel-rose">Pastel Rose</option> <option value="pastel-lemon">Pastel Lemon</option> </optgroup> <optgroup label="Academic"> <option value="academic-parchment">Academic Parchment</option> <option value="academic-slate">Academic Slate</option> <option value="academic-ink">Academic Ink</option> <option value="academic-forest">Academic Forest</option> <option value="academic-navy">Academic Navy</option> <option value="academic-sepia">Academic Sepia</option> </optgroup> <optgroup label="Darkish"> <option value="darkish-plum">Darkish Plum</option> <option value="darkish-ocean">Darkish Ocean</option> <option value="darkish-moss">Darkish Moss</option> <option value="darkish-graphite">Darkish Graphite</option> </optgroup> <optgroup label="Dark"> <option value="dark-midnight">Dark Midnight</option> <option value="dark-obsidian">Dark Obsidian</option> <option value="dark-carbon">Dark Carbon</option> <option value="dark-terminal">Dark Terminal</option> </optgroup> </select> </div> <nav class="menu-nav"> <a href="/">Home</a> <a href="/archives">All posts</a> <a href="/about">About</a> </nav> </div> </div> </header> <main class="container py-4">  <article class="post-content"> <h1>Reverse Mouse Scroll Direction</h1> <p class="post-meta"> <time datetime="2016-09-19T00:00:00.000Z">Sun Sep 18 2016</time> <span> in </span> <a href="/categories/technotes">Technotes</a> </p> <div class="post-tags"> <a class="tag" href="/tags/mouse">Mouse</a><a class="tag" href="/tags/scroll">Scroll</a><a class="tag" href="/tags/direction">Direction</a> </div>  <p>This script edits the Windows registry and turns on the FlipFlopWheel attribute for all USB HID devices. To run this script, save this script as <code>fixScroll.py</code> file, and execute it from the windows command prompt running with administrative privileges.</p>
+<p>Also, Python 3 should be already pre-installed with Windows 10+, so there will be no need to install Python 3.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>from winreg import *</span></span>
+<span class="line"><span>import os</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>def is_admin():</span></span>
+<span class="line"><span>    if os.name == 'nt':</span></span>
+<span class="line"><span>        try:</span></span>
+<span class="line"><span>            # only windows users with admin privileges can read the C:\windows\temp</span></span>
+<span class="line"><span>            temp = os.listdir(os.sep.join([os.environ.get('SystemRoot','C:\\windows'),'temp']))</span></span>
+<span class="line"><span>        except:</span></span>
+<span class="line"><span>            return False</span></span>
+<span class="line"><span>        else:</span></span>
+<span class="line"><span>            return True</span></span>
+<span class="line"><span>    else:</span></span>
+<span class="line"><span>        print('This is a windows script.')</span></span>
+<span class="line"><span>        exit(1)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>"""print r"*** Reading from HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\HID ***" """</span></span>
+<span class="line"><span>def main():</span></span>
+<span class="line"><span>    if not is_admin():</span></span>
+<span class="line"><span>        print('Must have admin privileges to run this script.')</span></span>
+<span class="line"><span>        exit(1)</span></span>
+<span class="line"><span>    aReg = ConnectRegistry(None,HKEY_LOCAL_MACHINE)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    FLIP_FLOP_VALUE = 1</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    aKey = OpenKey(aReg, r"SYSTEM\CurrentControlSet\Enum\HID")</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    for i in range(1024):</span></span>
+<span class="line"><span>        try:</span></span>
+<span class="line"><span>            asubkey_name = EnumKey(aKey, i)</span></span>
+<span class="line"><span>            asubkey = OpenKey(aKey, asubkey_name)</span></span>
+<span class="line"><span>            for j in range(1024):</span></span>
+<span class="line"><span>                try:</span></span>
+<span class="line"><span>                    bsubkey_name = EnumKey(asubkey, j)</span></span>
+<span class="line"><span>                    bsubkey = OpenKey(asubkey, bsubkey_name)</span></span>
+<span class="line"><span>                    for k in range(1024):</span></span>
+<span class="line"><span>                        try:</span></span>
+<span class="line"><span>                            csubkey_name = EnumKey(bsubkey, k)</span></span>
+<span class="line"><span>                            if csubkey_name != 'Device Parameters':</span></span>
+<span class="line"><span>                                continue</span></span>
+<span class="line"><span>                            csubkey = OpenKey(bsubkey, csubkey_name, 0, KEY_ALL_ACCESS)</span></span>
+<span class="line"><span>                            val = QueryValueEx(csubkey, "FlipFlopWheel")</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>                            print((asubkey_name, bsubkey_name, csubkey_name))</span></span>
+<span class="line"><span>                            SetValueEx(csubkey, 'FlipFlopWheel', 0, REG_DWORD, FLIP_FLOP_VALUE)</span></span>
+<span class="line"><span>                            CloseKey(csubkey)</span></span>
+<span class="line"><span>                            print('Set FFW : %s' % FLIP_FLOP_VALUE)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>                        except error as e:</span></span>
+<span class="line"><span>                            if 'No more data' in e.strerror:</span></span>
+<span class="line"><span>                                break</span></span>
+<span class="line"><span>                            continue</span></span>
+<span class="line"><span>                except error as e:</span></span>
+<span class="line"><span>                    if 'No more data' in e.strerror:</span></span>
+<span class="line"><span>                        break</span></span>
+<span class="line"><span>                    continue</span></span>
+<span class="line"><span>        except error as e:</span></span>
+<span class="line"><span>            if 'No more data' in e.strerror:</span></span>
+<span class="line"><span>                break</span></span>
+<span class="line"><span>            continue</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>if __name__ == "__main__":</span></span>
+<span class="line"><span>    main()</span></span></code></pre>  <section id="comments" style="margin-top:2rem;"> <h2>Comments</h2> <div id="disqus_thread"></div> <script>(function(){const identifier = "reverse_mouse_scroll";
+const title = "Reverse Mouse Scroll Direction";
+
+    var disqus_config = function () {
+      this.page.identifier = identifier;
+      this.page.title = title;
+      this.page.url = window.location.href;
+    };
+    (function () {
+      var d = document;
+      var s = d.createElement('script');
+      s.src = 'https://motleytech.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', String(+new Date()));
+      (d.head || d.body).appendChild(s);
+    })();
+  })();</script> </section> </article>  </main> <footer class="container py-4 site-footer"> <p>Copyright 2017 - 2026 Nagarajan.</p> </footer> <script>
+      (function () {
+        const themes = {
+          'pastel-mint': { '--color-bg': '#f1faf5', '--color-text': '#24332c', '--color-surface': '#ffffff', '--color-border': '#cfe2d6', '--color-header-bg': '#dcf3e5', '--color-header-text': '#1e3a2f', '--color-link': '#1f5b57', '--color-tag-bg': '#eef9f1' },
+          'pastel-lavender': { '--color-bg': '#f6f2fb', '--color-text': '#2d2636', '--color-surface': '#ffffff', '--color-border': '#ddd1ed', '--color-header-bg': '#ece2f8', '--color-header-text': '#2f2342', '--color-link': '#5a3d85', '--color-tag-bg': '#f5effd' },
+          'pastel-peach': { '--color-bg': '#fff5ee', '--color-text': '#3f2f28', '--color-surface': '#ffffff', '--color-border': '#f0d8cb', '--color-header-bg': '#ffe7d8', '--color-header-text': '#4b2e21', '--color-link': '#8c4f35', '--color-tag-bg': '#fff2ea' },
+          'pastel-sky': { '--color-bg': '#eff7ff', '--color-text': '#1f3448', '--color-surface': '#ffffff', '--color-border': '#cfe1f4', '--color-header-bg': '#ddeeff', '--color-header-text': '#1d3c5f', '--color-link': '#1e5f8a', '--color-tag-bg': '#edf6ff' },
+          'pastel-rose': { '--color-bg': '#fff2f6', '--color-text': '#3f2a34', '--color-surface': '#ffffff', '--color-border': '#f0d0da', '--color-header-bg': '#ffe1eb', '--color-header-text': '#4d2737', '--color-link': '#8a3b5b', '--color-tag-bg': '#fff0f5' },
+          'pastel-lemon': { '--color-bg': '#fffcee', '--color-text': '#3b3721', '--color-surface': '#ffffff', '--color-border': '#eee4ba', '--color-header-bg': '#fff4c8', '--color-header-text': '#50471f', '--color-link': '#796425', '--color-tag-bg': '#fff9df' },
+
+          'academic-parchment': { '--color-bg': '#f8f4e8', '--color-text': '#2f2a1f', '--color-surface': '#fffdf7', '--color-border': '#d8cfb4', '--color-header-bg': '#ece2c8', '--color-header-text': '#352d1f', '--color-link': '#3c4f6b', '--color-tag-bg': '#f2ecda' },
+          'academic-slate': { '--color-bg': '#eef1f4', '--color-text': '#25313b', '--color-surface': '#fbfcfd', '--color-border': '#c7d1da', '--color-header-bg': '#dbe3ea', '--color-header-text': '#223341', '--color-link': '#2d5570', '--color-tag-bg': '#edf3f7' },
+          'academic-ink': { '--color-bg': '#f1f2f6', '--color-text': '#1f2230', '--color-surface': '#ffffff', '--color-border': '#cdd2df', '--color-header-bg': '#dde2ee', '--color-header-text': '#1f2740', '--color-link': '#304d7d', '--color-tag-bg': '#ecf0fa' },
+          'academic-forest': { '--color-bg': '#edf4ef', '--color-text': '#223127', '--color-surface': '#fbfffc', '--color-border': '#c8d7cc', '--color-header-bg': '#dcebdc', '--color-header-text': '#233a2a', '--color-link': '#2e5f42', '--color-tag-bg': '#edf7ef' },
+          'academic-navy': { '--color-bg': '#eef2f9', '--color-text': '#222d43', '--color-surface': '#fbfcff', '--color-border': '#c8d3e8', '--color-header-bg': '#dce5f5', '--color-header-text': '#1f2f4d', '--color-link': '#335d92', '--color-tag-bg': '#edf3ff' },
+          'academic-sepia': { '--color-bg': '#f7f1e6', '--color-text': '#332b22', '--color-surface': '#fffdfa', '--color-border': '#dacdbd', '--color-header-bg': '#ebdece', '--color-header-text': '#3d2f22', '--color-link': '#6b4e2e', '--color-tag-bg': '#f5eddf' },
+
+          'darkish-plum': { '--color-bg': '#2b2230', '--color-text': '#e7dced', '--color-surface': '#352a3b', '--color-border': '#4f3f58', '--color-header-bg': '#3a2d42', '--color-header-text': '#f3e7f9', '--color-link': '#c8b4ff', '--color-tag-bg': '#45364e' },
+          'darkish-ocean': { '--color-bg': '#1e2e38', '--color-text': '#d6e6ee', '--color-surface': '#263844', '--color-border': '#3e5563', '--color-header-bg': '#2a404e', '--color-header-text': '#e3f3fa', '--color-link': '#8fd6ff', '--color-tag-bg': '#324957' },
+          'darkish-moss': { '--color-bg': '#2a3327', '--color-text': '#deead8', '--color-surface': '#323d2f', '--color-border': '#4b5d45', '--color-header-bg': '#3a4935', '--color-header-text': '#e8f3e2', '--color-link': '#bde3a3', '--color-tag-bg': '#43533e' },
+          'darkish-graphite': { '--color-bg': '#2a2c30', '--color-text': '#e3e7ee', '--color-surface': '#353940', '--color-border': '#4c525d', '--color-header-bg': '#3a404b', '--color-header-text': '#f0f3f9', '--color-link': '#9dc4ff', '--color-tag-bg': '#434a56' },
+
+          'dark-midnight': { '--color-bg': '#10131a', '--color-text': '#e8ecf6', '--color-surface': '#171d27', '--color-border': '#2f3748', '--color-header-bg': '#1a2230', '--color-header-text': '#f2f6ff', '--color-link': '#8fb7ff', '--color-tag-bg': '#252d3b' },
+          'dark-obsidian': { '--color-bg': '#0f0f11', '--color-text': '#e4e4e8', '--color-surface': '#1a1b1f', '--color-border': '#32343b', '--color-header-bg': '#1e2025', '--color-header-text': '#f0f2f5', '--color-link': '#95c0ff', '--color-tag-bg': '#272a31' },
+          'dark-carbon': { '--color-bg': '#141414', '--color-text': '#ebebeb', '--color-surface': '#1f1f1f', '--color-border': '#3b3b3b', '--color-header-bg': '#252525', '--color-header-text': '#fafafa', '--color-link': '#86c5ff', '--color-tag-bg': '#2c2c2c' },
+          'dark-terminal': { '--color-bg': '#0b130f', '--color-text': '#d7f0df', '--color-surface': '#101b15', '--color-border': '#294636', '--color-header-bg': '#16261d', '--color-header-text': '#e5fff0', '--color-link': '#7ef3b0', '--color-tag-bg': '#1c3025' }
+        };
+
+        function applyTheme(themeName) {
+          const theme = themes[themeName] || themes['pastel-mint'];
+          const root = document.documentElement;
+          Object.keys(theme).forEach(function (key) {
+            root.style.setProperty(key, theme[key]);
+          });
+          root.setAttribute('data-theme', themeName);
+        }
+
+        function initThemeMenu() {
+          const select = document.getElementById('theme-select');
+          if (!select) {
+            return;
+          }
+          const stored = window.localStorage.getItem('motleytech-theme') || 'pastel-mint';
+          select.value = themes[stored] ? stored : 'pastel-mint';
+          applyTheme(select.value);
+          select.addEventListener('change', function (event) {
+            const nextTheme = event.target.value;
+            applyTheme(nextTheme);
+            window.localStorage.setItem('motleytech-theme', nextTheme);
+          });
+        }
+
+        function initMenu() {
+          const header = document.querySelector('.site-header');
+          const menu = document.getElementById('menu-panel');
+          const button = document.getElementById('nav-toggle');
+          if (!header || !menu || !button) {
+            return;
+          }
+          function closeMenu() {
+            header.classList.remove('menu-open');
+            button.setAttribute('aria-expanded', 'false');
+          }
+          button.addEventListener('click', function () {
+            const isOpen = header.classList.toggle('menu-open');
+            button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          });
+          menu.querySelectorAll('a').forEach(function (link) {
+            link.addEventListener('click', function () {
+              closeMenu();
+            });
+          });
+          document.addEventListener('click', function (event) {
+            if (!header.classList.contains('menu-open')) {
+              return;
+            }
+            const target = event.target;
+            if (!(target instanceof Node)) {
+              return;
+            }
+            if (menu.contains(target) || button.contains(target)) {
+              return;
+            }
+            closeMenu();
+          });
+        }
+
+        initThemeMenu();
+        initMenu();
+      })();
+    </script> </body> </html>
