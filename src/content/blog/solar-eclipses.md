@@ -12,7 +12,7 @@ I also recently built a frontend app for visualizing solar eclipses.
 
 <div style="display: flex; justify-content: center; margin: 1rem 0 1.25rem 0;">
   <img
-    src="/images/solar-eclipses-app.png"
+    src="/images/Solar%20eclipses%20app%20screenshot.png"
     alt="Screenshot of the solar eclipses app"
     style="width: 900px; max-width: 100%; border: 2px solid gray; padding: 6px; box-sizing: border-box;"
   />
