@@ -10,6 +10,14 @@ disqusIdentifier: "taskManagementApp"
 
 Recently, I created a frontend task management application focused on keeping everyday planning simple, visual, and easy to update.
 
+<div style="display: flex; justify-content: center; margin: 1rem 0 1.25rem 0;">
+  <img
+    src="/images/task-management-app.png"
+    alt="Screenshot of the task management app"
+    style="width: 900px; max-width: 100%; border: 2px solid gray; padding: 6px; box-sizing: border-box;"
+  />
+</div>
+
 The app is available here:
 
 [Open the task management app](/apps/tasks)

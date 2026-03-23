@@ -10,6 +10,14 @@ disqusIdentifier: "solarEclipsesApp"
 
 I also recently built a frontend app for visualizing solar eclipses.
 
+<div style="display: flex; justify-content: center; margin: 1rem 0 1.25rem 0;">
+  <img
+    src="/images/solar-eclipses-app.png"
+    alt="Screenshot of the solar eclipses app"
+    style="width: 900px; max-width: 100%; border: 2px solid gray; padding: 6px; box-sizing: border-box;"
+  />
+</div>
+
 The app is available here:
 
 [Open the solar eclipses app](/apps/solar-eclipses)
