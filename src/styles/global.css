@@ -1311,6 +1311,12 @@ hr {
   border-radius: 999px;
 }
 
+/* The demos keep an error label in the markup and fill it in only on a bad
+   input; without this its padding renders as an empty coloured pill. */
+.label:empty {
+  display: none;
+}
+
 .label-danger {
   color: #fff;
   background: #d93b52;
