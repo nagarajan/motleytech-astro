@@ -5,16 +5,29 @@ interface Props {
 }
 
 const { identifier, title } = Astro.props;
+
+/**
+ * Threads are looked up by identifier, but Disqus also records the page a
+ * thread lives on, so send a canonical URL rather than whatever query string or
+ * fragment the visitor arrived with.
+ */
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://motleytech.net').href;
 ---
 
 <section id="comments" style="margin-top:2rem;">
   <h2>Comments</h2>
   <div id="disqus_thread"></div>
-  <script is:inline define:vars={{ identifier, title }}>
-    var disqus_config = function () {
+  <script is:inline define:vars={{ identifier, title, canonical }}>
+    /*
+     * This has to be `window.disqus_config`, not a bare `var`: embed.js reads it
+     * off the global object, and `define:vars` compiles this block into an IIFE,
+     * so a `var` here stays local and Disqus silently falls back to keying the
+     * thread by URL. That loses every comment made before the page moved.
+     */
+    window.disqus_config = function () {
       this.page.identifier = identifier;
       this.page.title = title;
-      this.page.url = window.location.href;
+      this.page.url = canonical;
     };
     (function () {
       var d = document;
