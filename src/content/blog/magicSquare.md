@@ -62,37 +62,37 @@ Much easier than remembering 5 different steps.
 
 
 <div style="position: fixed">
-  <img class="arrows" id="greenarrowtopright" src="images/right-arrow-green.svg"
+  <img class="arrows" id="greenarrowtopright" src="/images/right-arrow-green.svg"
       style="transform: rotate(-45deg); display: none"
   />
 </div>
 <div style="position: fixed">
-  <img class="arrows" id="greenarrowleft" src="images/right-arrow-green.svg"
+  <img class="arrows" id="greenarrowleft" src="/images/right-arrow-green.svg"
       style="transform: rotate(180deg); display: none"
    />
 </div>
 <div style="position: fixed">
-  <img class="arrows" id="greenarrowdown" src="images/right-arrow-green.svg"
+  <img class="arrows" id="greenarrowdown" src="/images/right-arrow-green.svg"
       style="transform: rotate(90deg); display: none"
   />
 </div>
 <div style="position: fixed">
-  <img class="arrows" id="redarrowleft" src="images/right-arrow-red.svg"
+  <img class="arrows" id="redarrowleft" src="/images/right-arrow-red.svg"
       style="transform: rotate(180deg); display: none"
   />
 </div>
 <div style="position: fixed">
-  <img class="arrows" id="redarrowdown" src="images/right-arrow-red.svg"
+  <img class="arrows" id="redarrowdown" src="/images/right-arrow-red.svg"
       style="transform: rotate(90deg); display: none"
   />
 </div>
 <div style="position: fixed">
-  <img class="arrows" id="redarrowtopright" src="images/right-arrow-red.svg"
+  <img class="arrows" id="redarrowtopright" src="/images/right-arrow-red.svg"
       style="transform: rotate(-45deg); display: none"
   />
 </div>
 <div style="position: fixed">
-  <img class="arrows" id="orangearrowtopright" src="images/right-arrow-orange.svg"
+  <img class="arrows" id="orangearrowtopright" src="/images/right-arrow-orange.svg"
       style="transform: rotate(-45deg); display: none"
   />
 </div>
