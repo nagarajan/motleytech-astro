@@ -56,6 +56,57 @@ export function pageCount(total: number, perPage = TRAILERS_PER_PAGE): number {
   return Math.max(1, Math.ceil(total / perPage));
 }
 
+/** How many articles the "Also on MotleyTech" list shows. */
+export const RELATED_COUNT = 4;
+
+const SNIPPET_LENGTH = 130;
+
+/** One line of an article, for the compact lists that sit beside a post. */
+export interface RelatedLink {
+  href: string;
+  title: string;
+  isoDate: string;
+  stamp: string;
+  readMinutes: number;
+  image: string;
+  alt: string;
+  snippet: string;
+}
+
+function snippet(text: string): string {
+  if (text.length <= SNIPPET_LENGTH) return text;
+  const cut = text.slice(0, SNIPPET_LENGTH);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${cut.slice(0, lastSpace > 0 ? lastSpace : cut.length).replace(/[,;:.]$/, '')}\u2026`;
+}
+
+export function toRelatedLink(trailer: Trailer): RelatedLink {
+  return {
+    href: `/blog/${encodeURI(trailer.slug)}`,
+    title: trailer.title,
+    isoDate: trailer.isoDate,
+    stamp: trailer.stamp,
+    readMinutes: trailer.readMinutes,
+    image: trailer.heroImage ? encodeURI(trailer.heroImage) : '',
+    alt: trailer.heroAlt,
+    snippet: snippet(trailer.trailer),
+  };
+}
+
+/**
+ * Fisher-Yates, so every article gets its own set rather than the four newest
+ * turning up everywhere. Drawing without replacement is what keeps the list
+ * free of the duplicates the old Disqus widget used to show.
+ */
+export function sample<T>(items: T[], count: number, random: () => number = Math.random): T[] {
+  const pool = [...items];
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, count);
+}
+
 export function getTrailerPage(
   trailers: Trailer[],
   page: number,

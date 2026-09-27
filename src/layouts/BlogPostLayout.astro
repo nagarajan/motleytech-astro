@@ -1,9 +1,11 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import DisqusComments from '../components/DisqusComments.astro';
+import RelatedPosts from '../components/RelatedPosts.astro';
 
 interface Props {
   title: string;
+  slug: string;
   description?: string;
   pubDate: Date;
   tags?: string[];
@@ -16,6 +18,7 @@ interface Props {
 
 const {
   title,
+  slug,
   description,
   pubDate,
   tags = [],
@@ -63,6 +66,7 @@ const {
       </div>
     )}
     <slot />
+    <RelatedPosts currentSlug={slug} />
     {disqusIdentifier && (
       <DisqusComments identifier={disqusIdentifier} title={title} />
     )}

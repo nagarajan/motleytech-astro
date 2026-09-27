@@ -1050,6 +1050,112 @@ hr {
   text-decoration: none;
 }
 
+/* ---------- Also on MotleyTech ---------- */
+
+.related {
+  max-width: none;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.related h2 {
+  margin: 0 0 1.2rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+/* Two columns, so four articles sit as a block rather than leaving one adrift. */
+.related-list {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 620px) {
+  .related-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.related-item a {
+  display: flex;
+  gap: 0.85rem;
+  height: 100%;
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-solid);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 140ms, transform 140ms, box-shadow 140ms;
+}
+
+.related-item a:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.related-thumb {
+  flex: 0 0 auto;
+  width: 5.2rem;
+  height: 4rem;
+  object-fit: cover;
+  border-radius: calc(var(--radius-sm) - 4px);
+  background: var(--code-bg);
+}
+
+.related-thumb--empty {
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--text-faint);
+}
+
+.related-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.related-meta {
+  display: flex;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.related-title {
+  font-family: var(--font-display);
+  font-size: 0.97rem;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.related-item a:hover .related-title {
+  color: var(--accent);
+}
+
+.related-text {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-dim);
+  /* Two lines whatever the trailer length, so the cards stay level. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
 /* ---------- Comments ---------- */
 
 #comments {
@@ -1057,6 +1163,17 @@ hr {
   margin-top: 3rem;
   padding-top: 2rem;
   border-top: 1px solid var(--border);
+}
+
+/*
+ * Disqus injects its own "Also on MotleyTech" panel here. It recommends threads
+ * rather than articles, so a page that ended up with two threads appears twice,
+ * and the order barely changes. The list above replaces it. Turning it off for
+ * real, along with the ad-sync frames it loads, is a Disqus admin setting
+ * (Settings > Discovery).
+ */
+#disqus_recommendations {
+  display: none;
 }
 
 /* ---------- Legacy classes used inside migrated posts ---------- */
