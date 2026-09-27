@@ -3,17 +3,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { getPostSlug, getPublicPosts } from '../lib/content';
 
 const posts = await getPublicPosts();
+
+const byYear = new Map<number, typeof posts>();
+for (const post of posts) {
+  const year = post.data.pubDate.getFullYear();
+  byYear.set(year, [...(byYear.get(year) ?? []), post]);
+}
+const years = [...byYear.keys()].sort((a, b) => b - a);
 ---
 
-<BaseLayout title="All posts | MotleyTech">
-  <h1>All posts</h1>
-  <p>All published articles.</p>
-  <ul>
-    {posts.map((post) => (
-      <li>
-        <a href={`/blog/${getPostSlug(post)}`}>{post.data.title}</a>
-        {' '}({post.data.pubDate.toISOString().slice(0, 10)})
-      </li>
-    ))}
-  </ul>
+<BaseLayout title="Archive | MotleyTech" description="Every article published on MotleyTech.">
+  <section class="hero" style="padding-bottom: 1rem;">
+    <p class="kicker">Index</p>
+    <h1><span class="gradient-text">Archive</span></h1>
+    <p class="lede">All {posts.length} published articles, newest first.</p>
+  </section>
+
+  {years.map((year) => (
+    <section>
+      <h2 class="archive-year">{year}</h2>
+      <ul class="archive-list">
+        {byYear.get(year)!.map((post) => (
+          <li>
+            <a href={`/blog/${getPostSlug(post)}`}>{post.data.title}</a>
+            <time datetime={post.data.pubDate.toISOString()}>
+              {post.data.pubDate.toISOString().slice(0, 10).replace(/-/g, '.')} &mdash; {post.data.category}
+            </time>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
 </BaseLayout>

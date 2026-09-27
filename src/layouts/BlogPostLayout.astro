@@ -9,6 +9,9 @@ interface Props {
   tags?: string[];
   category?: string;
   disqusIdentifier?: string;
+  heroImage?: string;
+  heroAlt?: string;
+  readMinutes?: number;
 }
 
 const {
@@ -18,17 +21,40 @@ const {
   tags = [],
   category = 'Blog',
   disqusIdentifier,
+  heroImage,
+  heroAlt = title,
+  readMinutes,
 } = Astro.props;
 ---
 
 <BaseLayout title={`${title} | MotleyTech`} description={description}>
   <article class="post-content">
+    <p class="kicker">{category}</p>
     <h1>{title}</h1>
     <p class="post-meta">
-      <time datetime={pubDate.toISOString()}>{pubDate.toDateString()}</time>
-      <span> in </span>
+      <time datetime={pubDate.toISOString()}>
+        {pubDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          timeZone: 'UTC',
+        })}
+      </time>
+      {readMinutes && (
+        <>
+          <span aria-hidden="true">&middot;</span>
+          <span>{readMinutes} min read</span>
+        </>
+      )}
+      <span aria-hidden="true">&middot;</span>
       <a href={`/categories/${category.toLowerCase()}`}>{category}</a>
     </p>
+    {heroImage && (
+      <figure class="post-hero">
+        <img class="trailer-media-blur" src={heroImage} alt="" aria-hidden="true" />
+        <img src={heroImage} alt={heroAlt} />
+      </figure>
+    )}
     {tags.length > 0 && (
       <div class="post-tags">
         {tags.map((tag) => (

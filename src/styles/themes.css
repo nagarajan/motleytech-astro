@@ -1,0 +1,173 @@
+/*
+ * Theme palettes. Each theme sets the same variable contract; global.css never
+ * hardcodes a colour. `color-scheme` keeps native controls and scrollbars in step.
+ */
+
+:root,
+[data-theme='nebula'] {
+  color-scheme: dark;
+
+  --bg: #05070f;
+  --bg-tint-1: rgba(76, 226, 255, 0.16);
+  --bg-tint-2: rgba(150, 92, 255, 0.18);
+  --grid-line: rgba(122, 162, 214, 0.07);
+
+  --surface: rgba(17, 24, 43, 0.72);
+  --surface-solid: #111828;
+  --surface-raised: rgba(28, 38, 64, 0.85);
+  --border: rgba(122, 156, 214, 0.2);
+  --border-strong: rgba(122, 200, 255, 0.45);
+
+  --text: #e6edfa;
+  --text-dim: #a7b6d4;
+  --text-faint: #6f7f9f;
+
+  --accent: #4be3ff;
+  --accent-2: #b478ff;
+  --accent-ink: #04121a;
+
+  --glow: rgba(75, 227, 255, 0.28);
+  --header-bg: rgba(7, 11, 22, 0.78);
+  --code-bg: rgba(6, 12, 24, 0.78);
+  --chip-bg: rgba(75, 227, 255, 0.1);
+}
+
+[data-theme='synthwave'] {
+  color-scheme: dark;
+
+  --bg: #0d0518;
+  --bg-tint-1: rgba(255, 95, 162, 0.18);
+  --bg-tint-2: rgba(255, 180, 87, 0.14);
+  --grid-line: rgba(214, 122, 196, 0.08);
+
+  --surface: rgba(32, 16, 48, 0.72);
+  --surface-solid: #1d0f2c;
+  --surface-raised: rgba(48, 24, 70, 0.85);
+  --border: rgba(214, 138, 214, 0.22);
+  --border-strong: rgba(255, 122, 190, 0.5);
+
+  --text: #f6e9ff;
+  --text-dim: #cbaad9;
+  --text-faint: #96769f;
+
+  --accent: #ff5fa2;
+  --accent-2: #ffb457;
+  --accent-ink: #1c0410;
+
+  --glow: rgba(255, 95, 162, 0.3);
+  --header-bg: rgba(14, 6, 26, 0.8);
+  --code-bg: rgba(16, 7, 28, 0.82);
+  --chip-bg: rgba(255, 95, 162, 0.12);
+}
+
+[data-theme='matrix'] {
+  color-scheme: dark;
+
+  --bg: #03100a;
+  --bg-tint-1: rgba(77, 255, 168, 0.14);
+  --bg-tint-2: rgba(90, 224, 255, 0.1);
+  --grid-line: rgba(110, 214, 160, 0.08);
+
+  --surface: rgba(12, 32, 23, 0.72);
+  --surface-solid: #0b2017;
+  --surface-raised: rgba(20, 50, 36, 0.85);
+  --border: rgba(110, 214, 160, 0.22);
+  --border-strong: rgba(77, 255, 168, 0.45);
+
+  --text: #dcf7e7;
+  --text-dim: #9fc9b3;
+  --text-faint: #6b8f7d;
+
+  --accent: #4dffa8;
+  --accent-2: #5ae0ff;
+  --accent-ink: #03170e;
+
+  --glow: rgba(77, 255, 168, 0.26);
+  --header-bg: rgba(4, 18, 12, 0.8);
+  --code-bg: rgba(4, 20, 13, 0.8);
+  --chip-bg: rgba(77, 255, 168, 0.1);
+}
+
+[data-theme='ember'] {
+  color-scheme: dark;
+
+  --bg: #100906;
+  --bg-tint-1: rgba(255, 138, 61, 0.16);
+  --bg-tint-2: rgba(255, 209, 102, 0.12);
+  --grid-line: rgba(214, 156, 110, 0.08);
+
+  --surface: rgba(34, 21, 15, 0.74);
+  --surface-solid: #22150f;
+  --surface-raised: rgba(52, 32, 22, 0.86);
+  --border: rgba(214, 156, 110, 0.22);
+  --border-strong: rgba(255, 160, 80, 0.48);
+
+  --text: #f8ece2;
+  --text-dim: #d1b49f;
+  --text-faint: #9c7f6c;
+
+  --accent: #ff8a3d;
+  --accent-2: #ffd166;
+  --accent-ink: #1a0b04;
+
+  --glow: rgba(255, 138, 61, 0.28);
+  --header-bg: rgba(18, 10, 6, 0.8);
+  --code-bg: rgba(20, 12, 7, 0.82);
+  --chip-bg: rgba(255, 138, 61, 0.12);
+}
+
+[data-theme='aurora'] {
+  color-scheme: light;
+
+  --bg: #eef3fb;
+  --bg-tint-1: rgba(10, 126, 164, 0.16);
+  --bg-tint-2: rgba(107, 75, 255, 0.12);
+  --grid-line: rgba(38, 76, 130, 0.07);
+
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-solid: #ffffff;
+  --surface-raised: rgba(255, 255, 255, 0.95);
+  --border: rgba(38, 76, 130, 0.16);
+  --border-strong: rgba(10, 126, 164, 0.5);
+
+  --text: #16243a;
+  --text-dim: #4a5f80;
+  --text-faint: #7b8dab;
+
+  --accent: #0a7ea4;
+  --accent-2: #6b4bff;
+  --accent-ink: #f3fbff;
+
+  --glow: rgba(10, 126, 164, 0.2);
+  --header-bg: rgba(238, 243, 251, 0.82);
+  --code-bg: rgba(22, 36, 58, 0.06);
+  --chip-bg: rgba(10, 126, 164, 0.1);
+}
+
+[data-theme='quartz'] {
+  color-scheme: light;
+
+  --bg: #f7f4fa;
+  --bg-tint-1: rgba(122, 60, 255, 0.14);
+  --bg-tint-2: rgba(224, 65, 126, 0.12);
+  --grid-line: rgba(88, 60, 120, 0.07);
+
+  --surface: rgba(255, 255, 255, 0.8);
+  --surface-solid: #ffffff;
+  --surface-raised: rgba(255, 255, 255, 0.96);
+  --border: rgba(88, 60, 120, 0.16);
+  --border-strong: rgba(122, 60, 255, 0.45);
+
+  --text: #241c33;
+  --text-dim: #5b4f72;
+  --text-faint: #8b7fa0;
+
+  --accent: #7a3cff;
+  --accent-2: #e0417e;
+  --accent-ink: #fdf8ff;
+
+  --glow: rgba(122, 60, 255, 0.18);
+  --header-bg: rgba(247, 244, 250, 0.84);
+  --code-bg: rgba(36, 28, 51, 0.06);
+  --chip-bg: rgba(122, 60, 255, 0.1);
+}

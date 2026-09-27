@@ -4,7 +4,10 @@ pubDate: 2013-12-03
 category: "Blog"
 tags: ["Physics", "Mathematics", "Gravity", "Pi", "Sun", "Earth"]
 author: "Nagarajan"
-description: "The earth orbits around the sun because it has angular momentum. If we stopped the earth in orbit then let it fall straight towards the sun, then how long (in seconds) would it take to reach the sun? <br /> <div style=\"display: flex; justify-content: center\"><img style=\"width: 600px; border: 2px solid gray; padding: 12px; box-sizing: border-box\" src=\"/images/corot_ill.jpg\" /></div> <br />"
+description: "If the Earth were stopped in its orbit, how long would it take to fall into the Sun?"
+trailer: "The Earth stays in orbit because of its angular momentum. Take that away, stopping the planet dead in its tracks, and how long until it reaches the Sun? Working out the answer turns up an unexpected appearance by pi."
+heroImage: "/images/corot_ill.jpg"
+heroAlt: "Illustration of a planet close to its star"
 legacySlug: "fallingIntoTheSun"
 disqusIdentifier: "falling_into_the_sun"
 ---

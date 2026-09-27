@@ -4,7 +4,8 @@ pubDate: 2013-01-01
 category: "Private"
 tags: ["nginx"]
 author: "Nagarajan"
-description: ""
+description: "Notes on configuring nginx for static sites and reverse proxies."
+trailer: "Notes on configuring nginx for static sites and reverse proxies."
 legacySlug: "nginx-configuration"
 disqusIdentifier: "nginx_configuration"
 ---

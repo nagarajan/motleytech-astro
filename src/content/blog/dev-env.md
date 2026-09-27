@@ -4,7 +4,8 @@ pubDate: 2020-10-13
 category: "Private"
 tags: ["dev"]
 author: "Nagarajan"
-description: ""
+description: "Assorted commands and tips for setting up a development environment."
+trailer: "Assorted commands and tips for setting up a development environment."
 legacySlug: "dev-env"
 disqusIdentifier: "dev_env_tips"
 ---

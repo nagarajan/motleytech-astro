@@ -4,19 +4,14 @@ pubDate: 2026-03-22
 category: "Blog"
 tags: ["Javascript", "Visualization", "Astronomy", "Physics", "Solar Eclipse"]
 author: "Nagarajan"
-description: "A frontend visualization app for exploring solar eclipses and the geometry behind how the Sun, Moon, and Earth line up."
+description: "An interactive visualization of the Sun, Moon and Earth geometry that produces a solar eclipse."
+trailer: "A total eclipse is a cosmic coincidence: a moon that just barely covers the sun. This app lets you move through the Sun, Moon and Earth system and watch the geometry that decides which patch of the planet falls into shadow."
+heroImage: "/images/solar-eclipses-app.png"
+heroAlt: "Screenshot of the solar eclipse visualization app"
 disqusIdentifier: "solarEclipsesApp"
 ---
 
 I also recently built a frontend app for visualizing solar eclipses.
-
-<div style="display: flex; justify-content: center; margin: 1rem 0 1.25rem 0;">
-  <img
-    src="/images/Solar%20eclipses%20app%20screenshot.png"
-    alt="Screenshot of the solar eclipses app"
-    style="width: 900px; max-width: 100%; border: 2px solid gray; padding: 6px; box-sizing: border-box;"
-  />
-</div>
 
 The app is available here:
 

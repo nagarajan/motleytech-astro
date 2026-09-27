@@ -4,7 +4,10 @@ pubDate: 2015-04-16
 category: "Blog"
 tags: ["Javascript", "CSS", "Bezier curves"]
 author: "Nagarajan"
-description: "Bezier curves are one of the *cooler* things with built-in support in the web browser - which makes it easier to create this demo in the browser (vs a custom native UI).<br /> <div style=\"display: flex; justify-content: center\"><img style=\"width: 400px; border: 2px solid gray; padding: 15px; box-sizing: border-box\" src=\"/images/Bezier curve screenshot.webp\" /></div>"
+description: "An interactive Bezier curve playground built on the curve support already in the browser."
+trailer: "Bezier curves are one of the few pieces of real mathematics the browser ships natively, which makes them a joy to play with. Drag the control points around and watch the construction lines sweep the curve into place."
+heroImage: "/images/Bezier curve screenshot.webp"
+heroAlt: "Bezier curve with draggable control points and its construction lines"
 legacySlug: "bezier-curve"
 disqusIdentifier: "bezierPlayground"
 ---

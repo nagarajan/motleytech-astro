@@ -4,15 +4,14 @@ pubDate: 2014-03-15
 category: "Blog"
 tags: ["Leo Szilard", "Fission", "Manhattan Project", "Atomic Bomb"]
 author: "Nagarajan"
-description: "I bet you have not heard the name **Leo Szilard** - I feel safe making this bet because even with a deep interest in physics, engineering and a fair interest in scientific history, it took me an unfortunately long time to hear about him (and I feel good losing this bet to a knowledgeable person :-) ). <br /> <div style=\"display: flex; justify-content: center\"><img style=\"width: 400px; border: 2px solid gray; padding: 15px; box-sizing: border-box\" src=\"/images/Szilard-portrait.webp\" /></div> <br /> Given how well the world knows about his inventions and the effect of this actions, it truly is surprising how little known this person is. Read on to find out how one man changed the world and impacted it in the most profound ways."
+description: "The physicist who patented the nuclear chain reaction and then spent his life trying to contain it."
+trailer: "He patented the nuclear chain reaction, drafted the letter that Einstein signed, and then spent the rest of his life trying to restrain the weapon he had set in motion. Leo Szilard may be the most consequential physicist you have never heard of."
+heroImage: "/images/Szilard-portrait.webp"
+heroAlt: "Portrait photograph of the physicist Leo Szilard"
 legacySlug: "leo_szilard"
 disqusIdentifier: "cmsplugin-disqus-62"
 ---
 I bet you have not heard the name **Leo Szilard** - I feel safe making this bet because even with a deep interest in physics, engineering and a fair interest in scientific history, it took me an unfortunately long time to hear about him (and I feel good losing this bet to a knowledgeable person :-) ). Given how well the world knows about his inventions and the effect of this actions, it truly is surprising how little known this person is. Read on to find out how one man changed the world and impacted it in the most profound ways.
-
-<span class="img-width-400">
-![Alternate text](/images/Szilard-portrait.webp)
-</span>
 
 Born in 1898 in Budapest, Austria-Hungary, Leo Szilard was interested in Physics and Mathematics from a very early age. He won national level prizes in Mathematics and studied engineering at Budapest Technical University before being drafted into the army during WWI. However, he was hospitalized with Spanish Influenza and did not have to fight a battle on the front lines.
 

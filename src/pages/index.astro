@@ -1,22 +1,145 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getPostSlug, getPublicPosts } from '../lib/content';
+import { getPublicPosts, getUniqueTags } from '../lib/content';
+import {
+  getTrailerPage,
+  pageCount,
+  renderTrailerCards,
+  toTrailer,
+} from '../lib/trailers';
 
 const posts = await getPublicPosts();
-const featured = posts.slice(0, 10);
+const trailers = posts.map(toTrailer);
+const totalPages = pageCount(trailers.length);
+const firstPage = renderTrailerCards(getTrailerPage(trailers, 1));
+
+const topicCount = getUniqueTags(posts).length;
+const years = posts.map((post) => post.data.pubDate.getFullYear());
+const span = `${Math.min(...years)}-${Math.max(...years)}`;
 ---
 
-<BaseLayout title="MotleyTech" description="Variegated technical notes and interactive demos">
-  <h1>Latest posts</h1>
-  <p>Selected topics from programming, mathematics, physics, and puzzle solving.</p>
-  <ul class="list-group">
-    {featured.map((post) => (
-      <li class="list-group-item">
-        <a href={`/blog/${getPostSlug(post)}`}>{post.data.title}</a>
-        <small style="display:block;color:var(--color-text);opacity:0.78;">
-          {post.data.pubDate.toDateString()} - {post.data.category}
-        </small>
-      </li>
-    ))}
-  </ul>
+<BaseLayout
+  title="MotleyTech"
+  description="Variegated notes on mathematics, physics, puzzles and programming, with interactive demos."
+>
+  <section class="hero">
+    <p class="kicker">Signal log &mdash; mathematics, physics, code</p>
+    <h1><span class="gradient-text">Curious things,</span><br />worked out in public.</h1>
+    <p class="lede">
+      Interactive demos and long-form notes on the problems I could not stop thinking about:
+      gravity trains, magic squares, balanced trees, and the occasional piece of scientific
+      history.
+    </p>
+    <p class="hero-stats">
+      <span><b>{posts.length}</b> articles</span>
+      <span><b>{topicCount}</b> topics</span>
+      <span><b>{span}</b> archive</span>
+    </p>
+  </section>
+
+  <section aria-labelledby="feed-heading">
+    <div class="feed-head">
+      <h2 id="feed-heading">Latest transmissions</h2>
+      <a href="/archives">Full index &rarr;</a>
+    </div>
+
+    <ul id="trailer-grid" class="trailer-grid" set:html={firstPage} />
+
+    <div
+      id="feed-status"
+      class="feed-status"
+      data-next-page={totalPages > 1 ? '2' : ''}
+      aria-live="polite"
+    >
+      {totalPages > 1 ? (
+        <noscript><a class="feed-more" href="/archives">Browse the full index</a></noscript>
+      ) : (
+        <p class="feed-end">End of transmission</p>
+      )}
+    </div>
+  </section>
+
+  <script is:inline>
+    (function () {
+      const grid = document.getElementById('trailer-grid');
+      const status = document.getElementById('feed-status');
+      if (!grid || !status || !status.dataset.nextPage) {
+        return;
+      }
+
+      const spinner =
+        '<div><div class="feed-spinner" aria-hidden="true"><span></span><span></span><span></span><span></span></div><p>Loading</p></div>';
+      let loading = false;
+      let observer = null;
+
+      function showEnd() {
+        status.innerHTML = '<p class="feed-end">End of transmission</p>';
+        delete status.dataset.nextPage;
+        if (observer) {
+          observer.disconnect();
+        }
+      }
+
+      function showRetry() {
+        status.innerHTML = '';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'feed-more';
+        button.textContent = 'Retry';
+        button.addEventListener('click', loadNext);
+        status.appendChild(button);
+      }
+
+      async function loadNext() {
+        const page = status.dataset.nextPage;
+        if (loading || !page) {
+          return;
+        }
+        loading = true;
+        status.innerHTML = spinner;
+
+        try {
+          const response = await fetch('/api/trailers/' + page + '.json');
+          if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+          }
+          const data = await response.json();
+
+          const fragment = document.createElement('template');
+          fragment.innerHTML = data.html;
+          Array.prototype.forEach.call(fragment.content.children, function (item, index) {
+            const card = item.querySelector('.trailer');
+            if (card) {
+              card.classList.add('trailer-enter');
+              card.style.animationDelay = index * 60 + 'ms';
+            }
+          });
+          grid.appendChild(fragment.content);
+
+          if (data.nextPage) {
+            status.dataset.nextPage = String(data.nextPage);
+            status.innerHTML = '';
+          } else {
+            showEnd();
+          }
+        } catch (error) {
+          console.error('Could not load more trailers', error);
+          showRetry();
+        } finally {
+          loading = false;
+        }
+      }
+
+      // Start fetching a screenful early so the feed feels continuous.
+      observer = new IntersectionObserver(
+        function (entries) {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            loadNext();
+          }
+        },
+        { rootMargin: '600px 0px' },
+      );
+      observer.observe(status);
+    })();
+  </script>
 </BaseLayout>

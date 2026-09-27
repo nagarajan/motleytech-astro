@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getPostSlug, getPublicPosts, getUniqueCategories } from '../../lib/content';
+import { getPublicPosts, getUniqueCategories } from '../../lib/content';
+import { renderTrailerCards, toTrailer } from '../../lib/trailers';
 
 export async function getStaticPaths() {
   const posts = await getPublicPosts();
@@ -14,13 +15,20 @@ const { category, posts } = Astro.props;
 const filtered = posts.filter(
   (post) => post.data.category.toLowerCase() === category.toLowerCase(),
 );
+const cards = renderTrailerCards(filtered.map(toTrailer));
 ---
 
-<BaseLayout title={`Category: ${category} | MotleyTech`}>
-  <h1>Category: {category}</h1>
-  <ul>
-    {filtered.map((post) => (
-      <li><a href={`/blog/${getPostSlug(post)}`}>{post.data.title}</a></li>
-    ))}
-  </ul>
+<BaseLayout
+  title={`Category: ${category} | MotleyTech`}
+  description={`Articles filed under ${category}.`}
+>
+  <section class="hero" style="padding-bottom: 1.5rem;">
+    <p class="kicker">Category</p>
+    <h1><span class="gradient-text">{category}</span></h1>
+    <p class="lede">
+      {filtered.length} {filtered.length === 1 ? 'article' : 'articles'} in this category.
+    </p>
+  </section>
+
+  <ul class="trailer-grid" set:html={cards} />
 </BaseLayout>

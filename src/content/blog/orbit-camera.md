@@ -4,7 +4,10 @@ pubDate: 2016-08-13
 category: "Blog"
 tags: ["3D", "camera", "orbit"]
 author: "Nagarajan"
-description: "A set of orbit controls, which allow the object under the mouse pointer to be the 'object of interest' with respect to which the camera then rotates / zooms. <div style=\"display: flex; justify-content: center; margin-bottom: 15px\"><img style=\"width: 400px; border: 2px solid gray; padding: 10px; box-sizing: border-box\" src=\"/images/Orbit camera screenshot.webp\" /></div>"
+description: "Orbit controls that rotate and zoom around whatever object sits under the mouse pointer."
+trailer: "Most orbit controls rotate around a fixed origin, which starts to feel wrong the moment you zoom in on something off-centre. These controls pick whatever sits under your cursor as the object of interest and orbit around that instead."
+heroImage: "/images/Orbit camera screenshot.webp"
+heroAlt: "A 3D scene viewed through the orbit camera controls"
 legacySlug: "orbit-camera"
 disqusIdentifier: "3dOrbitCamera"
 ---

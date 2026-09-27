@@ -4,19 +4,14 @@ pubDate: 2026-03-22
 category: "Blog"
 tags: ["Javascript", "React", "Productivity", "Tasks"]
 author: "Nagarajan"
-description: "A frontend task management application for organizing work, tracking progress, and keeping day-to-day planning lightweight and visual."
+description: "A lightweight, visual task board that runs entirely in the browser with no backend or account."
+trailer: "A lightweight, visual task board that runs entirely in the browser. Move work between columns, track what is in flight, and keep day-to-day planning low friction: no backend, no account, nothing to sync."
+heroImage: "/images/task-management-app.png"
+heroAlt: "Screenshot of the task management board"
 disqusIdentifier: "taskManagementApp"
 ---
 
 Recently, I created a frontend task management application focused on keeping everyday planning simple, visual, and easy to update.
-
-<div style="display: flex; justify-content: center; margin: 1rem 0 1.25rem 0;">
-  <img
-    src="/images/task-management-app.png"
-    alt="Screenshot of the task management app"
-    style="width: 900px; max-width: 100%; border: 2px solid gray; padding: 6px; box-sizing: border-box;"
-  />
-</div>
 
 The app is available here:
 

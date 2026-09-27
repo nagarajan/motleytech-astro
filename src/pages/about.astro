@@ -15,13 +15,10 @@ const { Content } = await render(aboutPage);
 ---
 
 <PageLayout title={aboutPage.data.title} description={aboutPage.data.description}>
-  <figure style="margin: 0 0 1.5rem; text-align: center;">
-    <img
-      src="/images/motleytech-collage.png"
-      alt="Mosaic collage inspired by the blog topics"
-      style="max-width: 100%; height: auto; border: 1px solid var(--color-border); border-radius: 0.4rem;"
-    />
+  <figure class="post-hero">
+    <img class="trailer-media-blur" src="/images/motleytech-collage.png" alt="" aria-hidden="true" />
+    <img src="/images/motleytech-collage.png" alt="Mosaic collage inspired by the blog topics" />
   </figure>
   <Content />
-  <p style="margin-top: 1rem;">Built with Astro.</p>
+  <p class="kicker" style="margin-top: 2rem;">Built with Astro</p>
 </PageLayout>

@@ -4,7 +4,10 @@ pubDate: 2014-03-22
 category: "Blog"
 tags: ["Circle", "Chords"]
 author: "Nagarajan"
-description: "A fun little program to discover shapes conjured up drawing periodic chords in a circle. I made this for my kids to enjoy. <br /> <div style=\"display: flex; justify-content: center\"><img style=\"width: 600px; border: 2px solid gray; padding: 12px; box-sizing: border-box\" src=\"/images/circle chord screenshot.webp\" /></div> <br />"
+description: "Periodic chords drawn inside a circle conjure up cardioids and other unexpected shapes."
+trailer: "Draw a chord from point n to point 2n around a circle, repeat a few hundred times, and a cardioid appears out of nowhere. A small program I wrote so my kids could go hunting for the shapes hiding inside simple arithmetic."
+heroImage: "/images/circle chord screenshot.webp"
+heroAlt: "Cardioid shape emerging from chords drawn inside a circle"
 legacySlug: "circle-chord-fun"
 disqusIdentifier: "circle_chord_fun"
 ---

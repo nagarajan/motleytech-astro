@@ -4,14 +4,13 @@ pubDate: 2014-01-17
 category: "Blog"
 tags: ["Physics", "Mathematics", "Gravity", "Train"]
 author: "Nagarajan"
-description: "Here is a really cool transportation idea - using gravity powered vacuum tubes to travel through the earth across long distances - and all of that in 42 minutes. <br /> <div style=\"display: flex; justify-content: center\"><img style=\"width: 400px; border: 2px solid gray; padding: 15px; box-sizing: border-box\" src=\"/images/gravity_train_poster.webp\" /></div> <br /> Yes, you read that right. 42 minutes flat... irrespective of the starting or ending stations!! Read on to find out more..."
+description: "Gravity powered vacuum tubes through the Earth make every journey take the same 42 minutes."
+trailer: "Dig a straight tunnel between any two points on Earth, pump out the air, and let gravity supply the propulsion. The trip takes 42 minutes, and the remarkable part is that it takes 42 minutes no matter which two cities you pick."
+heroImage: "/images/gravity_train_poster.webp"
+heroAlt: "Illustration of a gravity powered train travelling through the Earth"
 legacySlug: "gravityTrain"
 disqusIdentifier: "gravity_train"
 ---
-<span class="img-width-400">
-![Alternate text](/images/gravity_train_poster.webp)
-</span>
-
 Here is a really cool transportation idea - using gravity powered vacuum tubes to travel through the earth across long distances - and all of that in 42 minutes. You can see the relevant part of a discovery channel show on this topic in the following youtube snippet.
 
 <div class="youtube youtube-16x9-640">

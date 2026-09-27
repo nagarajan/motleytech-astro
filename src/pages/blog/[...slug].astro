@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import BlogPostLayout from '../../layouts/BlogPostLayout.astro';
 import { getPostSlug } from '../../lib/content';
+import { getReadMinutes } from '../../lib/trailers';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -22,6 +23,9 @@ const { Content } = await render(post);
   tags={post.data.tags}
   category={post.data.category}
   disqusIdentifier={post.data.disqusIdentifier}
+  heroImage={post.data.heroImage}
+  heroAlt={post.data.heroAlt}
+  readMinutes={getReadMinutes(post)}
 >
   <Content />
 </BlogPostLayout>
