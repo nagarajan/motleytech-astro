@@ -17,6 +17,7 @@ Surprisingly, it is very easy to create magic squares when n is odd. Magic squar
 
 What follows is a program to create odd magic squares of any (reasonable) size. Give it a try... enter an odd number (3 to 49) and the program should reply with a magic square.
 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="/js/magicSquare.js"></script>
 
 <input id="sqsize" type="number" min="3" max="49" step="2" class="form-control" value="3" />
