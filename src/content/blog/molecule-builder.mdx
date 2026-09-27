@@ -1,0 +1,78 @@
+---
+title: "Building molecules out of two rules"
+pubDate: 2026-09-27
+category: "Blog"
+tags: ["Chemistry", "3D", "Javascript", "Physics", "Geometry"]
+author: "Nagarajan"
+description: "A 3D playground for building molecules, where the shapes are not looked up in a table but fall out of bond lengths and the fact that neighbours push each other away."
+trailer: "Drop atoms into a 3D workspace, bond them together, and watch the geometry arrange itself. Methane finds its tetrahedron, benzene flattens into a hexagon, and cyclohexane buckles into a chair — from two rules and no table of angles."
+heroImage: "/images/demos/molecule-builder.webp"
+heroAlt: "Sulfur hexafluoride in 3D: a yellow sulfur nucleus with six green fluorines at the corners of an octahedron, each inside a transparent shell"
+disqusIdentifier: "moleculeBuilder"
+---
+
+import MoleculeBuilder from '../../components/apps/MoleculeBuilder.tsx';
+
+Pick an element, and it appears. Select an atom, pick another element, and the new one arrives bonded to it. Every atom is a small nucleus inside a transparent shell, and every bond is a cylinder between two nuclei — steel for covalent, amber for ionic.
+
+<MoleculeBuilder client:visible />
+
+What is worth knowing is that nothing in there consults a table of bond angles. There are two rules, and every shape you can see is a consequence of them.
+
+## The two rules
+
+**Bonds have a length.** The distance between two nuclei is the sum of the two atoms' covalent radii, which is where those radii come from in the first place: they were reverse-engineered from measured bond lengths precisely so that adding them up works. Carbon's is 0.77 Å and hydrogen's is 0.37 Å, so a C–H bond is 1.14 Å, and the real thing is 1.09 Å. Close enough to be recognisable, which is all this is trying to be.
+
+**Neighbours of the same atom push each other away.** Two atoms bonded to the same third atom repel, with an inverse-square force. That is the whole of the second rule.
+
+Then the program rolls downhill: nudge everything along the forces, over and over, until nothing is moving.
+
+## Why that is enough
+
+Load methane and look at it. The four hydrogens sit at 109.47° from each other — the tetrahedral angle — and nobody told the program that number. Here is why they have to.
+
+Fix a central atom and ask where its $k$ neighbours go. Bond lengths are already settled by the first rule, so each neighbour is pinned to a sphere around the centre and the only freedom left is *direction*. The second rule says those directions repel each other with an inverse-square force. Spreading $k$ points over a sphere to minimise inverse-square repulsion is a named problem — the **Thomson problem**, originally about electrons in Thomson's plum-pudding atom — and for small $k$ its answers are exactly the shapes chemistry teaches:
+
+| Neighbours | Thomson solution | What chemistry calls it |
+| --- | --- | --- |
+| 2 | opposite poles | linear, 180° |
+| 3 | triangle on a great circle | trigonal planar, 120° |
+| 4 | tetrahedron | tetrahedral, 109.47° |
+| 5 | triangular bipyramid | trigonal bipyramidal |
+| 6 | octahedron | octahedral, 90° |
+
+So VSEPR, the rule every chemistry course teaches for predicting molecular shape, is the Thomson problem wearing a different hat. The playground is not approximating a table of ideal angles; it is solving the problem the table was an answer to. Load carbon dioxide for the two-neighbour case, boron trifluoride for three, methane for four, sulfur hexafluoride for six, and watch each one find its own answer.
+
+The nicest demonstration is to build methane by hand. Drop a carbon, then add hydrogens one at a time. The second hydrogen swings round to sit opposite the first; the third pushes all three into a flat triangle; the fourth makes the triangle pucker into a tetrahedron. Each new neighbour re-solves the problem for everybody.
+
+## Where it is wrong, on purpose
+
+Water comes out straight. Real water is bent, at 104.5°, and the reason is the two lone pairs on the oxygen: pairs of electrons that are not in any bond but still take up room and still shove. This model only knows about bonded neighbours, so oxygen with two of them puts them at opposite poles and gets a straight line.
+
+That is the main simplification, and it is a deliberate one — modelling lone pairs properly means counting electrons, which means knowing about oxidation states and hybridisation and all the chemistry this was trying to avoid. Ammonia is wrong in the same way, coming out flat where it should be a shallow pyramid. Bond order is missing too: every bond here is a single stick, so the double bonds in carbon dioxide and the delocalised ring in benzene are drawn as plain connections. Their geometry still comes out right, because it was never the double bonds that set those angles.
+
+Everything with only bonded neighbours around it — methane, the boron and sulfur halides, the carbon skeleton of anything organic — comes out very close to correct.
+
+## Rings, and a thing that surprised me
+
+Load benzene: a flat, regular hexagon. Each carbon has three neighbours — two ring carbons and a hydrogen — and a flat hexagon is the one arrangement that gives all three of them 120° at every carbon simultaneously. Everything agrees, and the ring has no reason to leave the plane.
+
+Then load cyclohexane, the same six-carbon ring with two hydrogens on each carbon instead of one. Now every carbon has four neighbours and wants 109.47°, but a flat hexagon forces 120° on the ring bonds. Something has to give, and what gives is the plane: the ring buckles into the shape chemists call a **chair**. It arrives there with no idea that it is famous for doing so.
+
+Rings are also where rolling downhill stops being enough. Closing a ring yanks together two ends that were nowhere near each other, and the strain of that can settle into a twist where every atom is genuinely in equilibrium and the molecule is genuinely the wrong shape — benzene stuck at 115° in a shallow saddle. The fix is to shove the whole thing in a random direction and roll downhill again, keeping the result only if it came out calmer. That is called basin hopping, and it is what the **tidy up** button does. If something you have built looks wrong, press it.
+
+## Ionic or covalent
+
+The colour of a bond is decided by electronegativity — how hard an atom pulls on shared electrons. When the two atoms differ by less than 1.8 on the Pauling scale, the electrons are shared and the bond is drawn in steel. Above that, one atom has effectively taken them, and the bond is drawn thinner and in amber. Sodium and chlorine differ by 2.23, so table salt comes out ionic; oxygen and hydrogen differ by 1.24, so water does not.
+
+That cutoff is a convention rather than a fact — real bonds shade continuously from one kind to the other, and 1.8 is just where textbooks like to draw the line. Select any atom and its bonds are listed with the actual Δχ, so you can see how close to the line each one sits, and override any of them by hand.
+
+## Things worth trying
+
+- Build methane one hydrogen at a time and watch the geometry re-solve itself at each step.
+- Turn the shells off, or slide them up to 100%, which is their true van der Waals size. At full size they overlap heavily — which is correct, and is why space-filling models look like clumps of fused bubbles rather than balls on sticks.
+- Make a six-carbon chain, then use **bond to…** to join the ends, and press tidy up. You have made cyclohexane, and it will find the chair.
+- Force a bond to be ionic that has no business being one — carbon to hydrogen, say — and note that the geometry does not change at all. In this model the bond type is paint. Whether that bothers you is a good measure of how much chemistry the two rules are actually doing.
+- Put six fluorines on a sulfur, then a seventh. The program will tell you that sulfur does not usually do that, and then draw it anyway.
+
+If you like watching simple rules produce structure, [the game behind TREE(3)](/blog/tree-sequence-game) is two rules about coloured trees that produce a number too large to write down.
