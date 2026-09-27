@@ -1,0 +1,101 @@
+---
+title: "Four ways to keep a tree balanced"
+pubDate: 2026-09-27
+category: "Blog"
+tags: ["Data Structures", "Balanced Binary Tree", "AVL", "Red Black Tree", "B-tree", "Treap", "Animation", "Javascript"]
+author: "Nagarajan"
+description: "Interactive simulations of AVL trees, Red-Black trees, B-trees and treaps, narrating every rotation, recolour, split and merge."
+trailer: "A search tree is only fast while it stays short, and there are surprisingly different ways to keep it that way: measure heights, colour nodes, roll dice, or give up on binary altogether. Add and delete values in all four and watch each one repair itself a step at a time."
+heroImage: "/images/demos/tree-lab.webp"
+heroAlt: "A Red-Black tree simulation mid-repair, with the rotation being narrated underneath"
+disqusIdentifier: "selfBalancingTrees"
+---
+
+import TreeLab from '../../components/apps/TreeLab.tsx';
+
+A binary search tree is a lovely idea with one embarrassing failure mode. Insert `1, 2, 3, 4, 5` in order and you do not get a tree, you get a linked list with extra steps: every lookup walks the whole thing, and the $O(\log n)$ promise evaporates into $O(n)$.
+
+Everything below is a way of refusing to let that happen. They all keep a tree short enough to stay fast, but they disagree about how — one measures heights, one colours nodes, one rolls dice, and one gives up on binary trees altogether. The simulation has all four: type a number, insert or delete it, and step through what the tree does about it.
+
+<TreeLab client:visible />
+
+Every step is narrated, so you can hit **Play** and watch, or use the arrows to walk one move at a time. Clicking a node loads its value into the box, which is the quickest way to delete something specific. The step list underneath is clickable too, if you want to jump back to the moment a rotation happened.
+
+## What they are trading off
+
+|  | Balance rule | Stored per node | Worst case height | Rotations to insert | Rotations to delete |
+| --- | --- | --- | --- | --- | --- |
+| AVL | subtree heights differ by at most one | the height | about $1.44\log_2 n$ | at most 2 | up to one per level |
+| Red-Black | colour rules, below | one colour bit | at most $2\log_2(n+1)$ | at most 2 | at most 3 |
+| Treap | heap order on a random priority | a random priority | $O(\log n)$ expected | about 2 expected | about 2 expected |
+| B-tree | key counts, and all leaves level | a block of keys | $\log_{\lceil m/2 \rceil} n$ | none, it splits instead | none, it merges instead |
+
+The pattern worth noticing: the tighter the height bound, the more work the structure does on every write. AVL keeps the shortest trees and pays for them during deletion. Red-Black accepts trees up to about 40% taller in exchange for repairs that are mostly recolouring. The treap does almost no bookkeeping at all and gets its balance from the random priorities. The B-tree stops competing on height entirely and wins by making each node hold dozens of keys.
+
+## AVL trees: measure everything
+
+Every AVL node stores its own height, and the rule is that the heights of its two children may differ by at most one. Insert or delete anything and that claim has to be rechecked along the path back to the root, because those are the only nodes whose heights can have changed.
+
+When a node does tip over, the repair is a **rotation**: a local rewiring of three nodes and their subtrees that reduces the height on the heavy side by one, without disturbing the left-to-right order of the keys. There are two shapes of trouble. If the heavy grandchild is on the outside of the path, one rotation fixes it. If it is on the inside, a single rotation just tips the tree the other way, so the inner grandchild has to be rotated outwards first — the Left-Right and Right-Left cases in the narration.
+
+<TreeLab structures={["avl"]} initial={[50, 30, 70, 20, 40, 60, 80]} client:visible />
+
+Two things are worth trying here. Insert `10` and then `5`: the height notes creep up the tree until a node breaks the rule, and only then does anything rotate. Then delete a few nodes from one side and watch how deletion differs from insertion — an insert is finished after the first rotation, but a delete can shorten a subtree, which breaks the node above it, which breaks the node above that. That cascade is the price AVL pays for its tight height bound.
+
+## Red-Black trees: colour instead of count
+
+A Red-Black tree replaces the stored height with a single bit of colour and three rules: the root is black, a red node never has a red child, and every path from a node down to a missing child passes the same number of black nodes. That last one is the real invariant. It is a statement about black height, and it is what bounds the tree at twice the height of a perfectly balanced one.
+
+The trick to the insert is that a new node arrives **red**, which changes nobody's black height, so the only thing that can be wrong is a red node under a red parent. If the new node's uncle is also red, that is repaired by recolouring alone: the parent and uncle go black, the grandparent goes red, and the problem — if any — moves two levels up. That is why inserts here are cheap in practice; most of the work is repainting, not rewiring.
+
+Deletion is the harder half, and it is worth stepping through slowly. Removing a black node leaves every path through that spot one black short, and there is no way to fix that locally without either finding a spare black nearby or spreading the shortage upwards. The narration calls it a shortage; textbooks call it a double black. Watch it move up the tree in the recolouring case, and get absorbed the moment it reaches a red node.
+
+<TreeLab structures={["redblack"]} initial={[50, 30, 70, 20, 40, 60, 80, 10]} client:visible />
+
+This is the structure your standard library almost certainly uses. C++ `std::map`, Java's `TreeMap`, and plenty of kernel data structures are Red-Black trees, chosen because the write path is cheap and the height bound is still a guarantee rather than a hope.
+
+## Treaps: let randomness do it
+
+The treap is my favourite of the four, because it barely has an algorithm. Each node gets a random priority when it is created. The tree is a search tree on the keys, as usual, and simultaneously a max-heap on those priorities: no node may outrank its parent.
+
+That single extra rule is enough. Insert a key as a leaf in the ordinary way, then rotate it upwards while its priority beats its parent's. Deleting is the same idea backwards: rotate the doomed node downwards, always lifting whichever child has the higher priority, until it is a leaf with nothing hanging off it, and then just unhook it.
+
+<TreeLab structures={["treap"]} initial={[50, 30, 70, 20, 40, 60, 80]} client:visible />
+
+Why does this balance anything? Because the shape of a treap depends only on the priorities, not on the order the keys arrived in. A treap built from keys `1, 2, 3, ..., n` inserted in ascending order has exactly the shape of a search tree built from those keys in a random order — which is short, with overwhelming probability. Insert an ascending run here and compare the height to the AVL tree above doing the same thing: the treap will usually be a level or two taller, and nowhere near the disaster an unbalanced tree would be.
+
+The catch is in that phrase "with overwhelming probability". A treap has no worst-case guarantee, just very long odds against a bad shape. In exchange you get a structure you can write from memory, and one where splitting a tree in two or joining two trees is a few lines of code.
+
+## B-trees: stop being binary
+
+The other three all assume that following a pointer is cheap. A database reading from a disk, or a filesystem reading from flash, lives in a different world: you do not read a node, you read a block, and reading one byte costs the same as reading four kilobytes. The number that matters is not the height of the tree, it is the number of blocks you have to touch.
+
+So a B-tree puts many keys in each node. A node holds up to some maximum number of keys and one more child than it has keys, the keys inside a node act as separators for the children between them, and — this is the invariant that makes everything else work — every leaf sits at exactly the same depth.
+
+Nothing rotates. Insert into the leaf where the key belongs, and if that leaves the node holding one key too many, split it: the middle key moves up into the parent, and the two halves become siblings. If that overfills the parent, split the parent too. The only way a B-tree gets taller is by splitting its root, which is why all the leaves stay level.
+
+Deletion runs the same argument backwards. Take the key out, and if the node is now one key short, first ask a sibling for a spare: the separator in the parent comes down, and the sibling's outermost key goes up to replace it. If no sibling has a spare, merge instead — two thin nodes and the separator between them make one node of legal size — and if that empties the root, the tree loses a level.
+
+<TreeLab structures={["btree"]} initial={[10, 20, 30, 40, 50, 60, 70]} maxKeys={2} client:visible />
+
+Set "keys per node" to its smallest setting and insert eight or ten values: you will see the root split repeatedly, and the tree stay perfectly level while it does. Then note the height in the corner and compare it with the binary trees holding the same number of keys. With only two keys per node the difference is small; a real B-tree node holds hundreds, which is how a database indexes a billion rows in a structure four levels deep.
+
+Deleting an internal key is the case to watch. That key is a separator — the children on either side of it are defined by it — so it cannot simply vanish. Its predecessor is promoted to do the separating job instead, and the deletion turns into a deletion from a leaf, which is the only place the structure ever really removes anything.
+
+## Things worth trying
+
+- Insert `1, 2, 3, 4, 5, 6, 7` in that order into all four and compare the heights in the corner. None of them degenerate, but they disagree about how short a tree is worth paying for.
+- In the Red-Black tree, delete a black leaf and step through the fixup slowly. Then delete a red one and notice there is nothing to fix at all.
+- In the AVL tree, find a delete that rotates twice on the way up. They are not rare.
+- In the treap, hit **Reset** and then insert the same values again: the seed is fixed, so the priorities repeat, but change the order you insert them in and the tree comes out the same shape anyway.
+- Delete the root of the treap over and over, and watch it rotate all the way down to a leaf before it is removed.
+
+## How the animation works
+
+Each structure is implemented as a generator that mutates a tree and yields a caption whenever it reaches a state worth showing. A thin driver runs the generator to the end, taking a full snapshot of the tree after every yield, and hands back the list. The player then just walks that list, which is why stepping backwards and jumping around in the step log both work: nothing is being recomputed, the animation is a slideshow of states the algorithm genuinely passed through.
+
+The drawing is positions only. Binary nodes are placed by in-order rank so the keys read left to right, B-tree nodes are boxes as wide as their key count, and every node is tweened from wherever it was drawn last to wherever the new snapshot wants it — which is what makes a rotation look like a rotation instead of a redraw.
+
+The algorithms are the interesting part to get right, and they are also the easy part to get subtly wrong, so they are checked by a harness that runs thousands of random inserts and deletes against each structure and asserts the invariants after every single operation: stored heights and balance factors for AVL, the colour rules and black heights for Red-Black, heap order for the treap, and key counts plus a single uniform leaf depth for the B-tree.
+
+If you want the shorter version of this story, the [older AVL animation](/blog/balanced-tree) on this site builds a tree from a list of numbers and narrates the rotations as it goes.
