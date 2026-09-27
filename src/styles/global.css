@@ -1145,7 +1145,15 @@ hr {
   accent-color: var(--accent);
 }
 
+/* The arrow SVGs are intrinsically 512px. magicSquare.js positions them with
+   hardcoded pixel nudges around a cell, so they must keep the original 40px
+   size the pre-Astro theme gave them. */
 .arrows {
+  width: auto;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
   vertical-align: middle;
 }
 
@@ -1226,9 +1234,12 @@ hr {
   border-radius: var(--radius-sm);
 }
 
+/* 48px cells: the animation nudges arrows by hardcoded pixel amounts that were
+   written against the pre-Astro theme's 3em (48px) cells. Set in rem so the
+   monospace font size below cannot change the geometry. */
 #therealtable td {
-  width: 2.3rem;
-  height: 2.3rem;
+  width: 3rem;
+  height: 3rem;
   padding: 0;
   border: 1px solid var(--border);
   font-family: var(--font-mono);
