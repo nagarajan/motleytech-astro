@@ -910,6 +910,9 @@ blockquote {
 
 code {
   font-family: var(--font-mono);
+  /* JetBrains Mono ligates ===, =>, != and friends into single glyphs, which
+     misrepresents code that readers may copy out. */
+  font-variant-ligatures: none;
   font-size: 0.88em;
   padding: 0.12em 0.36em;
   background: var(--code-bg);
@@ -918,6 +921,7 @@ code {
 }
 
 pre {
+  font-variant-ligatures: none;
   max-width: 100%;
   overflow-x: auto;
   padding: 1.05rem 1.2rem;

@@ -6,8 +6,8 @@ tags: ["Javascript", "Visualization", "Astronomy", "Physics", "Solar Eclipse"]
 author: "Nagarajan"
 description: "An interactive visualization of the Sun, Moon and Earth geometry that produces a solar eclipse."
 trailer: "A total eclipse is a cosmic coincidence: a moon that just barely covers the sun. This app lets you move through the Sun, Moon and Earth system and watch the geometry that decides which patch of the planet falls into shadow."
-heroImage: "/images/solar-eclipses-app.png"
-heroAlt: "Screenshot of the solar eclipse visualization app"
+heroImage: "/images/demos/solar-eclipses.webp"
+heroAlt: "The solar eclipse app showing an annular eclipse shadow crossing South America"
 disqusIdentifier: "solarEclipsesApp"
 ---
 

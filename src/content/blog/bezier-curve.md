@@ -6,8 +6,8 @@ tags: ["Javascript", "CSS", "Bezier curves"]
 author: "Nagarajan"
 description: "An interactive Bezier curve playground built on the curve support already in the browser."
 trailer: "Bezier curves are one of the few pieces of real mathematics the browser ships natively, which makes them a joy to play with. Drag the control points around and watch the construction lines sweep the curve into place."
-heroImage: "/images/Bezier curve screenshot.webp"
-heroAlt: "Bezier curve with draggable control points and its construction lines"
+heroImage: "/images/demos/bezier-curve.webp"
+heroAlt: "A multi segment bezier curve with its draggable points and construction lines"
 legacySlug: "bezier-curve"
 disqusIdentifier: "bezierPlayground"
 ---

@@ -6,8 +6,8 @@ tags: ["Circle", "Chords"]
 author: "Nagarajan"
 description: "Periodic chords drawn inside a circle conjure up cardioids and other unexpected shapes."
 trailer: "Draw a chord from point n to point 2n around a circle, repeat a few hundred times, and a cardioid appears out of nowhere. A small program I wrote so my kids could go hunting for the shapes hiding inside simple arithmetic."
-heroImage: "/images/circle chord screenshot.webp"
-heroAlt: "Cardioid shape emerging from chords drawn inside a circle"
+heroImage: "/images/demos/circle-chords.webp"
+heroAlt: "Chords drawn between periodic points on a circle, tracing out a cardioid"
 legacySlug: "circle-chord-fun"
 disqusIdentifier: "circle_chord_fun"
 ---
@@ -15,7 +15,11 @@ A fun little program to discover shapes conjured up drawing periodic chords in a
 
 <style>
     #DemoCanvas {
-        border: 1px solid #ddd;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--code-bg);
+        /* The chords are stroked with this, so the figure follows the theme. */
+        color: var(--accent);
     }
 </style>
 <body>
@@ -107,6 +111,7 @@ A fun little program to discover shapes conjured up drawing periodic chords in a
 
 
     function drawFig(nps, radius, jump, canvas) {
+        canvas.getContext('2d').strokeStyle = getComputedStyle(canvas).color
         const cPtsLocs = getCircPts(nps, radius);
         [...Array(nps).keys()].forEach( x => {
             const l1 = x + 1
@@ -126,7 +131,15 @@ A fun little program to discover shapes conjured up drawing periodic chords in a
         }
     }
 
-    drawFig(nCirPts, cRadius, kJump, canvas)
+    function redraw() {
+        const context = canvas.getContext('2d')
+        context.clearRect(0, 0, canvas.width, canvas.height)
+        drawFig(nCirPts, cRadius, kJump, canvas)
+    }
+
+    new MutationObserver(redraw).observe(document.documentElement, { attributeFilter: ['data-theme'] })
+
+    redraw()
     numPointsDisplay.innerHTML = nCirPts.toString()
     jumpSizeDisplay.innerHTML = kJump.toString()
 

@@ -17,12 +17,12 @@ const defaultTheme = "nebula";
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', gaId);
-    })();</script><link rel="stylesheet" href="/_astro/BaseLayout.BjAXqYep.css"></head> <body> <header class="site-header"> <div class="shell topbar"> <div class="topbar-main"> <a href="/" class="site-title"><span class="gradient-text">MotleyTech</span></a> <nav id="site-nav" class="site-nav" aria-label="Primary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-controls="menu-panel" aria-expanded="false"> <span class="hamburger-icon" aria-hidden="true"> <span></span> <span></span> <span></span> </span> </button> <div id="menu-panel" class="menu-panel"> <div class="theme-row"> <label for="theme-select" class="theme-label">Theme</label> <select id="theme-select" class="theme-select" aria-label="Select theme"> <option value="nebula">Nebula</option><option value="synthwave">Synthwave</option><option value="matrix">Matrix</option><option value="ember">Ember</option><option value="aurora">Aurora (light)</option><option value="quartz">Quartz (light)</option> </select> </div> <nav class="menu-nav" aria-label="Secondary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> </div> </header> <main class="shell site-main">  <article class="post-content"> <p class="kicker">Blog</p> <h1>Magic Squares</h1> <p class="post-meta"> <time datetime="2015-05-29T00:00:00.000Z"> May 29, 2015 </time>  <span aria-hidden="true">&middot;</span> <span>2 min read</span>  <span aria-hidden="true">&middot;</span> <a href="/categories/blog">Blog</a> </p> <figure class="post-hero"> <img class="trailer-media-blur" src="/images/Magic square screenshot.webp" alt="" aria-hidden="true"> <img src="/images/Magic square screenshot.webp" alt="A five by five magic square where every line sums to 65"> </figure> <div class="post-tags"> <a class="tag" href="/tags/magic%20square">Magic Square</a><a class="tag" href="/tags/computing">Computing</a><a class="tag" href="/tags/mathematics">Mathematics</a> </div>  <p>A conventional <a href="http://en.wikipedia.org/wiki/Magic_square">magic square</a> of order n is a square filled with the numbers 1 through n*n such that the sum of the rows, columns and diagonals is the same. Each number in the square must be distinct, and thus every number is used exactly once.</p>
-<p>Surprisingly, it is very easy to create magic squares when n is odd. Magic squares of even n also exist, but creating them is comparatively more difficult.</p>
-<p>What follows is a program to create odd magic squares of any (reasonable) size. Give it a try… enter an odd number (3 to 49) and the program should reply with a magic square.</p>
+    })();</script><link rel="stylesheet" href="/_astro/BaseLayout.Dbt_23SE.css"></head> <body> <header class="site-header"> <div class="shell topbar"> <div class="topbar-main"> <a href="/" class="site-title"><span class="gradient-text">MotleyTech</span></a> <nav id="site-nav" class="site-nav" aria-label="Primary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-controls="menu-panel" aria-expanded="false"> <span class="hamburger-icon" aria-hidden="true"> <span></span> <span></span> <span></span> </span> </button> <div id="menu-panel" class="menu-panel"> <div class="theme-row"> <label for="theme-select" class="theme-label">Theme</label> <select id="theme-select" class="theme-select" aria-label="Select theme"> <option value="nebula">Nebula</option><option value="synthwave">Synthwave</option><option value="matrix">Matrix</option><option value="ember">Ember</option><option value="aurora">Aurora (light)</option><option value="quartz">Quartz (light)</option> </select> </div> <nav class="menu-nav" aria-label="Secondary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> </div> </header> <main class="shell site-main">  <article class="post-content"> <p class="kicker">Blog</p> <h1>Magic Squares</h1> <p class="post-meta"> <time datetime="2015-05-29T00:00:00.000Z"> May 29, 2015 </time>  <span aria-hidden="true">&middot;</span> <span>5 min read</span>  <span aria-hidden="true">&middot;</span> <a href="/categories/blog">Blog</a> </p> <figure class="post-hero"> <img class="trailer-media-blur" src="/images/demos/magic-square.webp" alt="" aria-hidden="true"> <img src="/images/demos/magic-square.webp" alt="A five by five magic square where every row, column and diagonal sums to 65"> </figure> <div class="post-tags"> <a class="tag" href="/tags/magic%20square">Magic Square</a><a class="tag" href="/tags/computing">Computing</a><a class="tag" href="/tags/mathematics">Mathematics</a> </div>  <p>A conventional <a href="http://en.wikipedia.org/wiki/Magic_square">magic square</a> of order n is a square filled with the numbers 1 through n*n such that the sum of the rows, columns and diagonals is the same. Each number in the square must be distinct, and thus every number is used exactly once.</p>
+<p>Surprisingly, it is very easy to create magic squares when n is odd. Magic squares of even n also exist, but they need entirely different constructions - and the even sizes split into two cases which need one method each.</p>
+<p>What follows is a program to create magic squares of any (reasonable) size. Give it a try… enter a number from 3 to 49 and the program should reply with a magic square. (There is no magic square of order 2, and order 1 is a bit of a let-down.)</p>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="/js/magicSquare.js"></script>
-<input id="sqsize" type="number" min="3" max="49" step="2" class="form-control" value="3">
+<input id="sqsize" type="number" min="3" max="49" step="1" class="form-control" value="3">
 <button id="btngenerate" onclick="magicSquare.onGenerate()" class="btn btn-info" type="button">Generate!</button>
 <span id="errorspan" class="label label-danger"></span>
 <p><strong>Animation speed</strong>: <input id="aspeed" type="range" min="0" max="10" step="1" value="5" oninput="magicSquare.updateAnimSpeed()" style="width: 300px"> <span id="viewspeed">1.0x</span><br>
@@ -31,7 +31,9 @@ const defaultTheme = "nebula";
 <div id="magicsquare"></div>
 <hr>
 <h2 id="algorithm">Algorithm</h2>
-<p>The program uses an extraordinarily simple algorithm (which you might be able to understand in its entirety just by looking at the animation above). It is called the <a href="https://en.wikipedia.org/wiki/Siamese_method">Siamese Method</a>.</p>
+<p>There is no single recipe that covers every size. The program picks one of three, depending on n: the Siamese method for odd n, a sequence-and-flip trick when n is divisible by 4, and the LUX method for the even sizes left over (6, 10, 14, …). Only the odd method is a walk across the square, so the arrows in the animation above appear for odd sizes only.</p>
+<h3 id="odd-n---the-siamese-method">Odd n - the Siamese method</h3>
+<p>For odd n the program uses an extraordinarily simple algorithm (which you might be able to understand in its entirety just by looking at the animation above). It is called the <a href="https://en.wikipedia.org/wiki/Siamese_method">Siamese Method</a>.</p>
 <ol>
 <li>
 <p>We start at top row, middle column and write “1” in that cell.</p>
@@ -54,6 +56,31 @@ const defaultTheme = "nebula";
 <li>Move to the cell towards the top right. If top-right cell is occupied, move one cell down instead. Write the next number (in the same cell in all copies) and repeat this step.</li>
 </ol>
 <p>Much easier than remembering 5 different steps.</p>
+<h3 id="n-divisible-by-4">n divisible by 4</h3>
+<p>This case is the easiest of the three, and it barely looks like an algorithm at all.</p>
+<ol>
+<li>Write the numbers 1 to n*n into the square in plain reading order - left to right, top to bottom. Obviously this is not magic yet: the rows are far too lopsided.</li>
+<li>Now cut the square into 4x4 blocks, and look at the two diagonals of each block. Every cell on one of those diagonals gets replaced by its complement: a cell holding <strong>v</strong> becomes <strong>n*n + 1 - v</strong>.</li>
+</ol>
+<p>That is the whole method. In code, the test for “is this cell on a diagonal of its block” is just <code>r % 4 === c % 4</code> for one diagonal and <code>(r % 4) + (c % 4) === 3</code> for the other.</p>
+<p>For n = 4 this produces the square below, which is the same one <a href="https://en.wikipedia.org/wiki/Melencolia_I">Albrecht Dürer</a> hid in the corner of <em>Melencolia I</em> in 1514, give or take a reflection.</p>
+<div class="noteworthy-equation">
+<pre>16  2  3 13
+ 5 11 10  8
+ 9  7  6 12
+ 4 14 15  1</pre>
+</div>
+<p>Why it works is worth a moment. Reading order makes each row an arithmetic run, so a row is wrong by a fixed amount. Complementing exactly two cells per row per block cancels that error precisely, and because the chosen cells are the block diagonals, the same cancellation lands on the columns and on both long diagonals too.</p>
+<h3 id="the-remaining-even-n---the-lux-method">The remaining even n - the LUX method</h3>
+<p>The sizes that are even but not divisible by 4 (6, 10, 14, …) are the awkward ones, and they get the nicest trick: <a href="https://en.wikipedia.org/wiki/Conway%27s_LUX_method_for_magic_squares">Conway’s LUX method</a>, which builds the answer on top of the odd method we already have.</p>
+<p>Write n as 4m+2. The square is then a grid of 2x2 blocks, (2m+1) blocks across, and we label each block <strong>L</strong>, <strong>U</strong> or <strong>X</strong>. Each letter is a way of arranging four consecutive numbers inside its 2x2 block:</p>
+<div class="noteworthy-equation">
+<pre>   L        U        X
+ 4  1     1  4     1  4
+ 2  3     2  3     3  2</pre>
+</div>
+<p>The labels are laid out in rows: the first m+1 rows of blocks are all <strong>L</strong>, the next row is all <strong>U</strong>, and the rest are <strong>X</strong>. Then comes the one fiddly step - the <strong>L</strong> in the middle of the last L row swaps places with the <strong>U</strong> directly beneath it.</p>
+<p>Finally, build an odd magic square of order 2m+1 using the Siamese method above, and read it as instructions for the blocks: wherever that odd square holds <strong>k</strong>, the corresponding block is filled with the four numbers 4k-3, 4k-2, 4k-1 and 4k, arranged according to its letter. The animation fills the square four cells at a time for exactly this reason - each 2x2 block is one step of the odd square underneath it.</p>
 <div style="position: fixed">
   <img class="arrows" id="greenarrowtopright" src="/images/right-arrow-green.svg" style="transform: rotate(-45deg); display: none">
 </div>

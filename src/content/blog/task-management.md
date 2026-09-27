@@ -6,8 +6,8 @@ tags: ["Javascript", "React", "Productivity", "Tasks"]
 author: "Nagarajan"
 description: "A lightweight, visual task board that runs entirely in the browser with no backend or account."
 trailer: "A lightweight, visual task board that runs entirely in the browser. Move work between columns, track what is in flight, and keep day-to-day planning low friction: no backend, no account, nothing to sync."
-heroImage: "/images/task-management-app.png"
-heroAlt: "Screenshot of the task management board"
+heroImage: "/images/demos/task-board.webp"
+heroAlt: "A kanban board with cards spread across To Do, In Progress and Done"
 disqusIdentifier: "taskManagementApp"
 ---
 

@@ -43,9 +43,10 @@ var magicSquare = function () {
   function onGenerate(initial) {
     let inp = $("#sqsize").val()
     let res = parseInt(inp)
-    if ((!res) || (res === undefined) || (res <= 2) || (res % 2 === 0) || (res >= 50)) {
+    // Every size from 3 up works now; 1 is trivial and 2 is impossible.
+    if ((!res) || (res === undefined) || (res <= 2) || (res >= 50)) {
       let msg = "Invalid input: '" + inp + "'."
-      $("#errorspan").text(msg + " Valid: Odd number [3:49]")
+      $("#errorspan").text(msg + " Valid: Number [3:49]")
       $("#sqsize").val("")
       return
     }
@@ -100,8 +101,21 @@ var magicSquare = function () {
     settings.showArrows = $('#ashow').is(':checked')
   }
 
-  // generates the 2d array of magic square numbers
+  // Three constructions are needed, one per size class. Only the odd one has a
+  // walk to narrate, so the even ones emit nothing but 'write' moves and the
+  // arrow overlays never come into play.
   function generateNumbersAndMoves(size) {
+    if (size % 2 === 1) {
+      return generateOddSquare(size)
+    }
+    if (size % 4 === 0) {
+      return generateDoublyEvenSquare(size)
+    }
+    return generateSinglyEvenSquare(size)
+  }
+
+  // Odd sizes: the Siamese method, walking diagonally up and to the right.
+  function generateOddSquare(size) {
     let nums = []
     let moves = []
 
@@ -146,6 +160,94 @@ var magicSquare = function () {
         moves.push(['bump', null, pr, pc])
       } else {
         moves.push(['move', null, pr, pc])
+      }
+    }
+
+    return [nums, moves]
+  }
+
+  // Sizes divisible by 4: number the cells 1..n*n in reading order, then invert
+  // (v -> n*n + 1 - v) the cells sitting on a diagonal of their own 4x4 block.
+  function generateDoublyEvenSquare(size) {
+    let nums = []
+    let moves = []
+    let last = size * size
+
+    for (let cr = 0; cr < size; cr++) {
+      let row = []
+      for (let cc = 0; cc < size; cc++) {
+        let seq = cr * size + cc + 1
+        let onBlockDiagonal = ((cr % 4) === (cc % 4)) || (((cr % 4) + (cc % 4)) === 3)
+        let val = onBlockDiagonal ? (last + 1 - seq) : seq
+        row.push(val)
+        moves.push(['write', val, cr, cc])
+      }
+      nums.push(row)
+    }
+
+    return [nums, moves]
+  }
+
+  // The remaining even sizes (6, 10, 14, ...): Conway's LUX method. The square
+  // is a grid of 2x2 blocks laid out by an odd square of half the block count,
+  // where each block's letter decides how its four numbers are arranged.
+  let luxPatterns = {
+    L: [[4, 1], [2, 3]],
+    U: [[1, 4], [2, 3]],
+    X: [[1, 4], [3, 2]]
+  }
+
+  function generateSinglyEvenSquare(size) {
+    let mm = (size - 2) / 4
+    let blocks = 2 * mm + 1
+    let [odd] = generateOddSquare(blocks)
+
+    // m+1 rows of L, then one row of U, then X for the rest. Finally the centre
+    // L swaps places with the U directly below it.
+    let types = []
+    for (let br = 0; br < blocks; br++) {
+      let row = []
+      for (let bc = 0; bc < blocks; bc++) {
+        row.push(br <= mm ? 'L' : (br === (mm + 1) ? 'U' : 'X'))
+      }
+      types.push(row)
+    }
+    types[mm][mm] = 'U'
+    types[mm + 1][mm] = 'L'
+
+    let nums = []
+    for (let cr = 0; cr < size; cr++) {
+      let row = []
+      for (let cc = 0; cc < size; cc++) {
+        row.push(null)
+      }
+      nums.push(row)
+    }
+
+    // Visit the blocks in the order the odd square numbers them, so each block
+    // takes the next four consecutive values.
+    let order = []
+    for (let br = 0; br < blocks; br++) {
+      for (let bc = 0; bc < blocks; bc++) {
+        order.push([odd[br][bc], br, bc])
+      }
+    }
+    order.sort(function (a, b) { return a[0] - b[0] })
+
+    let moves = []
+    for (let [num, br, bc] of order) {
+      let base = (num - 1) * 4
+      let pattern = luxPatterns[types[br][bc]]
+      let cells = []
+      for (let dr = 0; dr < 2; dr++) {
+        for (let dc = 0; dc < 2; dc++) {
+          cells.push([base + pattern[dr][dc], br * 2 + dr, bc * 2 + dc])
+        }
+      }
+      cells.sort(function (a, b) { return a[0] - b[0] })
+      for (let [val, cr, cc] of cells) {
+        nums[cr][cc] = val
+        moves.push(['write', val, cr, cc])
       }
     }
 
@@ -385,6 +487,9 @@ var magicSquare = function () {
 
     let table = createEmptyTable(size)
     let sum = size * (size * size + 1) / 2
+
+    // The arrows trace the Siamese walk, which only the odd sizes use.
+    $('#ashow').prop('disabled', (size % 2) === 0)
 
     $(divid).empty()
     $(divid).append('<p><b>Sum</b> : ' + sum + '</p>')

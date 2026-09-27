@@ -4,7 +4,8 @@
 
 .treeContainer {
   margin: 20px 0;
-  border: 1px solid lightgray;
+  border: 1px solid var(--border);
+  border-radius: 12px;
   line-height: 1em;
 }
 
@@ -33,6 +34,12 @@
 .head {
   left: 40%;
   top: 15%;
+}
+
+/* app.js strokes the connectors black as a presentation attribute, which this
+   rule outranks, so they can follow the theme. */
+.tree path.line {
+  stroke: var(--text-faint);
 }
 
 .tree svg {
@@ -76,6 +83,8 @@
   display: inline-block;
   border: 3px solid lightgrey;
   background-color: lightskyblue;
+  /* The chips stay pastel in every theme, so they need their own ink. */
+  color: #0b1220;
   border-radius: 0.5em;
   padding: 0.5em 1em;
   transform: translate(-50%, -50%);
@@ -84,9 +93,10 @@
 .inputField {
   width: 100%;
   padding: 3px 0 3px 7px;
-  border-radius: 3px;
-  border: 1px solid lightgray;
-  background-color: palegoldenrod;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background-color: var(--code-bg);
+  color: var(--text);
 }
 
 .headlabel {
@@ -96,13 +106,13 @@
 .inline-input {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid lightgray;
+  border-bottom: 1px solid var(--border);
 }
 
 .flex-item1 {
   padding: 8px 16px 8px 8px;
   flex: 1;
-  border-right: 1px solid lightgray;
+  border-right: 1px solid var(--border);
 }
 
 .flex-item2 {

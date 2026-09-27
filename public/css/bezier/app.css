@@ -6,8 +6,35 @@
     font-size: small;
     display: flex;
     flex-direction: column;
-    border: 1px solid lightgray;
-    background-color: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background-color: var(--code-bg);
+}
+
+/*
+ * bezier.js writes stroke and fill as presentation attributes, which lose to any
+ * rule here, so the palette lives with the rest of the theme colours.
+ */
+.thecurve path {
+    stroke: var(--accent);
+}
+
+.thepoints circle {
+    fill: var(--text);
+    stroke: var(--text);
+}
+
+.cpoints1 circle {
+    stroke: #22c55e;
+}
+
+.cpoints2 circle {
+    stroke: #f0596b;
+}
+
+.clines1 line,
+.clines2 line {
+    stroke: var(--text-faint);
 }
 
 .playground {
@@ -33,10 +60,10 @@
 }
 
 .svgcode {
-    border: 1px solid lightgray;
-    padding: 5px;
-    border-radius: 3px;
-    background-color: #d1bc74;
+    border: 1px solid var(--border);
+    padding: 5px 12px 12px;
+    border-radius: 12px;
+    background-color: var(--surface);
 }
 
 .svgcode p {
@@ -70,7 +97,10 @@
 .svgcodeText > textarea,
 .svgcodeText::after {
     /* Identical styling required!! */
-    border: 1px solid black;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--code-bg);
+    color: var(--text-dim);
     padding: 0.5rem;
     font: inherit;
     font-size: 12px;
