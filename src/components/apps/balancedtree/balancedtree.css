@@ -9,8 +9,9 @@
   line-height: 1em;
 }
 
-.treeContainer > div {
-    overflow: hidden;
+/* Values queue up outside the tree, so the stage has to crop. */
+.bt-stage {
+  overflow: hidden;
 }
 
 .tree {
@@ -31,13 +32,6 @@
   top: 5%;
 }
 
-.head {
-  left: 40%;
-  top: 15%;
-}
-
-/* app.js strokes the connectors black as a presentation attribute, which this
-   rule outranks, so they can follow the theme. */
 .tree path.line {
   stroke: var(--text-faint);
 }
@@ -63,7 +57,6 @@
   padding: 0.75em 1em;
   top: -3.5em;
   transform: translate(-50%, -50%);
-  display: none;
   width: max-content;
   z-index: 2;
 }
@@ -75,8 +68,12 @@
   border-right: 10px solid transparent;
   top: -2rem;
   border-left: 10px solid transparent;
-  display: none;
   transform: translate(-50%, 0);
+}
+
+/* The value currently being placed, so it reads as separate from the tree. */
+.node--walking .nodeLabel {
+  border-color: var(--accent);
 }
 
 .nodeLabel, .headlabel {
@@ -122,4 +119,69 @@
 .inline-input label {
   font-size: 0.65em;
   margin-bottom: 2px;
+}
+
+.bt-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bt-btn {
+  font: inherit;
+  font-size: 0.88rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 120ms, color 120ms;
+}
+
+.bt-btn:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.bt-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.bt-btn--play {
+  min-width: 4.6rem;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.bt-step {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  min-width: 8rem;
+}
+
+.bt-caption {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.bt-error {
+  margin: 0;
+  padding: 6px 8px;
+  font-size: 0.82rem;
+  color: var(--accent-2, var(--text));
+  border-bottom: 1px solid var(--border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .treeContainer {
+    --transition-time: 0s;
+  }
 }
