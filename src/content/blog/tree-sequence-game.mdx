@@ -1,0 +1,86 @@
+---
+title: "The game behind TREE(3)"
+pubDate: 2026-09-27
+category: "Blog"
+tags: ["Mathematics", "Logic", "Trees", "Combinatorics", "Big Numbers", "Javascript"]
+author: "Nagarajan"
+description: "A playground for the tree game that defines TREE(n), with a checker that decides whether each tree you play is legal."
+trailer: "Two rules, a handful of coloured dots, and a longest game so vast that with three colours nobody can write the answer down. Build sequences here and let the computer tell you the moment you break the rules."
+heroImage: "/images/demos/tree-game.webp"
+heroAlt: "The tree sequence playground, showing an illegal move with the embedded earlier tree ringed"
+disqusIdentifier: "treeSequenceGame"
+---
+
+import TreeSequence from '../../components/apps/TreeSequence.tsx';
+
+Here is a game for one player. You have crayons in $n$ colours, and you are going to draw a sequence of rooted trees. Two rules:
+
+1. The $k$-th tree you draw may have at most $k$ vertices. So the first has one vertex, the second at most two, and so on.
+2. No tree may **fit inside** any tree drawn after it.
+
+That is all. The game ends when you cannot draw anything legal. The longest you could possibly last, playing perfectly with $n$ colours, is called $\mathrm{TREE}(n)$.
+
+With one colour you last one move. With two, three moves. With three colours the answer is finite — that part is a theorem — but it is so large that no notation you have met is going to help, and it makes Graham's number look like a rounding error.
+
+<TreeSequence client:visible />
+
+The checker is doing the referee's job: after every edit it tells you whether the tree in the editor is legal, and if it is not, which earlier tree fits inside it and exactly where. You can save a sequence under a name and come back to it later.
+
+## What "fits inside" means
+
+Everything depends on rule 2, and the natural reading of it is wrong.
+
+The relation is the one from Kruskal's tree theorem. Tree $S$ fits inside tree $T$ when you can find a copy of $S$ among the vertices of $T$ such that
+
+- distinct vertices go to distinct vertices,
+- every vertex keeps its colour, and
+- **meets are preserved**: if two vertices of $S$ have their deepest common ancestor at $v$, their images must have their deepest common ancestor exactly at the image of $v$.
+
+That third condition is the one people drop, and it is what makes the game playable. Write a tree as a colour followed by its children in brackets, so `1(2,3)` is a vertex of colour 1 with two children coloured 2 and 3. Then:
+
+- `1(2)` **does** fit inside `1(3(2))`. The root maps to the root, and the single child slides down past the colour-3 vertex to land on the 2. With only two vertices there is no pair of cousins whose meeting point could go wrong.
+- `1(2,3)` **does not** fit inside `1(3(2,3))`, even though every colour is present and the shape looks like a stretched version of the same thing. The 2 and the 3 are siblings, so they must meet at the image of their parent. Inside the bigger tree they meet at the colour-3 vertex instead, which is nobody's image. And they cannot both go into that one subtree, because then they would have to share it.
+
+So sibling-ness is rigid. Two children of a vertex need two genuinely separate subtrees to live in, and no amount of stretching will merge them. That rigidity is the only reason you get to make more than a couple of moves.
+
+## One colour, then two
+
+With one colour, the first tree must be the single vertex, and after that you are finished: every tree contains a vertex, that vertex has the only colour there is, and so your first tree fits inside everything. $\mathrm{TREE}(1) = 1$.
+
+Two colours gets more interesting, and the trick is worth internalising because it is the whole idea of the game in miniature. Play:
+
+1. A single vertex of colour **2**.
+2. `1(1)`, a colour-1 vertex with a colour-1 child.
+3. A single vertex of colour **1**.
+
+Check it. Tree 1 cannot fit into anything later, because nothing later uses colour 2 at all. Tree 2 has two vertices and tree 3 has one, so it cannot fit into it. And now you are stuck: a fourth tree would have to avoid colour 2 (or tree 1 fits) and avoid colour 1 (or tree 3 fits), which leaves nothing to draw. $\mathrm{TREE}(2) = 3$, and the playground will confirm the dead end for you — that is what the "any legal move left?" button is checking.
+
+Notice what tree 1 was for. Spending a whole move on a single dot looks wasteful, but it buys a **ban**: from then on, that colour is forbidden everywhere. The art of this game is deciding when to cash a colour in, because you may only do it once per colour, and afterwards the board shrinks.
+
+Which also explains why greedy play is terrible. If you always play the smallest legal tree you will play $n$ single dots and stop, so greedy scores exactly $n$. Try it with three colours: three moves. Then try the seven-move run in the examples, which uses nothing more exotic than two-vertex trees, and note that it is still nowhere near optimal.
+
+## Three colours, and why nobody can tell you the answer
+
+The moment you have a third colour, the two-colour game becomes a *resource* rather than the whole story. You can spend colour 3 to buy yourself a ban, then play out a two-colour game with a more generous vertex budget, and the budget keeps growing while you do it. Each colour you cash in leaves you playing the smaller game from a better starting position, and the recursion nests.
+
+The result grows faster than essentially any function you can name. $\mathrm{TREE}(3)$ is not merely bigger than Graham's number; the gap is not one you can close with more arrows or more layers of recursion.
+
+The reason the game must end at all is Kruskal's tree theorem: in any infinite sequence of finite trees with colours from a fixed finite set, some earlier tree fits inside some later one. A sequence that breaks rule 2 forever is therefore impossible, so every game is finite, so $\mathrm{TREE}(n)$ exists.
+
+And here is the part I find genuinely strange. Harvey Friedman showed that Kruskal's theorem cannot be proved in $\mathrm{ATR}_0$, one of the standard subsystems of second-order arithmetic — a system strong enough for a great deal of ordinary mathematics. The finite game inherits that strength. Any proof that your game must terminate is, in a precise sense, using more mathematical power than a large chunk of analysis needs. The unimaginable size of $\mathrm{TREE}(3)$ is the arithmetic shadow of that logical strength: a system can only prove a function total if it can, in effect, out-grow it.
+
+## Things worth trying
+
+- Play the two-colour game and get stuck in three moves. Then reach for the third colour and beat it without thinking hard.
+- Build `1(2,3)` as your tree and then try to play `1(3(2,3))` later. The checker will refuse — meets are not preserved — and this is the single most useful thing to have in your fingers.
+- Play a single dot early and watch how much of the board it deletes. Then restart and hold that colour back.
+- Load the seven-move three-colour example, take back the last move, and look for a better ending than the one I found.
+- Ask for a legal move when you think you are finished. Sometimes there is one, and it is never the one you expected.
+
+## How the referee works
+
+Deciding "does $S$ fit inside $T$" is a small recursion with a subtlety. Either the root of $S$ lands on the root of $T$, in which case the colours must agree and each child subtree of $S$ must be placed in a **different** child subtree of $T$ — that is a bipartite matching, and running it is what enforces the meet condition on siblings. Or the root of $S$ lands somewhere deeper, in which case all of $S$ fits inside one of the child subtrees of $T$, and you recurse. Memoising on pairs of subtrees keeps it quick at these sizes.
+
+That is a neat argument, and neat arguments are exactly the ones that are subtly wrong, so the checker is tested against the definition rather than against my reasoning. A second, deliberately naive program enumerates every injection from $S$ into $T$ and verifies the colour and meet conditions directly from their statement; the two programs are compared on every pair of trees up to three and four vertices over two colours, and on hundreds of random pairs over up to three colours. Every witness the fast checker produces is separately re-verified against the definition. The search that proves you are stuck also reports honestly: when it can only rule out the trees it had time to enumerate, it says so instead of claiming you are finished. And the whole thing agrees that $\mathrm{TREE}(1) = 1$ and $\mathrm{TREE}(2) = 3$ by brute-force search over all legal sequences, which is the only part of this problem where brute force will ever be enough.
+
+If you enjoy trees that stay small and well behaved, [four ways to keep a tree balanced](/blog/self-balancing-trees) is about the other end of the spectrum entirely.

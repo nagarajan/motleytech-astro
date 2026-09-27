@@ -1,0 +1,238 @@
+<!DOCTYPE html><html lang="en" data-theme="nebula"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v6.0.8"><meta name="description" content="A playground for the tree game that defines TREE(n), with a checker that decides whether each tree you play is legal."><link rel="icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="MotleyTech" href="/rss.xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><title>The game behind TREE(3) | MotleyTech</title><!-- Applied before first paint so the chosen theme never flashes. --><script>(function(){const themeIds = ["nebula","synthwave","matrix","ember","aurora","quartz"];
+const defaultTheme = "nebula";
+
+      (function () {
+        var stored = null;
+        try {
+          stored = window.localStorage.getItem('motleytech-theme');
+        } catch (error) {
+          stored = null;
+        }
+        var theme = themeIds.indexOf(stored) === -1 ? defaultTheme : stored;
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    })();</script><script async src="https://www.googletagmanager.com/gtag/js?id=G-V8WZYM91B4"></script><script>(function(){const gaId = "G-V8WZYM91B4";
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', gaId);
+    })();</script><link rel="stylesheet" href="/_astro/BaseLayout.BShXWbRi.css"><link rel="stylesheet" href="/_astro/tree-sequence-game.Bd9ehclt.css"></head> <body> <header class="site-header"> <div class="shell topbar"> <div class="topbar-main"> <a href="/" class="site-title"><span class="gradient-text">MotleyTech</span></a> <nav id="site-nav" class="site-nav" aria-label="Primary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-controls="menu-panel" aria-expanded="false"> <span class="hamburger-icon" aria-hidden="true"> <span></span> <span></span> <span></span> </span> </button> <div id="menu-panel" class="menu-panel"> <div class="theme-row"> <label for="theme-select" class="theme-label">Theme</label> <select id="theme-select" class="theme-select" aria-label="Select theme"> <option value="nebula">Nebula</option><option value="synthwave">Synthwave</option><option value="matrix">Matrix</option><option value="ember">Ember</option><option value="aurora">Aurora (light)</option><option value="quartz">Quartz (light)</option> </select> </div> <nav class="menu-nav" aria-label="Secondary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> </div> </header> <main class="shell site-main">  <article class="post-content"> <p class="kicker">Blog</p> <h1>The game behind TREE(3)</h1> <p class="post-meta"> <time datetime="2026-09-27T00:00:00.000Z"> September 27, 2026 </time>  <span aria-hidden="true">&middot;</span> <span>7 min read</span>  <span aria-hidden="true">&middot;</span> <a href="/categories/blog">Blog</a> </p> <figure class="post-hero"> <img class="trailer-media-blur" src="/images/demos/tree-game.webp" alt="" aria-hidden="true"> <img src="/images/demos/tree-game.webp" alt="The tree sequence playground, showing an illegal move with the embedded earlier tree ringed"> </figure> <div class="post-tags"> <a class="tag" href="/tags/mathematics">Mathematics</a><a class="tag" href="/tags/logic">Logic</a><a class="tag" href="/tags/trees">Trees</a><a class="tag" href="/tags/combinatorics">Combinatorics</a><a class="tag" href="/tags/big%20numbers">Big Numbers</a><a class="tag" href="/tags/javascript">Javascript</a> </div>  <p>Here is a game for one player. You have crayons in <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em"></span><span class="mord mathnormal">n</span></span></span></span> colours, and you are going to draw a sequence of rooted trees. Two rules:</p>
+<ol>
+<li>The <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em"></span><span class="mord mathnormal" style="margin-right:0.03148em">k</span></span></span></span>-th tree you draw may have at most <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em"></span><span class="mord mathnormal" style="margin-right:0.03148em">k</span></span></span></span> vertices. So the first has one vertex, the second at most two, and so on.</li>
+<li>No tree may <strong>fit inside</strong> any tree drawn after it.</li>
+</ol>
+<p>That is all. The game ends when you cannot draw anything legal. The longest you could possibly last, playing perfectly with <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em"></span><span class="mord mathnormal">n</span></span></span></span> colours, is called <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">T</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">E</mi><mi mathvariant="normal">E</mi></mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\mathrm{TREE}(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord"><span class="mord mathrm">TREE</span></span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span>.</p>
+<p>With one colour you last one move. With two, three moves. With three colours the answer is finite — that part is a theorem — but it is so large that no notation you have met is going to help, and it makes Graham’s number look like a rounding error.</p>
+<style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>Number.POSITIVE_INFINITY*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="Ol9CT" prefix="r1" component-url="/_astro/TreeSequence.PQ5hlK08.js" component-export="default" renderer-url="/_astro/client.DIQWfPlE.js" props="{}" ssr client="visible" opts="{&quot;name&quot;:&quot;TreeSequence&quot;,&quot;value&quot;:true}" await-children><div class="ts"><div class="ts-bar"><label class="ts-field">Colours<select class="ts-select"><option value="1">1</option><option value="2">2</option><option value="3" selected="">3</option><option value="4">4</option></select></label><button type="button" class="ts-btn">New sequence</button><span class="ts-spacer"></span><button type="button" class="ts-btn">The best two-colour run</button><button type="button" class="ts-btn">A three-colour run</button></div><div class="ts-panes"><section class="ts-pane" aria-labelledby="ts-seq-heading"><h3 id="ts-seq-heading" class="ts-pane-head">Sequence<span>0<!-- --> <!-- -->trees</span></h3><p class="ts-empty">Nothing played yet. Tree #1 may have exactly one vertex, so your only choice is which colour to spend.</p></section><section class="ts-pane" aria-labelledby="ts-draft-heading"><h3 id="ts-draft-heading" class="ts-pane-head">Tree #<!-- -->1<span>at most <!-- -->one vertex</span></h3><div class="ts-brushes" role="group" aria-label="Colour for new vertices"><span class="ts-brush-label">New vertices</span><button type="button" class="ts-swatch ts-swatch--on" style="background:#f0b429" aria-pressed="true" aria-label="colour 1">1</button><button type="button" class="ts-swatch" style="background:#38bdf8" aria-pressed="false" aria-label="colour 2">2</button><button type="button" class="ts-swatch" style="background:#f472b6" aria-pressed="false" aria-label="colour 3">3</button></div><div class="ts-stage"><svg class="ts-figure" viewBox="0 0 70 70" width="70" height="70" role="img" aria-label="tree 0"><g></g><g><g class="ts-vertex ts-vertex--selected" transform="translate(35,35)" role="button" tabindex="0" aria-label="vertex of colour 1"><circle r="15" fill="#f0b429"></circle><text dy="0.33em">1</text></g></g></svg></div><div class="ts-tools"><button type="button" class="ts-btn">Add child</button><button type="button" class="ts-btn">Paint</button><button type="button" class="ts-btn" disabled="">Delete</button><button type="button" class="ts-btn ts-btn--quiet">Clear</button></div><p class="ts-verdict ts-verdict--ok" aria-live="polite">Legal. This would become tree #1.</p><div class="ts-tools"><button type="button" class="ts-btn ts-btn--primary">Add to sequence</button><button type="button" class="ts-btn">Any legal move left?</button></div></section></div><section class="ts-saves" aria-labelledby="ts-saves-heading"><h3 id="ts-saves-heading" class="ts-pane-head">Saved sequences</h3><div class="ts-tools"><input class="ts-input" placeholder="name this sequence" aria-label="Name for the saved sequence" value=""/><button type="button" class="ts-btn">Save</button></div><p class="ts-empty">Nothing saved yet. Saves live in this browser only.</p></section></div><!--astro:end--></astro-island>
+<p>The checker is doing the referee’s job: after every edit it tells you whether the tree in the editor is legal, and if it is not, which earlier tree fits inside it and exactly where. You can save a sequence under a name and come back to it later.</p>
+<h2 id="what-fits-inside-means">What “fits inside” means</h2>
+<p>Everything depends on rule 2, and the natural reading of it is wrong.</p>
+<p>The relation is the one from Kruskal’s tree theorem. Tree <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.05764em">S</span></span></span></span> fits inside tree <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.13889em">T</span></span></span></span> when you can find a copy of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.05764em">S</span></span></span></span> among the vertices of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.13889em">T</span></span></span></span> such that</p>
+<ul>
+<li>distinct vertices go to distinct vertices,</li>
+<li>every vertex keeps its colour, and</li>
+<li><strong>meets are preserved</strong>: if two vertices of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.05764em">S</span></span></span></span> have their deepest common ancestor at <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em"></span><span class="mord mathnormal" style="margin-right:0.03588em">v</span></span></span></span>, their images must have their deepest common ancestor exactly at the image of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em"></span><span class="mord mathnormal" style="margin-right:0.03588em">v</span></span></span></span>.</li>
+</ul>
+<p>That third condition is the one people drop, and it is what makes the game playable. Write a tree as a colour followed by its children in brackets, so <code>1(2,3)</code> is a vertex of colour 1 with two children coloured 2 and 3. Then:</p>
+<ul>
+<li><code>1(2)</code> <strong>does</strong> fit inside <code>1(3(2))</code>. The root maps to the root, and the single child slides down past the colour-3 vertex to land on the 2. With only two vertices there is no pair of cousins whose meeting point could go wrong.</li>
+<li><code>1(2,3)</code> <strong>does not</strong> fit inside <code>1(3(2,3))</code>, even though every colour is present and the shape looks like a stretched version of the same thing. The 2 and the 3 are siblings, so they must meet at the image of their parent. Inside the bigger tree they meet at the colour-3 vertex instead, which is nobody’s image. And they cannot both go into that one subtree, because then they would have to share it.</li>
+</ul>
+<p>So sibling-ness is rigid. Two children of a vertex need two genuinely separate subtrees to live in, and no amount of stretching will merge them. That rigidity is the only reason you get to make more than a couple of moves.</p>
+<h2 id="one-colour-then-two">One colour, then two</h2>
+<p>With one colour, the first tree must be the single vertex, and after that you are finished: every tree contains a vertex, that vertex has the only colour there is, and so your first tree fits inside everything. <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">T</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">E</mi><mi mathvariant="normal">E</mi></mrow><mo stretchy="false">(</mo><mn>1</mn><mo stretchy="false">)</mo><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\mathrm{TREE}(1) = 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord"><span class="mord mathrm">TREE</span></span><span class="mopen">(</span><span class="mord">1</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="base"><span class="strut" style="height:0.6444em"></span><span class="mord">1</span></span></span></span>.</p>
+<p>Two colours gets more interesting, and the trick is worth internalising because it is the whole idea of the game in miniature. Play:</p>
+<ol>
+<li>A single vertex of colour <strong>2</strong>.</li>
+<li><code>1(1)</code>, a colour-1 vertex with a colour-1 child.</li>
+<li>A single vertex of colour <strong>1</strong>.</li>
+</ol>
+<p>Check it. Tree 1 cannot fit into anything later, because nothing later uses colour 2 at all. Tree 2 has two vertices and tree 3 has one, so it cannot fit into it. And now you are stuck: a fourth tree would have to avoid colour 2 (or tree 1 fits) and avoid colour 1 (or tree 3 fits), which leaves nothing to draw. <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">T</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">E</mi><mi mathvariant="normal">E</mi></mrow><mo stretchy="false">(</mo><mn>2</mn><mo stretchy="false">)</mo><mo>=</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">\mathrm{TREE}(2) = 3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord"><span class="mord mathrm">TREE</span></span><span class="mopen">(</span><span class="mord">2</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="base"><span class="strut" style="height:0.6444em"></span><span class="mord">3</span></span></span></span>, and the playground will confirm the dead end for you — that is what the “any legal move left?” button is checking.</p>
+<p>Notice what tree 1 was for. Spending a whole move on a single dot looks wasteful, but it buys a <strong>ban</strong>: from then on, that colour is forbidden everywhere. The art of this game is deciding when to cash a colour in, because you may only do it once per colour, and afterwards the board shrinks.</p>
+<p>Which also explains why greedy play is terrible. If you always play the smallest legal tree you will play <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em"></span><span class="mord mathnormal">n</span></span></span></span> single dots and stop, so greedy scores exactly <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em"></span><span class="mord mathnormal">n</span></span></span></span>. Try it with three colours: three moves. Then try the seven-move run in the examples, which uses nothing more exotic than two-vertex trees, and note that it is still nowhere near optimal.</p>
+<h2 id="three-colours-and-why-nobody-can-tell-you-the-answer">Three colours, and why nobody can tell you the answer</h2>
+<p>The moment you have a third colour, the two-colour game becomes a <em>resource</em> rather than the whole story. You can spend colour 3 to buy yourself a ban, then play out a two-colour game with a more generous vertex budget, and the budget keeps growing while you do it. Each colour you cash in leaves you playing the smaller game from a better starting position, and the recursion nests.</p>
+<p>The result grows faster than essentially any function you can name. <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">T</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">E</mi><mi mathvariant="normal">E</mi></mrow><mo stretchy="false">(</mo><mn>3</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\mathrm{TREE}(3)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord"><span class="mord mathrm">TREE</span></span><span class="mopen">(</span><span class="mord">3</span><span class="mclose">)</span></span></span></span> is not merely bigger than Graham’s number; the gap is not one you can close with more arrows or more layers of recursion.</p>
+<p>The reason the game must end at all is Kruskal’s tree theorem: in any infinite sequence of finite trees with colours from a fixed finite set, some earlier tree fits inside some later one. A sequence that breaks rule 2 forever is therefore impossible, so every game is finite, so <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">T</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">E</mi><mi mathvariant="normal">E</mi></mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\mathrm{TREE}(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord"><span class="mord mathrm">TREE</span></span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span> exists.</p>
+<p>And here is the part I find genuinely strange. Harvey Friedman showed that Kruskal’s theorem cannot be proved in <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">A</mi><mi mathvariant="normal">T</mi><mi mathvariant="normal">R</mi></mrow><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\mathrm{ATR}_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em"></span><span class="mord"><span class="mord"><span class="mord mathrm">ATR</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em"><span style="top:-2.55em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em"><span></span></span></span></span></span></span></span></span></span>, one of the standard subsystems of second-order arithmetic — a system strong enough for a great deal of ordinary mathematics. The finite game inherits that strength. Any proof that your game must terminate is, in a precise sense, using more mathematical power than a large chunk of analysis needs. The unimaginable size of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">T</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">E</mi><mi mathvariant="normal">E</mi></mrow><mo stretchy="false">(</mo><mn>3</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\mathrm{TREE}(3)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord"><span class="mord mathrm">TREE</span></span><span class="mopen">(</span><span class="mord">3</span><span class="mclose">)</span></span></span></span> is the arithmetic shadow of that logical strength: a system can only prove a function total if it can, in effect, out-grow it.</p>
+<h2 id="things-worth-trying">Things worth trying</h2>
+<ul>
+<li>Play the two-colour game and get stuck in three moves. Then reach for the third colour and beat it without thinking hard.</li>
+<li>Build <code>1(2,3)</code> as your tree and then try to play <code>1(3(2,3))</code> later. The checker will refuse — meets are not preserved — and this is the single most useful thing to have in your fingers.</li>
+<li>Play a single dot early and watch how much of the board it deletes. Then restart and hold that colour back.</li>
+<li>Load the seven-move three-colour example, take back the last move, and look for a better ending than the one I found.</li>
+<li>Ask for a legal move when you think you are finished. Sometimes there is one, and it is never the one you expected.</li>
+</ul>
+<h2 id="how-the-referee-works">How the referee works</h2>
+<p>Deciding “does <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.05764em">S</span></span></span></span> fit inside <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.13889em">T</span></span></span></span>” is a small recursion with a subtlety. Either the root of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.05764em">S</span></span></span></span> lands on the root of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.13889em">T</span></span></span></span>, in which case the colours must agree and each child subtree of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.05764em">S</span></span></span></span> must be placed in a <strong>different</strong> child subtree of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.13889em">T</span></span></span></span> — that is a bipartite matching, and running it is what enforces the meet condition on siblings. Or the root of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.05764em">S</span></span></span></span> lands somewhere deeper, in which case all of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.05764em">S</span></span></span></span> fits inside one of the child subtrees of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.13889em">T</span></span></span></span>, and you recurse. Memoising on pairs of subtrees keeps it quick at these sizes.</p>
+<p>That is a neat argument, and neat arguments are exactly the ones that are subtly wrong, so the checker is tested against the definition rather than against my reasoning. A second, deliberately naive program enumerates every injection from <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.05764em">S</span></span></span></span> into <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.13889em">T</span></span></span></span> and verifies the colour and meet conditions directly from their statement; the two programs are compared on every pair of trees up to three and four vertices over two colours, and on hundreds of random pairs over up to three colours. Every witness the fast checker produces is separately re-verified against the definition. The search that proves you are stuck also reports honestly: when it can only rule out the trees it had time to enumerate, it says so instead of claiming you are finished. And the whole thing agrees that <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">T</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">E</mi><mi mathvariant="normal">E</mi></mrow><mo stretchy="false">(</mo><mn>1</mn><mo stretchy="false">)</mo><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\mathrm{TREE}(1) = 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord"><span class="mord mathrm">TREE</span></span><span class="mopen">(</span><span class="mord">1</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="base"><span class="strut" style="height:0.6444em"></span><span class="mord">1</span></span></span></span> and <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">T</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">E</mi><mi mathvariant="normal">E</mi></mrow><mo stretchy="false">(</mo><mn>2</mn><mo stretchy="false">)</mo><mo>=</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">\mathrm{TREE}(2) = 3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord"><span class="mord mathrm">TREE</span></span><span class="mopen">(</span><span class="mord">2</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="base"><span class="strut" style="height:0.6444em"></span><span class="mord">3</span></span></span></span> by brute-force search over all legal sequences, which is the only part of this problem where brute force will ever be enough.</p>
+<p>If you enjoy trees that stay small and well behaved, <a href="/blog/self-balancing-trees">four ways to keep a tree balanced</a> is about the other end of the spectrum entirely.</p>  <section class="related" aria-labelledby="related-heading" data-related data-here="/blog/tree-sequence-game"><h2 id="related-heading">Also on MotleyTech</h2><ul class="related-list"><li class="related-item"><a href="/blog/task-management"><img class="related-thumb" src="/images/demos/task-board.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2026-03-22T00:00:00.000Z">2026.03.22</time><span aria-hidden="true">&middot;</span><span>1 min read</span></span><span class="related-title">Task management app</span><span class="related-text">A lightweight, visual task board that runs entirely in the browser. Move work between columns, track what is in flight, and keep…</span></span></a></li><li class="related-item"><a href="/blog/balanced-tree"><img class="related-thumb" src="/images/demos/balanced-tree.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2020-04-09T00:00:00.000Z">2020.04.09</time><span aria-hidden="true">&middot;</span><span>2 min read</span></span><span class="related-title">Balanced binary tree animated</span><span class="related-text">Balanced binary trees promise fast inserts, finds and deletes, and rotations are what keep the promise: they stop the tree from…</span></span></a></li><li class="related-item"><a href="/blog/minesweeper"><img class="related-thumb" src="/images/demos/minesweeper.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2020-02-18T00:00:00.000Z">2020.02.18</time><span aria-hidden="true">&middot;</span><span>1 min read</span></span><span class="related-title">Minesweeper</span><span class="related-text">The classic sweep-for-mines game, rebuilt with React and plain CSS on top of a flood fill that opens up the empty regions. Same…</span></span></a></li><li class="related-item"><a href="/blog/gravitytrain"><img class="related-thumb" src="/images/gravity_train_poster.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2014-01-17T00:00:00.000Z">2014.01.17</time><span aria-hidden="true">&middot;</span><span>8 min read</span></span><span class="related-title">Gravity Train</span><span class="related-text">Dig a straight tunnel between any two points on Earth, pump out the air, and let gravity supply the propulsion. The trip takes 42…</span></span></a></li></ul></section><script>(function(){const count = 4;
+
+  (function () {
+    const section = document.querySelector('[data-related]');
+    const list = section && section.querySelector('.related-list');
+    if (!list) return;
+
+    const trim = (path) => path.replace(/\/+$/, '');
+    const here = trim(section.dataset.here || location.pathname);
+
+    function draw(items) {
+      const pool = items.filter((item) => trim(item.href) !== here);
+      for (let i = pool.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      const chosen = pool.slice(0, count);
+      if (chosen.length < count) return;
+
+      const fresh = document.createDocumentFragment();
+      for (const item of chosen) {
+        const li = document.createElement('li');
+        li.className = 'related-item';
+
+        const link = document.createElement('a');
+        link.href = item.href;
+
+        if (item.image) {
+          const img = document.createElement('img');
+          img.className = 'related-thumb';
+          img.src = item.image;
+          img.alt = '';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          link.appendChild(img);
+        } else {
+          const badge = document.createElement('span');
+          badge.className = 'related-thumb related-thumb--empty';
+          badge.setAttribute('aria-hidden', 'true');
+          badge.textContent = item.title.slice(0, 2).toUpperCase();
+          link.appendChild(badge);
+        }
+
+        const body = document.createElement('span');
+        body.className = 'related-body';
+
+        const meta = document.createElement('span');
+        meta.className = 'related-meta';
+        const time = document.createElement('time');
+        time.dateTime = item.isoDate;
+        time.textContent = item.stamp;
+        const dot = document.createElement('span');
+        dot.setAttribute('aria-hidden', 'true');
+        dot.innerHTML = '&middot;';
+        const read = document.createElement('span');
+        read.textContent = item.readMinutes + ' min read';
+        meta.append(time, dot, read);
+
+        const title = document.createElement('span');
+        title.className = 'related-title';
+        title.textContent = item.title;
+
+        const text = document.createElement('span');
+        text.className = 'related-text';
+        text.textContent = item.snippet;
+
+        body.append(meta, title, text);
+        link.appendChild(body);
+        li.appendChild(link);
+        fresh.appendChild(li);
+      }
+
+      list.replaceChildren(fresh);
+    }
+
+    // The build already picked a set. Only swap it while the list is out of
+    // sight, so nothing shifts under someone who is reading it.
+    function onScreen() {
+      const box = section.getBoundingClientRect();
+      return box.top < window.innerHeight && box.bottom > 0;
+    }
+
+    fetch('/api/related.json')
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!data || !Array.isArray(data.items) || onScreen()) return;
+        draw(data.items);
+      })
+      .catch(() => {
+        /* the server-rendered set is already on the page */
+      });
+  })();
+})();</script> <section id="comments" style="margin-top:2rem;"> <h2>Comments</h2> <div id="disqus_thread"></div> <script>(function(){const identifier = "treeSequenceGame";
+const title = "The game behind TREE(3)";
+const canonical = "https://motleytech.net/blog/tree-sequence-game/";
+
+    /*
+     * This has to be `window.disqus_config`, not a bare `var`: embed.js reads it
+     * off the global object, and `define:vars` compiles this block into an IIFE,
+     * so a `var` here stays local and Disqus silently falls back to keying the
+     * thread by URL. That loses every comment made before the page moved.
+     */
+    window.disqus_config = function () {
+      this.page.identifier = identifier;
+      this.page.title = title;
+      this.page.url = canonical;
+    };
+    (function () {
+      var d = document;
+      var s = d.createElement('script');
+      s.src = 'https://motleytech.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', String(+new Date()));
+      (d.head || d.body).appendChild(s);
+    })();
+  })();</script> </section> </article>  </main> <footer class="shell site-footer"> <p>&copy; 2017&ndash;2026 Nagarajan</p> <p><a href="/rss.xml">RSS</a> &middot; <a href="/archives">Archive</a></p> </footer> <script>
+      (function () {
+        const select = document.getElementById('theme-select');
+        if (select) {
+          select.value = document.documentElement.getAttribute('data-theme');
+          select.addEventListener('change', function (event) {
+            const theme = event.target.value;
+            document.documentElement.setAttribute('data-theme', theme);
+            try {
+              window.localStorage.setItem('motleytech-theme', theme);
+            } catch (error) {
+              /* private browsing: the theme simply will not persist */
+            }
+          });
+        }
+
+        const header = document.querySelector('.site-header');
+        const menu = document.getElementById('menu-panel');
+        const button = document.getElementById('nav-toggle');
+        if (!header || !menu || !button) {
+          return;
+        }
+
+        function closeMenu() {
+          header.classList.remove('menu-open');
+          button.setAttribute('aria-expanded', 'false');
+        }
+
+        button.addEventListener('click', function () {
+          const isOpen = header.classList.toggle('menu-open');
+          button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        menu.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', closeMenu);
+        });
+
+        document.addEventListener('click', function (event) {
+          if (!header.classList.contains('menu-open')) {
+            return;
+          }
+          const target = event.target;
+          if (target instanceof Node && (menu.contains(target) || button.contains(target))) {
+            return;
+          }
+          closeMenu();
+        });
+
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') {
+            closeMenu();
+          }
+        });
+      })();
+    </script> </body> </html>

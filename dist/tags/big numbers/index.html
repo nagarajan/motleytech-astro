@@ -1,0 +1,94 @@
+<!DOCTYPE html><html lang="en" data-theme="nebula"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v6.0.8"><meta name="description" content="Articles tagged Big Numbers."><link rel="icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="MotleyTech" href="/rss.xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><title>Tag: Big Numbers | MotleyTech</title><!-- Applied before first paint so the chosen theme never flashes. --><script>(function(){const themeIds = ["nebula","synthwave","matrix","ember","aurora","quartz"];
+const defaultTheme = "nebula";
+
+      (function () {
+        var stored = null;
+        try {
+          stored = window.localStorage.getItem('motleytech-theme');
+        } catch (error) {
+          stored = null;
+        }
+        var theme = themeIds.indexOf(stored) === -1 ? defaultTheme : stored;
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    })();</script><script async src="https://www.googletagmanager.com/gtag/js?id=G-V8WZYM91B4"></script><script>(function(){const gaId = "G-V8WZYM91B4";
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', gaId);
+    })();</script><link rel="stylesheet" href="/_astro/BaseLayout.BShXWbRi.css"></head> <body> <header class="site-header"> <div class="shell topbar"> <div class="topbar-main"> <a href="/" class="site-title"><span class="gradient-text">MotleyTech</span></a> <nav id="site-nav" class="site-nav" aria-label="Primary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-controls="menu-panel" aria-expanded="false"> <span class="hamburger-icon" aria-hidden="true"> <span></span> <span></span> <span></span> </span> </button> <div id="menu-panel" class="menu-panel"> <div class="theme-row"> <label for="theme-select" class="theme-label">Theme</label> <select id="theme-select" class="theme-select" aria-label="Select theme"> <option value="nebula">Nebula</option><option value="synthwave">Synthwave</option><option value="matrix">Matrix</option><option value="ember">Ember</option><option value="aurora">Aurora (light)</option><option value="quartz">Quartz (light)</option> </select> </div> <nav class="menu-nav" aria-label="Secondary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> </div> </header> <main class="shell site-main">  <section class="hero" style="padding-bottom: 1.5rem;"> <p class="kicker">Tag</p> <h1><span class="gradient-text">#Big Numbers</span></h1> <p class="lede"> 1 article on this topic.
+</p> </section> <ul class="trailer-grid"><li>
+  <article class="trailer">
+    <div class="trailer-media">
+      <img class="trailer-media-blur" src="/images/demos/tree-game.webp" alt="" aria-hidden="true" loading="lazy" decoding="async" />
+        <img class="trailer-media-img" src="/images/demos/tree-game.webp" alt="The tree sequence playground, showing an illegal move with the embedded earlier tree ringed" loading="lazy" decoding="async" />
+      <span class="trailer-cat">Blog</span>
+    </div>
+    <div class="trailer-body">
+      <p class="trailer-meta">
+        <time datetime="2026-09-27T00:00:00.000Z">2026.09.27</time>
+        <span aria-hidden="true"></span>
+        <span>7 min read</span>
+      </p>
+      <h3 class="trailer-title"><a href="/blog/tree-sequence-game">The game behind TREE(3)</a></h3>
+      <p class="trailer-text">Two rules, a handful of coloured dots, and a longest game so vast that with three colours nobody can write the answer down. Build sequences here and let the computer tell you the moment you break the rules.</p>
+      <ul class="trailer-tags"><li>Mathematics</li><li>Logic</li><li>Trees</li></ul>
+      <span class="trailer-cta" aria-hidden="true">Read article</span>
+    </div>
+  </article>
+</li></ul>  </main> <footer class="shell site-footer"> <p>&copy; 2017&ndash;2026 Nagarajan</p> <p><a href="/rss.xml">RSS</a> &middot; <a href="/archives">Archive</a></p> </footer> <script>
+      (function () {
+        const select = document.getElementById('theme-select');
+        if (select) {
+          select.value = document.documentElement.getAttribute('data-theme');
+          select.addEventListener('change', function (event) {
+            const theme = event.target.value;
+            document.documentElement.setAttribute('data-theme', theme);
+            try {
+              window.localStorage.setItem('motleytech-theme', theme);
+            } catch (error) {
+              /* private browsing: the theme simply will not persist */
+            }
+          });
+        }
+
+        const header = document.querySelector('.site-header');
+        const menu = document.getElementById('menu-panel');
+        const button = document.getElementById('nav-toggle');
+        if (!header || !menu || !button) {
+          return;
+        }
+
+        function closeMenu() {
+          header.classList.remove('menu-open');
+          button.setAttribute('aria-expanded', 'false');
+        }
+
+        button.addEventListener('click', function () {
+          const isOpen = header.classList.toggle('menu-open');
+          button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        menu.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', closeMenu);
+        });
+
+        document.addEventListener('click', function (event) {
+          if (!header.classList.contains('menu-open')) {
+            return;
+          }
+          const target = event.target;
+          if (target instanceof Node && (menu.contains(target) || button.contains(target))) {
+            return;
+          }
+          closeMenu();
+        });
+
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') {
+            closeMenu();
+          }
+        });
+      })();
+    </script> </body> </html>

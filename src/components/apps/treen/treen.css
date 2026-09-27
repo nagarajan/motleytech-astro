@@ -1,0 +1,346 @@
+.ts {
+  margin: 1.8rem 0;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-solid);
+  font-family: var(--font-body);
+  color: var(--text);
+}
+
+.ts-bar,
+.ts-tools,
+.ts-brushes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.ts-bar {
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ts-spacer {
+  flex: 1 1 0.5rem;
+}
+
+.ts-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.ts-select,
+.ts-input {
+  font: inherit;
+  font-size: 0.88rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text);
+}
+
+.ts-input {
+  min-width: 12rem;
+  flex: 0 1 16rem;
+}
+
+.ts-btn {
+  font: inherit;
+  font-size: 0.86rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 120ms, color 120ms;
+}
+
+.ts-btn:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.ts-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ts-btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+/* A dimmed accent still reads as the one button to press, so an illegal move drops
+ * the fill entirely. */
+.ts-btn--primary:disabled {
+  background: none;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.ts-btn--quiet {
+  font-size: 0.78rem;
+  padding: 0.22rem 0.5rem;
+  color: var(--text-faint);
+}
+
+.ts-notice {
+  margin: 0.7rem 0 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  font-size: 0.84rem;
+  color: var(--text-dim);
+}
+
+.ts-panes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+@media (max-width: 760px) {
+  .ts-panes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.ts-pane {
+  min-width: 0;
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.ts-pane-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  border: 0;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.ts-pane-head span {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.ts-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.ts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 27rem;
+  overflow-y: auto;
+}
+
+.ts-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--surface-solid);
+}
+
+.ts-item--lit {
+  border-color: var(--accent-2, var(--accent));
+}
+
+.ts-pos,
+.ts-count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+
+.ts-pos {
+  min-width: 2rem;
+  color: var(--text-dim);
+}
+
+.ts-count {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.ts-brush-label {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.ts-swatch {
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0b1220;
+  cursor: pointer;
+}
+
+.ts-swatch--on {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 12px var(--glow);
+}
+
+.ts-stage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 12rem;
+  margin: 0.6rem 0;
+  padding: 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--code-bg);
+  overflow: auto;
+}
+
+.ts-figure {
+  display: block;
+  max-width: 100%;
+}
+
+.ts-branch {
+  stroke: var(--text-faint);
+  stroke-width: 1.5;
+}
+
+.ts-vertex text {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-anchor: middle;
+  fill: #0b1220;
+  pointer-events: none;
+}
+
+.ts-vertex circle {
+  stroke: transparent;
+  stroke-width: 3;
+}
+
+.ts-stage .ts-vertex {
+  cursor: pointer;
+}
+
+.ts-vertex--selected circle {
+  stroke: var(--text);
+}
+
+/* The image of an offending embedding: ringed rather than recoloured, so the
+   colours still read correctly. */
+.ts-vertex--lit circle {
+  stroke: #ef4444;
+  stroke-dasharray: 3 2;
+}
+
+.ts-verdict {
+  margin: 0.5rem 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.ts-verdict--ok {
+  background: var(--chip-bg);
+  color: var(--text);
+}
+
+.ts-verdict--no {
+  background: var(--code-bg);
+  color: var(--text-dim);
+}
+
+.ts-hint {
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 8px;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.ts-hint p {
+  margin: 0;
+}
+
+.ts-hint-tree {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.ts-saves {
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border);
+}
+
+.ts-saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ts-saved-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.45rem;
+  border-radius: 8px;
+  background: var(--surface-solid);
+}
+
+.ts-saved-name {
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.ts-saved-meta {
+  margin-right: auto;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
