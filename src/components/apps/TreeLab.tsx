@@ -113,7 +113,7 @@ function summarise(snapshot: Snapshot): { keys: number; height: number } {
   return walk(snapshot.root);
 }
 
-export default function TreeLab({ structures, initial, maxKeys: initialMaxKeys = 2, showLog = true }: Props): ReactElement {
+export default function TreeLab({ structures, initial, maxKeys: initialMaxKeys = 3, showLog = true }: Props): ReactElement {
   // Island props are fixed by the article, so they only need reading once.
   const [tabs] = useState<EngineId[]>(() => (structures && structures.length ? structures : engineOrder));
   const [seedValues] = useState<number[]>(() => initial ?? DEFAULT_VALUES);

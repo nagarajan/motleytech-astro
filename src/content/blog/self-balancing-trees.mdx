@@ -76,9 +76,9 @@ Nothing rotates. Insert into the leaf where the key belongs, and if that leaves 
 
 Deletion runs the same argument backwards. Take the key out, and if the node is now one key short, first ask a sibling for a spare: the separator in the parent comes down, and the sibling's outermost key goes up to replace it. If no sibling has a spare, merge instead — two thin nodes and the separator between them make one node of legal size — and if that empties the root, the tree loses a level.
 
-<TreeLab structures={["btree"]} initial={[10, 20, 30, 40, 50, 60, 70]} maxKeys={2} client:visible />
+<TreeLab structures={["btree"]} initial={[10, 20, 30, 40, 50, 60, 70]} client:visible />
 
-Set "keys per node" to its smallest setting and insert eight or ten values: you will see the root split repeatedly, and the tree stay perfectly level while it does. Then note the height in the corner and compare it with the binary trees holding the same number of keys. With only two keys per node the difference is small; a real B-tree node holds hundreds, which is how a database indexes a billion rows in a structure four levels deep.
+Set "keys per node" to 2 and insert eight or ten values: you will see the root split repeatedly, and the tree stay perfectly level while it does. Then note the height in the corner and compare it with the binary trees holding the same number of keys. With only two keys per node the difference is small; a real B-tree node holds hundreds, which is how a database indexes a billion rows in a structure four levels deep.
 
 Deleting an internal key is the case to watch. That key is a separator — the children on either side of it are defined by it — so it cannot simply vanish. Its predecessor is promoted to do the separating job instead, and the deletion turns into a deletion from a leaf, which is the only place the structure ever really removes anything.
 
