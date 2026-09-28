@@ -209,6 +209,198 @@ export const KEYLESS = { windingPinion: 14, crownWheel: 24, ratchet: 36, setting
 
 const WIND_RATIO = KEYLESS.windingPinion / KEYLESS.ratchet;
 
+// ---------------------------------------------------------------- automatic winding
+
+/**
+ * The automatic work: an oscillating weight and the train that connects it to the barrel.
+ *
+ * Rotor pinion drives the reduction wheel, the reduction pinion drives the reversing
+ * wheel, and the reversing pinion drives the ratchet wheel — the same ratchet wheel the
+ * crown winds through, which is why an automatic can still be wound by hand.
+ */
+export const AUTO = {
+  rotorPinion: 9,
+  reduction: 45,
+  reductionPinion: 8,
+  reversing: 40,
+  reversingPinion: 9,
+} as const;
+
+/**
+ * Rotor turns per turn of the barrel arbor: 5 × 5 × 4 = 100.
+ *
+ * This number is the whole design problem of an automatic in one place. It cannot be
+ * small, because the rotor has to be able to wind a spring that is already nearly full and
+ * the torque it can muster is tiny — so the reduction is what turns a feeble weight into
+ * something that can pull against a mainspring. But every stage of reduction is another
+ * wheel, another pinion, another two bearings and more friction, in a watch that has no
+ * room for any of them.
+ *
+ * It also explains the shape of the module. One wheel-and-pinion stage gets you perhaps
+ * five to one, so a hundred to one is three stages, and there is no way round that: the
+ * teeth you can fit on a two-millimetre wheel are what they are.
+ */
+export const AUTO_RATIO =
+  (AUTO.reduction / AUTO.rotorPinion) *
+  (AUTO.reversing / AUTO.reductionPinion) *
+  (KEYLESS.ratchet / AUTO.reversingPinion);
+
+/** Moment of inertia of the rotor about its pivot, kg·m². A few grams of tungsten. */
+const ROTOR_INERTIA = 1.5e-7;
+
+/**
+ * Mass times the distance out to the centre of gravity, kg·m — the only property of the
+ * rotor's shape that matters to the physics. Multiply it by an acceleration and you have
+ * the torque. At one g that is 235 µN·m, against the 42 µN·m the winding train asks for
+ * with a full mainspring, so the rotor has about five times the muscle it needs. It has to:
+ * a rotor that could only just wind a slack spring would stop winding half way up.
+ */
+const ROTOR_MOMENT = 2.4e-5;
+
+/**
+ * Ball race friction, plus what the reduction pinion costs to drag round even unloaded.
+ * Set for a Q of about six: free enough that the rotor coasts through the top of a swing,
+ * damped enough that it does not sit and ring at its own six-hertz resonance, which is
+ * what an undamped one does and which put the winding rate out by a factor of four.
+ */
+const ROTOR_DRAG = 1.0e-6;
+
+/** What survives three reductions and a reverser. */
+const AUTO_EFFICIENCY = 0.55;
+
+const GRAVITY = 9.81;
+
+/** How often the rotor is integrated. Its natural flutter is about 6 Hz; this is ample. */
+const ROTOR_STEP = 2e-3;
+
+/** How long a sample of wrist motion is worth watching before believing its average. */
+const ROTOR_SAMPLE = 2;
+
+export interface Wrist {
+  id: string;
+  label: string;
+  /** How far the watch itself turns, in radians either side of level. */
+  swing: number;
+  /** Swings per second. */
+  pace: number;
+  /**
+   * The radius of the arc the watch travels on, in metres — how much the swing translates
+   * it as well as turning it. These have to be separate, because the two things a wrist
+   * does to a rotor are not the same thing. An arm swinging from the shoulder carries the
+   * watch on a 60 cm arc and throws it about; a hand turning over at a keyboard rotates
+   * the watch just as far while barely moving it anywhere. Collapse them into one number
+   * and desk work comes out either as no winding at all or as half a g of shaking.
+   */
+  reach: number;
+  /** How ragged it is. A real arm does not run on a sine wave. */
+  jitter: number;
+  /**
+   * How much of gravity lies in the plane the rotor turns in: 1 with the watch on edge,
+   * 0 with it lying flat. This is not a detail — it is the reason an automatic left face
+   * up on a bedside table stops, and stops even if you nudge the table. A rotor can only
+   * be pulled round by the part of gravity it can actually see.
+   */
+  lean: number;
+  note: string;
+}
+
+export const ACTIVITY: Wrist[] = [
+  {
+    id: 'off',
+    label: 'On the table',
+    swing: 0,
+    pace: 0,
+    reach: 0,
+    jitter: 0,
+    lean: 0,
+    note: 'Lying dial up. Gravity now points straight down the rotor’s axis, where the rotor has no leverage on it at all, so nothing happens — which is why a watch left face up overnight is stopped in the morning.',
+  },
+  {
+    id: 'still',
+    label: 'Worn, sitting still',
+    swing: 0.07,
+    pace: 0.4,
+    reach: 0.1,
+    jitter: 0.8,
+    lean: 0.85,
+    note: 'On a wrist that is barely moving. The rotor hangs and twitches. It winds, but it cannot keep up with a spring that is already strong, so the watch drifts down rather than up.',
+  },
+  {
+    id: 'desk',
+    label: 'At a desk',
+    swing: 0.55,
+    pace: 0.5,
+    reach: 0.18,
+    jitter: 1.0,
+    lean: 0.8,
+    note: 'Typing, reaching for a mouse, turning a page. The hand turns right over and takes the watch with it, so the rotor sees a large rotation even though nothing much is moving anywhere.',
+  },
+  {
+    id: 'walking',
+    label: 'Walking',
+    swing: 0.38,
+    pace: 0.9,
+    reach: 0.62,
+    jitter: 0.35,
+    lean: 0.9,
+    note: 'The arm swinging from the shoulder at about a step a second. This is the case an automatic is designed around, and it winds far faster than the watch can spend it.',
+  },
+  {
+    id: 'brisk',
+    label: 'Walking briskly',
+    swing: 0.6,
+    pace: 1.2,
+    reach: 0.62,
+    jitter: 0.3,
+    lean: 0.9,
+    note: 'Enough that the rotor stops hanging and starts going over the top.',
+  },
+  {
+    id: 'running',
+    label: 'Running',
+    swing: 0.95,
+    pace: 1.6,
+    reach: 0.62,
+    jitter: 0.4,
+    lean: 0.9,
+    note: 'The rotor goes right round, several times a second, and the bridle spends most of its time slipping.',
+  },
+];
+
+export const ACTIVITY_BY_ID = new Map(ACTIVITY.map((entry) => [entry.id, entry]));
+
+/**
+ * The arm, as a pendulum about the shoulder.
+ *
+ * Two sinusoids rather than one, at an awkward ratio so they never quite repeat, which is
+ * a cheap way to get something that looks like a person rather than a metronome. Written
+ * as a closed form because the rotor needs the second derivative and taking that off a
+ * noise source numerically is a good way to shake a simulation to pieces.
+ *
+ * The second harmonic is sized by the acceleration it contributes rather than the angle,
+ * hence the division by the frequency ratio squared. Size it by angle instead and a
+ * "sitting at a desk" that looks placid on a plot turns out to be shaking the watch at
+ * half a g, because differentiating twice multiplies the harmonic by seven.
+ */
+const JITTER_RATIO = 2.7;
+
+function armSwing(wrist: Wrist, t: number): { angle: number; rate: number; accel: number } {
+  const omega = TAU * wrist.pace;
+  const second = (0.4 * wrist.jitter) / (JITTER_RATIO * JITTER_RATIO);
+  const scale = wrist.swing / (1 + second);
+  const a = omega * t;
+  const b = JITTER_RATIO * a + 1.1;
+  return {
+    angle: scale * (Math.sin(a) + second * Math.sin(b)),
+    rate: scale * omega * (Math.cos(a) + second * JITTER_RATIO * Math.cos(b)),
+    accel:
+      -scale *
+      omega *
+      omega *
+      (Math.sin(a) + second * JITTER_RATIO * JITTER_RATIO * Math.sin(b)),
+  };
+}
+
 // ---------------------------------------------------------------- state
 
 export type Phase = 'locked' | 'unlocking' | 'impulse' | 'drop' | 'stopped';
@@ -218,9 +410,13 @@ export interface Pose {
   escape: number;
   balance: number;
   fork: number;
-  /** Barrel arbor angle, which moves only when the crown does. */
+  /** Barrel arbor angle, wound by the crown, the rotor, or both. */
   arbor: number;
   crown: number;
+  /** The rotor's angle relative to the watch. */
+  rotor: number;
+  /** Which way the watch itself is hanging, from the swing of the arm. */
+  tilt: number;
 }
 
 export interface Reading {
@@ -246,6 +442,16 @@ export interface Reading {
   /** What the hands say, in seconds since midnight. */
   shown: number;
   beats: number;
+  /** How fast the rotor is going round, in turns a minute, either way. */
+  rotorSpeed: number;
+  /** Turns a hour the rotor is putting into the barrel arbor. */
+  windingRate: number;
+  /** Turns an hour the going train is taking back out. */
+  spendRate: number;
+  /** The mainspring is full and the bridle is slipping: winding into nothing. */
+  slipping: boolean;
+  /** Turns the bridle has let go of since the movement was reset. */
+  slipped: number;
 }
 
 export interface Hands {
@@ -287,6 +493,39 @@ export class Movement {
   private crownTurns = 0;
   private crownOut = false;
 
+  /**
+   * Turns the bridle has slipped. The arbor keeps turning when the spring is full — the
+   * rotor has nowhere else to put them — so the tension in the spring is the turns wound
+   * in, less the turns that slipped away at the barrel wall, less what has run off through
+   * the train.
+   */
+  private slipped = 0;
+  /** Turns the bridle alone has given up, for the readout. */
+  private bridleTurns = 0;
+  /**
+   * How fast it is giving them up, in turns an hour, smoothed. A rate rather than a flag,
+   * because a rotor at full wind slips in jerks — a few hundredths of a turn as it swings,
+   * nothing at all while it hangs — so a flag set from the last step alone flickers several
+   * times a second. And smoothed the same way for the same reason.
+   */
+  private slipRate = 0;
+
+  // The rotor, relative to the watch, and the wrist that throws it about. It starts where
+  // it would be found: hanging. Start it anywhere else and the first thing it does is fall,
+  // and the fast-forward, which measures the rotor over a few seconds and believes the
+  // answer, reads that one drop as the steady rate and winds the watch off a transient.
+  private rotorAngle = -Math.PI / 2;
+  private rotorRate = 0;
+  private rotorClock = 0;
+  private wristClock = 0;
+  private wrist: Wrist = ACTIVITY[0];
+  private tilt = 0;
+
+  /** Rotor speed and winding rate, smoothed, because the raw numbers are a blur. */
+  private rotorSpeed = 0;
+  private windingRate = 0;
+  private lastShake = -1;
+
   /** The cannon pinion's slip against the centre arbor, in seconds of shown time. */
   private handShift = START_TIME;
 
@@ -309,7 +548,7 @@ export class Movement {
 
   /** Turns of tension in the mainspring: what has been wound in, less what has run off. */
   get wind(): number {
-    return Math.max(0, this.arborTurns - this.escape / TAU / TRAIN_RATIO);
+    return Math.max(0, this.arborTurns - this.slipped - this.escape / TAU / TRAIN_RATIO);
   }
 
   get torque(): number {
@@ -365,6 +604,140 @@ export class Movement {
     return this.crownOut;
   }
 
+  // ---------------------------------------------------------------- the rotor
+
+  setWrist(wrist: Wrist): void {
+    this.wrist = wrist;
+  }
+
+  get activity(): Wrist {
+    return this.wrist;
+  }
+
+  /**
+   * One step of the rotor, returning the angle it turned through. It does not touch the
+   * mainspring: the caller decides what to do with the turns, which is what lets the
+   * fast-forward sample the rotor without winding the watch six times over.
+   *
+   * The rotor is a pendulum on a very good bearing, sitting in a frame that is itself
+   * swinging about a shoulder, and the whole of its behaviour comes out of that. In the
+   * watch's own frame:
+   *
+   *     I·φ̈ = m·r·(cos φ · f_y − sin φ · f_x) − c·φ̇ − τ_load − I·ψ̈
+   *
+   * where φ is the rotor's angle in the watch, ψ is the watch's own rotation, and f is not
+   * gravity but the *specific force* — gravity less the frame's acceleration, which is
+   * what an accelerometer reads and what a weight on a pivot actually responds to. Ignore
+   * the difference and the rotor would only ever be driven by tilting the watch, which
+   * gets walking badly wrong: half the energy in a swinging arm is in the acceleration.
+   *
+   * The last term is the Euler force. The watch turns under the rotor, so some of the
+   * rotor's apparent movement is the watch moving and the rotor staying where it was —
+   * which is the other half of how these things wind, and the reason a rotor with a good
+   * enough bearing barely needs gravity at all.
+   */
+  private rotorStep(dt: number): number {
+    this.wristClock += dt;
+    const arm = armSwing(this.wrist, this.wristClock);
+    this.tilt = arm.angle;
+
+    // Gravity in watch coordinates, less what the arm is doing to the watch. The watch
+    // sweeps an arc, so it contributes a tangential term from the angular acceleration and
+    // a centripetal one, towards the middle of the arc, from the speed.
+    const g = GRAVITY * this.wrist.lean;
+    const reach = this.wrist.reach;
+    const fx = -g * Math.sin(arm.angle) - reach * arm.accel;
+    const fy = -g * Math.cos(arm.angle) - reach * arm.rate * arm.rate;
+
+    const drive =
+      ROTOR_MOMENT * (Math.cos(this.rotorAngle) * fy - Math.sin(this.rotorAngle) * fx);
+
+    // What the winding train asks for, referred back to the rotor. A reverser means the
+    // rotor pulls against the mainspring whichever way it is going, so the load always
+    // opposes the motion — the rotor is never coasting free once it is moving.
+    //
+    // The load behaves like dry friction rather than like a torque, because the train can
+    // hold the rotor but can never push it, and it has to be integrated the way friction
+    // is: work out where the rotor would go unresisted, then let the load take away at
+    // most enough to stop it dead. Subtracting it as a plain torque instead lets a stalled
+    // rotor chatter — stopped, so no load, so it accelerates, so it is moving, so the load
+    // reverses it, so it is stopped — and each cycle of that counts as winding. It winds a
+    // dead watch to full in half an hour off nothing but the integrator.
+    const load = barrelTorque(this.wind, this.strength) / (AUTO_RATIO * AUTO_EFFICIENCY);
+    const free = this.rotorRate + ((drive - ROTOR_DRAG * this.rotorRate) / ROTOR_INERTIA) * dt;
+    const most = (load / ROTOR_INERTIA) * dt;
+    const rate = Math.abs(free) <= most ? 0 : free - Math.sign(free) * most;
+
+    this.rotorRate = rate;
+    const moved = rate * dt;
+    // Wrapped, because a running rotor turns a few hundred thousand times a day and the
+    // angle is only ever wanted modulo a turn.
+    this.rotorAngle = (this.rotorAngle + moved) % TAU;
+    return Math.abs(moved);
+  }
+
+  /**
+   * Put a rotor's worth of turning into the barrel.
+   *
+   * Both directions wind, because the reverser rectifies the rotor: whichever way it goes,
+   * one of the pair of reversing wheels locks and the other free-wheels, and the ratchet
+   * wheel only ever turns the one way. A watch that only wound one way would waste half of
+   * every swing, and the early automatics that did exactly that are why the reverser was
+   * worth inventing.
+   *
+   * Then the bridle. The mainspring's outer end is not hooked to the barrel wall but held
+   * against it by friction, so when the spring is full the arbor simply carries on turning
+   * and the outer end slips. That is what stops a rotor bursting a mainspring on a day's
+   * walking, and it means a worn automatic sits permanently at full wind rather than
+   * anywhere near the bottom of its reserve.
+   */
+  private windFrom(rotorTurns: number, dt: number, ease: number): void {
+    this.arborTurns += Math.max(0, rotorTurns) / AUTO_RATIO;
+
+    const over = this.wind - FULL_WIND;
+    const slip = Math.max(0, over);
+    if (slip > 0) {
+      this.slipped += slip;
+      this.bridleTurns += slip;
+    }
+    this.slipRate += ((slip / dt) * 3600 - this.slipRate) * ease;
+
+    if (rotorTurns <= 0) return;
+    if (this.phase === 'stopped' && this.wind > 0.02 && this.elapsed - this.lastShake > 1) {
+      // A stopped automatic on a moving wrist starts itself, and this is how: the rotor
+      // slamming round is a jolt the balance feels.
+      this.lastShake = this.elapsed;
+      this.kick();
+    }
+  }
+
+  /**
+   * How many turns a second the rotor manages under the present load, measured by running
+   * it. There is no formula for this: the answer depends on whether the rotor is hanging
+   * and rocking, swinging over the top on some strides and not others, or going right
+   * round, and which of those three it does is what the equation of motion decides.
+   *
+   * Three seconds is long enough to average over several strides and short enough that a
+   * frame can afford it. The sample is run on the live rotor, so it genuinely carries on
+   * from where the rotor was, but it is not allowed to wind: the caller does that once,
+   * with the rate, for the whole jump.
+   */
+  private sampleRotor(): number {
+    if (this.wrist.swing <= 0 && this.wrist.lean <= 0) return 0;
+    let moved = 0;
+    for (let t = 0; t < ROTOR_SAMPLE; t += ROTOR_STEP) moved += this.rotorStep(ROTOR_STEP);
+    return moved / TAU / ROTOR_SAMPLE;
+  }
+
+  /**
+   * Smooth the rotor's turns a second into something a readout can show. The raw figure
+   * swings between nothing and thirty a second inside a single stride.
+   */
+  private watchRotor(turnsPerSecond: number, ease = 0.02): void {
+    this.rotorSpeed += (turnsPerSecond * 60 - this.rotorSpeed) * ease;
+    this.windingRate += ((turnsPerSecond * 3600) / AUTO_RATIO - this.windingRate) * ease;
+  }
+
   /** Shake the watch. A wound balance that has stopped needs a push to get going again. */
   kick(): void {
     if (this.wind <= 0) return;
@@ -391,11 +764,11 @@ export class Movement {
   }
 
   letDown(): void {
-    this.arborTurns = this.escape / TAU / TRAIN_RATIO;
+    this.slipped = this.arborTurns - this.escape / TAU / TRAIN_RATIO;
   }
 
   fullWind(): void {
-    this.arborTurns = this.escape / TAU / TRAIN_RATIO + FULL_WIND;
+    this.slipped = this.arborTurns - this.escape / TAU / TRAIN_RATIO - FULL_WIND;
     this.kick();
   }
 
@@ -418,6 +791,18 @@ export class Movement {
 
   private tick(dt: number): void {
     this.elapsed += dt;
+
+    // The rotor is a 6 Hz oscillator in a loop sized for a 2.5 Hz balance with a 52°
+    // window in it, so it does not need anything like this step. Let it accumulate.
+    this.rotorClock += dt;
+    if (this.rotorClock >= ROTOR_STEP) {
+      const span = this.rotorClock;
+      this.rotorClock = 0;
+      const moved = this.rotorStep(span);
+      this.windFrom(moved / TAU, span, 0.02);
+      this.watchRotor(moved / TAU / span);
+    }
+
     const torque = this.torque;
 
     if (this.phase === 'stopped') {
@@ -630,19 +1015,44 @@ export class Movement {
    * fair test of each.
    */
   fastForward(seconds: number): void {
-    const slice = 30;
+    // Ten seconds rather than thirty, because of the rotor. The balance does not care —
+    // it is solved in closed form and a slice costs nothing — but the rotor's output has
+    // to be measured under a particular load, and the load is exactly what the winding is
+    // changing. Sample at an empty barrel, apply it for half a minute, and the watch winds
+    // twice as fast as it should.
+    const slice = 10;
     let left = seconds;
+
     while (left > 1e-6) {
       const dt = Math.min(slice, left);
       left -= dt;
 
+      // The rotor cannot be skipped the way the balance can, because there is no
+      // equilibrium to skip to: it is driven by a wrist, not by a spring, and only its
+      // average survives. So measure the average — run a couple of seconds of wrist motion
+      // properly and see how far the rotor got — and take that as the rate for the slice.
+      const rotorRate = this.sampleRotor();
+      this.windFrom(rotorRate * dt, dt, 0.4);
+      this.watchRotor(rotorRate, 0.4);
+      // The rotor's own angle is left exactly where the sample put it. Spinning it on to
+      // cover the rest of the slice is tempting — it is what the balance gets — but the
+      // rotor is not periodic and the next sample starts from wherever this one finished.
+      // Drop it somewhere it would not have been and the sample measures it falling out of
+      // that position, every slice, and reports the fall as the winding rate.
+
       const torque = this.torque;
       const swing = Math.min(settledAmplitude(torque), KNOCK_ANGLE);
       if (torque <= 0 || swing < STALL_AMPLITUDE) {
+        // Out of power. The train has stopped, so nothing more runs off — but the rotor
+        // does not care whether the watch is going, and on a wrist that is still moving it
+        // will wind the watch back up and start it again. Which is the entire point.
         this.phase = 'stopped';
         this.omega = 0;
         this.theta = 0;
-        this.elapsed += left + dt;
+        this.elapsed += dt;
+        if (rotorRate > 0) continue;
+        // Nothing is going to start it again, so there is no point walking the rest.
+        this.elapsed += left;
         return;
       }
 
@@ -677,6 +1087,8 @@ export class Movement {
       // between the two and it would not be a difference otherwise.
       arbor: -this.arborTurns * TAU,
       crown: this.crownTurns * TAU,
+      rotor: this.rotorAngle,
+      tilt: this.tilt,
     };
   }
 
@@ -723,6 +1135,12 @@ export class Movement {
       elapsed: this.elapsed,
       shown: this.shown,
       beats: this.beats,
+      rotorSpeed: this.rotorSpeed,
+      windingRate: this.windingRate,
+      // What the train costs to run: one turn of the barrel every TRAIN_RATIO/600 hours.
+      spendRate: running ? 600 / TRAIN_RATIO : 0,
+      slipping: this.slipRate > 0.01,
+      slipped: this.bridleTurns,
     };
   }
 
@@ -744,6 +1162,25 @@ export class Movement {
       third: -escape / (STEP_UP.escape * STEP_UP.fourth),
       centre: escape / (STEP_UP.escape * STEP_UP.fourth * STEP_UP.third),
       barrel: -escape / TRAIN_RATIO,
+    };
+  }
+
+  /**
+   * The automatic work, which has to be read from both ends at once.
+   *
+   * The rotor pinion and the reduction wheel follow the rotor, because they are bolted to
+   * it through a mesh and go wherever it goes, backwards included. The reversing wheel and
+   * its pinion follow the *ratchet*, because everything from there on only ever turns one
+   * way. The discrepancy between the two is real, and it is the reverser: the whole job of
+   * that assembly is to absorb the difference between a weight that wanders about and a
+   * barrel that must only ever be wound.
+   */
+  autoWheels(): Record<'rotor' | 'reduction' | 'reversing', number> {
+    const ratchet = -this.arborTurns * TAU;
+    return {
+      rotor: this.rotorAngle,
+      reduction: (-this.rotorAngle * AUTO.rotorPinion) / AUTO.reduction,
+      reversing: (-ratchet * KEYLESS.ratchet) / AUTO.reversingPinion,
     };
   }
 }

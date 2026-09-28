@@ -98,7 +98,35 @@ const PNS_DENSITY = 1e11;
 /** Where the excision boundary ends up once the neutron star has finished shrinking. */
 const PNS_FINAL_RADIUS = 2.4e6; // cm
 /** How long that takes. Set by how fast neutrinos can carry the heat out. */
-const PNS_CONTRACTION_TIME = 0.5; // s
+const PNS_CONTRACTION_TIME = 0.5;
+
+/** How far inside the shock the inner boundary is allowed to sit, once there is a shock. */
+const EXCISE_FRACTION = 0.003;
+
+/** How much of the proto-neutron star is kept live; the rest is only gravity. */
+const PNS_EXCISE_FRACTION = 0.7;
+
+/**
+ * How far the shock must fall back below its stalling radius before the proto-neutron
+ * star may be trimmed.
+ *
+ * The trimming is only ever needed in a model that fails, where matter goes on raining
+ * onto the star for seconds and the zones at its surface are squeezed to nothing. But it
+ * cannot simply be switched on after a fixed delay, because the gain region sits close
+ * above that surface and trimming it takes away the very thing doing the work: applied
+ * from the start it stopped the star exploding at any heating factor, and applied after
+ * half a second regardless it still cost a fifth of the explosion energy.
+ *
+ * The condition it waits for instead is a shock that has stalled and not come back. A
+ * model on its way to exploding has revived long before this — revival happens within two
+ * to five hundred milliseconds of bounce — so an exploding star never notices this code
+ * exists, and a failing one gets cheap at exactly the moment its fate stops being in
+ * question.
+ */
+const PNS_EXCISE_AFTER = 0.6;
+
+/** Fraction of the escape speed above which matter counts as ejecta and is never retired. */
+const ESCAPE_MARGIN = 0.05; // s
 /** Relaxation time for electron capture towards its equilibrium track. */
 /** Largest share of a zone's heat that escaping capture neutrinos may carry per step. */
 const MAX_CAPTURE_SPEND = 0.25;
@@ -160,6 +188,8 @@ export function runCollapse(options: Options): RunResult {
   let shockRadius = 0;
   let maxShockRadius = 0;
   let stalledAt = 0;
+  let maxShockTime = 0;
+  let revivalSince = 0;
   let reviving = false;
   let excisionStart = 0;
   let luminosity = 0;
@@ -523,23 +553,50 @@ export function runCollapse(options: Options): RunResult {
     // thousands of kelvin and fourteen orders of magnitude in density apart. Measured that
     // way the same test finds the front through every layer it crosses.
     if (bounced) {
-      for (let i = n - 1; i >= inner; i -= 1) {
-        if (entropyOf(i) > 2.2 * initialEntropy[i] + 0.5 && rho[i] > 1e-11) {
+      // Two neighbours have to agree. A single zone can be lifted over the threshold by
+      // nothing more than the artificial viscosity smearing a steep compression, and one
+      // stray zone far out in the envelope would otherwise report the shock as having
+      // jumped thousands of kilometres for a step or two.
+      const shocked = (i: number): boolean =>
+        entropyOf(i) > 2.2 * initialEntropy[i] + 0.5 && rho[i] > 1e-11;
+      for (let i = n - 1; i > inner; i -= 1) {
+        if (shocked(i) && shocked(i - 1)) {
           shockRadius = r[i + 1];
           break;
         }
       }
-      if (shockRadius > maxShockRadius) maxShockRadius = shockRadius;
+      if (shockRadius > maxShockRadius) {
+        maxShockRadius = shockRadius;
+        maxShockTime = time;
+      }
 
+      // A stalled shock is not a motionless one. The front found by the entropy test
+      // wanders a few per cent from step to step as the zone holding the jump changes, and
+      // while the prompt shock is still climbing it spends much of its time slightly below
+      // the best radius it has reached. Calling that a stall — which an earlier version of
+      // this test did — froze the stall radius at fifty-odd kilometres during the climb,
+      // and every later reading looked like a revival by comparison.
+      //
+      // What actually distinguishes a stall is that the shock stops setting records. A
+      // climbing shock beats its own best every few milliseconds; one that has run out of
+      // push goes quiet. Thirty milliseconds of silence is far longer than the jitter and
+      // far shorter than the revival window.
       const sb = time - bounceTime;
       if (sb > 0.02 && !reviving) {
-        if (shockRadius < maxShockRadius * 0.97 && maxShockRadius > 5e6) {
-          if (phase !== 'stalled') phase = 'stalled';
-          if (stalledAt === 0) stalledAt = maxShockRadius;
+        if (stalledAt === 0 && maxShockRadius > 5e6 && time - maxShockTime > 0.03) {
+          phase = 'stalled';
+          stalledAt = maxShockRadius;
         }
-        if (stalledAt > 0 && shockRadius > stalledAt * 1.3 && sb > 0.08) {
-          reviving = true;
-          phase = 'reviving';
+        // Revival has to be held, not just touched. A stalled shock breathes, and a single
+        // reading thirty per cent out is a breath; a reviving one never comes back down.
+        if (stalledAt > 0 && shockRadius > stalledAt * 1.3) {
+          if (revivalSince === 0) revivalSince = time;
+          if (time - revivalSince > 0.02) {
+            reviving = true;
+            phase = 'reviving';
+          }
+        } else {
+          revivalSince = 0;
         }
       }
       if (reviving && shockRadius > 3e8) phase = 'exploding';
@@ -567,20 +624,65 @@ export function runCollapse(options: Options): RunResult {
     // shock further out than it belongs. So the boundary is walked inwards on the
     // contraction law that detailed cooling calculations produce, and the settling that
     // drives is a real part of what powers the explosion.
+    // Later still, the same argument applies again but for a different reason, and this
+    // one decides whether the run can reach the surface at all. Once the shock is away,
+    // the neutron star is a finished object twenty kilometres across sitting at the
+    // bottom of a star that now extends for tens of thousands, and the timestep — a zone
+    // width over a sound speed — is set entirely by it. Measured directly: two seconds
+    // after bounce, with the shock at fifteen thousand kilometres, every step in the
+    // calculation was being sized by a zone at twenty-six. Left that way the run costs a
+    // fixed number of microseconds per second of star, and shock breakout, which happens
+    // a day later, would take billions of steps.
+    //
+    // So the boundary is also kept at a small fraction of the shock radius, which lets it
+    // walk outwards as the explosion grows and keeps the timestep scaled to the thing
+    // being watched rather than to the thing that has stopped changing. The guard is on
+    // velocity: matter on its way out is ejecta and is never retired, however deep it is.
+    // What gets swallowed this way is matter that failed to escape and is falling back,
+    // which in the real star lands on the neutron star too.
     if (bounced && time - bounceTime > 0.003) {
       if (excisionStart === 0) excisionStart = Math.min(pnsRadius * 0.6, 6.0e6);
       const sb = time - bounceTime;
-      const wanted = PNS_FINAL_RADIUS + (excisionStart - PNS_FINAL_RADIUS) * Math.exp(-sb / PNS_CONTRACTION_TIME);
+      const contracting =
+        PNS_FINAL_RADIUS + (excisionStart - PNS_FINAL_RADIUS) * Math.exp(-sb / PNS_CONTRACTION_TIME);
+      // And the boundary also tracks the proto-neutron star itself, which is the case the
+      // contraction law alone gets wrong. When the shock fails to revive, matter keeps
+      // raining onto the star and the zones pile up against its surface, squeezed thinner
+      // and thinner: a run that stalled had its timestep set by a zone forty metres thick
+      // sitting at thirty-two kilometres, well inside a neutron star fifty-two kilometres
+      // across, and took a quarter of an hour to cover its first second. Matter that deep
+      // is part of the star and its only remaining job is to be heavy, which it goes on
+      // doing from the enclosed-mass sum after it is retired.
+      const wanted = Math.max(
+        contracting,
+        EXCISE_FRACTION * shockRadius,
+        !reviving && sb > PNS_EXCISE_AFTER ? PNS_EXCISE_FRACTION * pnsRadius : 0,
+      );
+
+      const leaving = (i: number): boolean =>
+        v[i] > ESCAPE_MARGIN * Math.sqrt((2 * G * mass[i]) / Math.max(r[i], 1e5));
+
       // Everything whose outer face has ended up inside the boundary is retired, and the
       // boundary itself becomes the inner face of whatever is left.
-      while (inner < n - 70 && r[inner + 1] <= wanted) inner += 1;
+      while (inner < n - 70 && r[inner + 1] <= wanted && !leaving(inner + 1)) inner += 1;
       // Then retire by thickness as well. What actually costs time is a thin zone, since
       // the timestep is a zone width divided by a sound speed, and zones piling up against
       // a contracting boundary get very thin indeed. Requiring the innermost live zone to
       // span a few per cent of its own radius puts a floor under the timestep directly
       // rather than hoping one falls out.
-      while (inner < n - 70 && r[inner + 1] - wanted < 0.05 * wanted) inner += 1;
-      r[inner] = wanted;
+      while (
+        inner < n - 70 &&
+        r[inner + 1] - r[inner] < 0.05 * r[inner + 1] &&
+        !leaving(inner + 1)
+      ) {
+        inner += 1;
+      }
+      // The boundary may be pulled inwards, because that is the neutron star contracting
+      // and is real, but it is never pushed outwards. Dragging a rigid wall out through
+      // the gas would do work on it, and the run that first tried it inflated the
+      // explosion energy by forty percent. Retiring a zone simply leaves the boundary at
+      // the face that zone used to have.
+      if (contracting < r[inner]) r[inner] = contracting;
       v[inner] = 0;
     }
   }
@@ -671,6 +773,9 @@ export function runCollapse(options: Options): RunResult {
       burnEnergy,
       ejectaMass: ejecta,
       peakVelocity: peak,
+      limitZone,
+      limitCause,
+      dt,
     });
   }
 

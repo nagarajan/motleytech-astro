@@ -46,9 +46,19 @@ import {
   ratchetRoot,
   Ribbon,
   ring,
+  rotorArmGeometry,
+  rotorWeightGeometry,
   wheelGeometry,
 } from './parts';
-import { KEYLESS, MOTION_WORK, TRAIN, type Hands, type Pose, type Reading } from './movement';
+import {
+  AUTO,
+  KEYLESS,
+  MOTION_WORK,
+  TRAIN,
+  type Hands,
+  type Pose,
+  type Reading,
+} from './movement';
 
 const TAU = Math.PI * 2;
 
@@ -62,6 +72,13 @@ const FINISH = {
   // colour, a millimetre apart and both filling the frame, are otherwise one grey shape.
   nickel: { color: 0x9aa0aa, metalness: 0.62, roughness: 0.62 },
   bridge: { color: 0xa4abb6, metalness: 0.86, roughness: 0.22 },
+  // The automatic work is rhodium-plated rather than gilt, which is how these modules are
+  // usually finished and which here does a second job: the whole of the going train and the
+  // barrel are yellow, and a reduction train in the same yellow, sitting directly on top of
+  // them, is one continuous brass blur.
+  rhodium: { color: 0xc3c9d2, metalness: 0.9, roughness: 0.17 },
+  /** The rotor's weight. Dense, dark and deliberately unlike everything around it. */
+  tungsten: { color: 0x565b66, metalness: 0.78, roughness: 0.38 },
   spring: { color: 0x8f99a7, metalness: 0.9, roughness: 0.25 },
   ruby: { color: 0xc42f4c, metalness: 0.15, roughness: 0.12 },
   dial: { color: 0xf6f1e4, metalness: 0.04, roughness: 0.8 },
@@ -528,6 +545,146 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
     spring.rotation.z = CLICK_REST + Math.PI * 0.72;
   }
 
+  // ---------------------------------------------------------------- automatic winding
+
+  /**
+   * The reduction train, built the same way as the going train and doing the opposite job.
+   * The going train turns one slow strong wheel into a fast weak one; this turns a hundred
+   * turns of a feeble weight into one turn of the barrel arbor.
+   */
+  function autoWheel(
+    id: string,
+    spot: Spot,
+    teeth: number,
+    radius: number,
+    wheelZ: number,
+    leaves: number,
+    leafRadius: number,
+    pinionZ: number,
+  ): THREE.Group {
+    const owner = part(id, wheelZ, spot);
+    const group = spinner(owner, spot);
+    piece(
+      owner,
+      group,
+      at(
+        wheelGeometry({ teeth, radius, thickness: THICK.wheel, crossings: 4, bore: 0.3 }),
+        wheelZ,
+      ),
+      'rhodium',
+    );
+    piece(
+      owner,
+      group,
+      at(
+        wheelGeometry({
+          teeth: leaves,
+          radius: leafRadius,
+          thickness: THICK.pinion,
+          bore: leafRadius * 0.3,
+          pinion: true,
+        }),
+        pinionZ,
+      ),
+      'steel',
+    );
+    // The arbor down to its pivot, which is in the automatic work's own bridge rather than
+    // in the main plate — the whole module is a storey above the watch.
+    piece(owner, group, at(disc(0.24, wheelZ - Z.ratchet + 0.5, 12), (wheelZ + Z.ratchet) / 2), 'steel');
+    return group;
+  }
+
+  const reductionSpin = autoWheel(
+    'reduction',
+    SPOT.reduction,
+    AUTO.reduction,
+    R.reduction,
+    Z.reductionWheel,
+    AUTO.reductionPinion,
+    R.reductionPinion,
+    Z.reductionPinion,
+  );
+  const reversingSpin = autoWheel(
+    'reversing',
+    SPOT.reversing,
+    AUTO.reversing,
+    R.reversing,
+    Z.reversingWheel,
+    AUTO.reversingPinion,
+    R.reversingPinion,
+    Z.reversingPinion,
+  );
+
+  /**
+   * The rotor.
+   *
+   * Homed on the middle of the watch, because that is where it turns, and because when the
+   * plan is spread out the rotor should stay put and let everything else walk out from
+   * under it — which is the only way to see what it has been covering.
+   */
+  const rotorPart = part('rotor', Z.rotor, SPOT.centre);
+  const rotorSpin = spinner(rotorPart, SPOT.centre);
+  {
+    piece(rotorPart, rotorSpin, at(rotorArmGeometry(R.rotor, THICK.rotor), Z.rotor), 'rhodium');
+
+    // The weight. Its inner edge at 0.6 of the radius and its span a little over a third of
+    // the circle: a crescent rather than a half-disc, which is what puts its centre of
+    // gravity out at seven tenths of the radius instead of four.
+    //
+    // Left pointing along +x, which is where the physics assumes it is. The rotor's
+    // equilibrium comes out of the equations at φ = −90°, so if the drawing agrees with the
+    // maths the weight should hang straight down with the watch level — and it does, which
+    // is a small free check that the two have not drifted apart.
+    const weight = piece(
+      rotorPart,
+      rotorSpin,
+      rotorWeightGeometry(R.rotor, R.rotor * 0.6, Math.PI * 0.78, THICK.rotorWeight),
+      'tungsten',
+    );
+    // Upward from the arm's underside. Downward is the balance cock, a third of a
+    // millimetre away.
+    weight.position.set(0, 0, Z.rotor - THICK.rotor / 2);
+
+    // The ball race the whole thing hangs on, and the pinion under it.
+    piece(rotorPart, rotorSpin, at(ring(0.82, 1.5, 0.62, 40), Z.rotor - 0.1), 'steel');
+    piece(
+      rotorPart,
+      rotorSpin,
+      at(
+        wheelGeometry({
+          teeth: AUTO.rotorPinion,
+          radius: R.rotorPinion,
+          thickness: THICK.pinion,
+          pinion: true,
+        }),
+        Z.rotorPinion,
+      ),
+      'steel',
+    );
+    piece(rotorPart, rotorSpin, at(disc(0.3, Z.rotor - Z.rotorPinion, 12), (Z.rotor + Z.rotorPinion) / 2), 'steel');
+  }
+
+  /**
+   * The bridle: the last few centimetres of the mainspring, lying against the inside of the
+   * barrel wall and held there by nothing but friction.
+   *
+   * Drawn as its own band just outside the outermost coil, because otherwise there is
+   * nothing to see — it is a length of spring that differs from the rest of the spring only
+   * in not being hooked to anything. What makes it visible is the slipping: it is pinned to
+   * the barrel until the spring is full, and then it starts creeping round the wall, and
+   * watching that creep is watching a rotor wind into nothing.
+   */
+  const bridlePart = part('bridle', Z.barrelTeeth, SPOT.barrel);
+  const bridleSpin = spinner(bridlePart, SPOT.barrel);
+  {
+    const wall = R.barrel * 0.82;
+    const band = new THREE.Shape([
+      ...arc(wall + 0.07, 0, Math.PI * 0.7, 30),
+      ...arc(wall - 0.07, Math.PI * 0.7, 0, 30),
+    ]);
+    piece(bridlePart, bridleSpin, at(extrude(band, THICK.mainspring, 6), Z.barrelTeeth), 'blued');
+  }
+
   // ---------------------------------------------------------------- the going train
 
   /** A wheel, the pinion it is driven by, and the arbor they share. */
@@ -947,6 +1104,13 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
   /** The spread the camera has already been backed off for. */
   let framedFor = 0;
 
+  /** Where the parts sit on average, which is not the middle of the watch. */
+  const crowd = (() => {
+    const mean = new THREE.Vector2();
+    for (const owner of parts.values()) mean.add(owner.home);
+    return mean.divideScalar(parts.size);
+  })();
+
   /** Enough coils to look like a hairspring; a real one has twelve to fourteen. */
   const HAIRSPRING_TURNS = 9;
   /** The coils a run-down mainspring still has lying against the barrel wall. */
@@ -962,6 +1126,17 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
     // wheel is one audible click of a watch being wound; this is where the sound lives.
     const phase = (-pose.arbor / TAU) * KEYLESS.ratchet;
     clickSpin.rotation.z = CLICK_REST - 0.14 * Math.pow(phase - Math.floor(phase), 2.5);
+
+    // The automatic work. The rotor and the reduction wheel follow the rotor, backwards
+    // included; the reversing wheel follows the ratchet, which only ever goes one way. The
+    // two do not agree, and the disagreement is the reverser.
+    rotorSpin.rotation.z = pose.rotor;
+    reductionSpin.rotation.z = wheels.reduction;
+    reversingSpin.rotation.z = wheels.reversing;
+    // Carried round by the barrel, less however much it has given up at the wall. While
+    // the spring has room this is just the barrel's own angle; once it is full the second
+    // term starts to grow and the band creeps.
+    bridleSpin.rotation.z = wheels.barrel - reading.slipped * TAU;
 
     centreSpin.rotation.z = wheels.centre;
     thirdSpin.rotation.z = wheels.third;
@@ -1018,6 +1193,15 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
       // keeps everything in frame and still fills it.
       const scale = (1 + view.spread * SPREAD * 0.75) / (1 + framedFor * SPREAD * 0.75);
       camera.position.sub(controls.target).multiplyScalar(scale).add(controls.target);
+      // And the target follows the parts. The plan is dilated about the middle of the
+      // watch, but the parts are not evenly distributed about the middle of the watch —
+      // most of them are off towards the barrel — so the whole arrangement walks sideways
+      // as it opens out and has to be followed or it leaves the frame.
+      const walk = (view.spread - framedFor) * SPREAD;
+      controls.target.x += crowd.x * walk;
+      controls.target.y += crowd.y * walk;
+      camera.position.x += crowd.x * walk;
+      camera.position.y += crowd.y * walk;
       framedFor = view.spread;
     }
 

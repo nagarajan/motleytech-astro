@@ -1,6 +1,9 @@
 import { type ReactElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GROUP_NAMES, GROUP_ORDER, PARTS } from './watch/layout';
 import {
+  ACTIVITY,
+  ACTIVITY_BY_ID,
+  AUTO_RATIO,
   BEATS_PER_HOUR,
   FULL_WIND,
   Movement,
@@ -43,8 +46,14 @@ function solid(): Record<string, number> {
   return Object.fromEntries(PARTS.map((part) => [part.id, 1]));
 }
 
-/** The four parts whose whole job is to be in the way of the interesting ones. */
-const COVERS = new Set(['bridges', 'cock', 'dial', 'plate']);
+/**
+ * The parts whose whole job is to be in the way of the interesting ones. The rotor is the
+ * worst of them by a distance: it is a solid disc very nearly as wide as the movement, and
+ * with it opaque there is no watch to look at at all — which is exactly the complaint
+ * people have always had about automatics, and why so many of them have a skeletonised
+ * rotor or none at all on the display-back version.
+ */
+const COVERS = new Set(['bridges', 'cock', 'dial', 'plate', 'rotor']);
 
 function opened(): Record<string, number> {
   return Object.fromEntries(PARTS.map((part) => [part.id, COVERS.has(part.id) ? GHOST : 1]));
@@ -88,6 +97,7 @@ export default function WatchMovement(): ReactElement {
   const [crownOut, setCrownOut] = useState(false);
   const [regulator, setRegulator] = useState(0);
   const [mainspring, setMainspring] = useState(1);
+  const [activity, setActivity] = useState('walking');
   const [reading, setReading] = useState<Reading | null>(null);
   const [notice, setNotice] = useState('');
   const [failed, setFailed] = useState(false);
@@ -133,7 +143,13 @@ export default function WatchMovement(): ReactElement {
       pulled += ((out ? 1 : 0) - pulled) * Math.min(1, real * 12);
 
       const view: View = { exploded: lift, spread: apart, opacity: shades, selected: chosen, crownOut: pulled };
-      viewer.draw(watch.pose(), watch.wheels(), watch.hands(), watch.read(), view);
+      viewer.draw(
+        watch.pose(),
+        { ...watch.wheels(), ...watch.autoWheels() },
+        watch.hands(),
+        watch.read(),
+        view,
+      );
 
       sinceReadout += real;
       if (sinceReadout > 0.12) {
@@ -160,6 +176,10 @@ export default function WatchMovement(): ReactElement {
 
   useEffect(() => watchRef.current.setIndex(regulator), [regulator]);
   useEffect(() => watchRef.current.setMainspring(mainspring), [mainspring]);
+  useEffect(() => {
+    const wrist = ACTIVITY_BY_ID.get(activity);
+    if (wrist) watchRef.current.setWrist(wrist);
+  }, [activity]);
 
   // ---------------------------------------------------------------- the crown
 
@@ -278,6 +298,11 @@ export default function WatchMovement(): ReactElement {
     return Math.min(100, (reading.amplitude / 330) * 100);
   }, [reading]);
 
+  // The two numbers that decide whether an automatic stays wound, and the only comparison
+  // that matters in the whole of self-winding: turns an hour in against turns an hour out.
+  const winding = reading?.windingRate ?? 0;
+  const spending = reading?.spendRate ?? 0;
+
   if (failed) {
     return (
       <div className="wm">
@@ -301,6 +326,25 @@ export default function WatchMovement(): ReactElement {
               <option key={entry.value} value={entry.value}>
                 {entry.label}
                 {entry.note ? ` — ${entry.note}` : ''}
+              </option>
+            ))}
+          </select>
+        </span>
+
+        <span className="wm-field">
+          Wrist
+          <select
+            className="wm-select"
+            value={activity}
+            aria-label="What the wearer is doing, which is what drives the rotor"
+            onChange={(event) => {
+              setActivity(event.target.value);
+              setNotice(ACTIVITY_BY_ID.get(event.target.value)?.note ?? '');
+            }}
+          >
+            {ACTIVITY.map((entry) => (
+              <option key={entry.id} value={entry.id}>
+                {entry.label}
               </option>
             ))}
           </select>
@@ -493,6 +537,58 @@ export default function WatchMovement(): ReactElement {
               <p className="wm-warn">
                 Knocking. The balance is swinging so far that the impulse jewel comes right round
                 and strikes the outside of the fork horn. The rate is worthless while this is happening.
+              </p>
+            )}
+          </section>
+
+          <section className="wm-block">
+            <h3 className="wm-head">
+              Self-winding
+              <span>{reading?.slipping ? 'bridle slipping' : winding > spending ? 'gaining' : 'losing'}</span>
+            </h3>
+
+            <dl className="wm-stats">
+              <div>
+                <dt>Rotor</dt>
+                <dd>{reading ? `${Math.round(reading.rotorSpeed)} rpm` : '—'}</dd>
+              </div>
+              <div>
+                <dt>Reduction</dt>
+                <dd>{AUTO_RATIO}:1</dd>
+              </div>
+              <div>
+                <dt>Winding</dt>
+                <dd>{winding.toFixed(2)} turns/h</dd>
+              </div>
+              <div>
+                <dt>Spending</dt>
+                <dd>{spending.toFixed(2)} turns/h</dd>
+              </div>
+              <div>
+                <dt>Balance</dt>
+                <dd className={winding >= spending ? '' : 'wm-stat--bad'}>
+                  {spending > 0 ? `${(winding / spending).toFixed(1)}×` : '—'}
+                </dd>
+              </div>
+              <div>
+                <dt>Slipped</dt>
+                <dd>{(reading?.slipped ?? 0).toFixed(0)} turns</dd>
+              </div>
+            </dl>
+
+            {reading?.slipping && (
+              <p className="wm-warn">
+                The spring is full and the bridle is slipping. The rotor is still turning and the
+                arbor is still being wound; the turns are simply going nowhere, because the
+                spring’s outer end is sliding round the barrel wall as fast as they arrive.
+                Without this a day’s walking would break the mainspring.
+              </p>
+            )}
+            {reading && !reading.slipping && winding < spending && (
+              <p className="wm-warn">
+                {activity === 'off'
+                  ? 'Lying flat, gravity points straight down the rotor’s axis and it has no leverage on it at all. Nothing is winding; the watch is simply running down.'
+                  : 'The rotor is not keeping up with the train. It will settle somewhere short of full and stay there, which is what happens to an automatic on a wrist that barely moves.'}
               </p>
             )}
           </section>

@@ -307,6 +307,11 @@
   color: var(--text);
 }
 
+/* A figure that is the wrong way round: winding slower than the watch is spending. */
+.wm-stat--bad {
+  color: var(--accent-warm, #d08a3a);
+}
+
 .wm-warn {
   display: flex;
   flex-wrap: wrap;

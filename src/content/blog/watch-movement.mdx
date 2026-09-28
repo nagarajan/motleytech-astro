@@ -2,10 +2,10 @@
 title: "A watch that is not animated"
 pubDate: 2026-09-27
 category: "Blog"
-tags: ["Horology", "3D", "Javascript", "Physics", "Mechanics"]
+tags: ["Horology", "3D", "Javascript", "Physics", "Mechanics", "Simulation"]
 author: "Nagarajan"
-description: "A hand-wound mechanical watch, simulated rather than animated: a mainspring holding a torque, a train that is only gearing, and a balance wheel obeying an equation of motion. Wind it, set it, and fade any part away to see what is under it."
-trailer: "The seconds hand moves because a balance wheel is vibrating, and for no other reason. Wind the crown, pull it out to set the time, and fade the bridges away to watch the escapement lock, unlock and impulse five times a second."
+description: "A mechanical watch, simulated rather than animated: a mainspring holding a torque, a train that is only gearing, a balance wheel obeying an equation of motion, and a self-winding rotor driven by a wrist. Wind it, set it, walk about in it, and fade any part away to see what is under it."
+trailer: "The seconds hand moves because a balance wheel is vibrating, and for no other reason. Wind the crown, pull it out to set the time, put it on a wrist and let the rotor wind it for you, and fade the bridges away to watch the escapement lock, unlock and impulse five times a second."
 heroImage: "/images/demos/watch-movement.webp"
 heroAlt: "A close-up of the escapement: a gilt balance wheel with timing screws around its rim and a blued hairspring coiled inside it, the steel pallet fork beside it, and the escape wheel and fourth wheel to the right, with the rest of the movement faded to a ghost behind them"
 disqusIdentifier: "watchMovement"
@@ -15,7 +15,7 @@ import WatchMovement from '../../components/apps/WatchMovement.tsx';
 
 <WatchMovement client:visible />
 
-Everything in there is turning because something else pushed it. Drag the crown to the right of the case and you will feel the mainspring take up; pull the crown out and drag again and the hands move while the seconds hand carries on undisturbed. Click any part to fade it and see what is underneath.
+Everything in there is turning because something else pushed it. Drag the crown to the right of the case and you will feel the mainspring take up; pull the crown out and drag again and the hands move while the seconds hand carries on undisturbed. Set the **Wrist** control to *Walking* and the watch will wind itself. Click any part to fade it and see what is underneath.
 
 The one thing worth knowing before anything else: **there is no animation in this**. Nothing has a keyframe, nothing is told what angle to be at, and the seconds hand is not advancing once a second because a timer fired. A balance wheel is solving an equation of motion at five thousand steps a second, an escapement is converting its swings into rotation, and the hands are geared off the result. If the rate comes out wrong, it comes out wrong, and you can watch it happen.
 
@@ -107,6 +107,12 @@ $$
 
 The beat period is 0.2 s and the timestep is 0.2 ms. The escapement code was returning early when it released the tooth, skipping the balance's integration for exactly one step per beat. One missing line, one part in a thousand, and a watch that would have lost an hour and a half a month.
 
+The rotor, added later, produced two more that the harness caught and the screen never would have.
+
+The first was a **perpetual motion machine made of stiction**. The winding load resists the rotor only while the rotor is moving, so I wrote it as a torque opposing the current direction and zeroed the rate when the load reversed it inside a step. That reads as sensible and is a ratchet: stopped means no load, no load means it accelerates freely, moving means the load reverses it, which means stopped. Each cycle of that accumulates a little $|\Delta\phi|$, and $|\Delta\phi|$ is what winds the watch. It wound a dead mainspring to full in half an hour off nothing but the integrator. The fix is to treat the load as what it is — dry friction — and integrate it that way: find where the rotor would go unresisted, then let the load take away at most enough to stop it dead. A stalled rotor then stays exactly stalled.
+
+The second only showed up in the comparison between the two integrators. At high speed the balance is replaced by its own steady state, but a rotor has no steady state to jump to — it is driven by a wrist, not by a spring — so the fast path runs a couple of seconds of wrist motion properly and takes the average. That works. What did not work was that I then spun the rotor's *drawn* angle forward to cover the rest of the slice, which felt like a cosmetic detail and quietly overwrote the physical state the next sample would start from. Every sample began with the rotor dropped somewhere it would never have been, measured it falling out of that position, and reported the fall as the winding rate. The watch wound about twice as fast as it should, consistently enough to look deliberate. The two integrators now agree to within **1%** at every activity and every state of wind, which is the check that found it and the check that says it is fixed.
+
 ## Laying it out
 
 A gear mesh fixes exactly one thing: the distance between two arbors is the sum of their pitch radii. So the plan of a movement is a chain of rigid links with free joints, and designing one is choosing the angles.
@@ -127,6 +133,67 @@ Here is the part that is genuinely clever. The minute hand is not fixed to the c
 
 Winding it from empty takes **14.15 turns of the crown** for five and a half turns in the barrel, which is about right, and about as tedious as the real thing.
 
+## Winding it without touching it
+
+Now put it on a wrist. The **Wrist** control at the top decides what the wearer is doing, and everything downstream of it follows.
+
+The part doing the work is the **rotor**: a crescent of tungsten on a ball race, free to swing either way about the middle of the watch. Fade it up to solid and you can see how much of the movement it covers, which is the standing complaint about automatics and the reason so many of them are skeletonised.
+
+The first thing to get straight is what actually turns it, because the obvious answer is wrong. A rotor does not spin because your wrist spins it. It spins because your wrist spins *the watch* while the rotor, hanging on a very good bearing, more or less stays where it was. The winding is the difference between the two. That is why the equation of motion is written in the watch's own frame, with $\phi$ the rotor's angle relative to the watch and $\psi$ the watch's own rotation:
+
+$$
+I\ddot{\phi} = m r\left(\cos\phi \cdot f_y - \sin\phi \cdot f_x\right) - c\dot{\phi} - \tau_{\text{load}} - I\ddot{\psi}
+$$
+
+That last term is the whole idea. It is the Euler force — the watch turning out from under the rotor — and it is not a correction to the gravity term, it is a peer of it. A rotor on a good enough bearing barely needs gravity at all.
+
+The second thing is that $f$ is not gravity. It is the **specific force**: gravity minus the frame's acceleration, which is what an accelerometer reads and what a weight on a pivot actually responds to. Modelling only gravity would mean the rotor could be driven by *tilting* the watch and by nothing else, and that gets walking badly wrong, because a good half of the energy in a swinging arm is in the acceleration rather than the change of angle.
+
+So the wrist model is an arm swinging as a pendulum, and each activity carries two numbers that have to be kept separate: how far the watch **turns**, and the radius of the arc it **travels on**. An arm swinging from the shoulder carries the watch on a 60 cm arc and throws it about. A hand turning over at a keyboard rotates the watch just as far while barely moving it anywhere. Collapse those into one number — which is what I did first — and desk work comes out either as no winding at all or as half a g of shaking, depending on which end you tune it from.
+
+And leave the watch on a table and nothing happens at all, which falls straight out of the same equations rather than being a special case. Lying dial up, gravity points down the rotor's axis, where the rotor has no leverage on it whatsoever. Every preset carries a `lean` — how much of gravity lies in the plane the rotor turns in — and for the table it is zero.
+
+### A hundred to one, and why it cannot be fewer stages
+
+Here is the number that shapes the whole module. The mainspring at full wind wants 2.3 mN·m at the barrel. Referred back through the automatic work at 55% efficiency, the rotor has to pull against
+
+$$
+\tau_{\text{load}} = \frac{2.3 \times 10^{-3}}{N \eta}
+$$
+
+and the most the rotor can ever offer is $mr\,g$, which for a few grams of tungsten at seven tenths of a 12 mm radius is about 235 µN·m. Set $N = 100$ and the load is 42 µN·m — a margin of 5.6, which sounds generous and is not, because the rotor only makes its full torque when it is lying sideways and makes *none* at all at the bottom of its swing. A rotor that could only just wind a slack mainspring would give up half way up.
+
+A hundred to one cannot be done in one stage. A wheel-and-pinion pair on a 2 mm wheel gets you about five to one, and the reversing wheel contributes nothing at all to the ratio because it is a pure idler — its tooth count cancels. So it is three meshes: a 9-leaf rotor pinion into a 45-tooth reduction wheel, an 8-leaf reduction pinion into a 40-tooth reversing wheel, and a 9-leaf reversing pinion into the same 36-tooth ratchet wheel the crown winds through. Five times five times four is exactly a hundred, and a full wind is **550 turns of the rotor**.
+
+Finding somewhere to put those two wheels was the same problem as laying out the going train, and more constrained, because both ends were already nailed down: the rotor turns about the middle of the watch and the ratchet wheel is on the barrel arbor. Three fixed link lengths and one free angle. Sweeping that angle and asking which setting left the most room put it at 141.5°, which drops the module into the empty quadrant above the barrel with both new pivots about 1.7 mm clear of the click's.
+
+What surprised me was how little else constrains it. The automatic work sails straight over the ratchet, the click, the crown wheel and half the going train without touching any of it, purely by being a millimetre higher up — which is why a module like this can be bolted onto a hand-wound calibre, and why historically so many of them were. Only two kinds of thing actually conflict: bodies that share a level, and arbors, which have to run down through every level to a pivot and so collide with everything on the way.
+
+### The reverser and the bridle
+
+Two more parts exist because the rotor is not a crank.
+
+The **reverser** is why the rotor winds in both directions. Whichever way it goes, one pawl bites and the other free-wheels, so the ratchet wheel only ever turns the winding way. Early automatics that wound in one direction only threw away half of every swing. In the model this is just $\Delta\text{wind} = |\Delta\phi| / N$, but it is visible in the scene: the rotor pinion and the reduction wheel follow the rotor, backwards and all, while the reversing wheel follows the ratchet, which only goes one way. The two disagree, and the disagreement *is* the reverser.
+
+The **slipping bridle** is why a rotor cannot burst a mainspring. The spring's outer end is not hooked to the barrel wall; it is pressed against it by friction. Walk for an hour with a full spring and the arbor keeps turning and the outer end simply slides. The model keeps the turns wound in and the turns slipped away as separate quantities, so the arbor angle carries on climbing — the ratchet wheel really does keep turning — while the tension sits pinned at 5.5. Select the **Slipping bridle** and watch the band creep round the barrel wall; that creep is a rotor winding into nothing.
+
+### What the numbers say
+
+Running each activity headlessly, against an empty barrel and then against a full one:
+
+| Wrist | Rotor | Turns/h in | Spent/h | From dead |
+| --- | --- | --- | --- | --- |
+| On the table | 0 rpm | 0.00 | 0.125 | never |
+| Worn, sitting still | 1 rpm | 0.83 | 0.125 | stalls at 0.4 turns |
+| At a desk | 9 rpm | 5.46 | 0.125 | full in 2.0 h |
+| Walking | 22 rpm | 13.1 | 0.125 | full in 0.7 h |
+| Walking briskly | 46 rpm | 27.9 | 0.125 | full in 0.3 h |
+| Running | 95 rpm | 56.7 | 0.125 | full in 0.2 h |
+
+The going train costs an eighth of a turn an hour. Walking supplies a hundred times that. An automatic does not politely top itself up — it overwhelms the watch, and then slips, and spends essentially its whole life pinned at full wind. Eight hours of walking from full gives up **56 turns** at the bridle.
+
+The two rows at the top are the interesting ones. Worn but motionless, the rotor winds — and then stalls at four tenths of a turn and stays there, because it is only ever driven by the *misalignment* between where it hangs and where gravity is, and once the spring is strong enough that misalignment cannot supply the torque. The watch never reaches a healthy amplitude. Nothing enforces that; it falls out of a 5.6× margin that is 5.6× only at the worst possible moment.
+
 ## Two adjustments, and what happens when you push them
 
 A watch has exactly two things you can change, and both are in the panel.
@@ -143,6 +210,12 @@ A movement is five layers of overlapping metal in four millimetres, and the only
 
 Selecting a part highlights it and tells you what it is for. The **Bridges off** preset is the one to start with — it is the view a watchmaker gets by taking four screws out. **Escapement only** fades everything except the escape wheel, fork, balance and hairspring, and is worth looking at with the speed slowed to a fiftieth.
 
+The rotor is the extreme case, which is why it starts as a ghost: it is a solid disc very nearly as wide as the movement, and with it opaque there is no watch to look at at all. Fading is not always enough, though, because a ghost of the thing in front is still a thing in front. So the movement also comes apart, in two directions, and they do different jobs. **Lift** slides every part along the axis it was assembled on, in proportion to the height it sits at — which is the only way to see that the barrel, the ratchet wheel and the crown wheel are three separate wheels stacked inside a millimetre and a half, and it is exactly the order a watchmaker meets them in. **Spread** opens the plan out sideways instead. That one is a *dilation* about the middle of the watch, every part moving to its own position times a common factor, and it is worth being deliberate about why: a dilation multiplies every distance between every pair of parts by the same number, so nothing can end up on top of anything else. Push each part outward by a fixed amount instead and two wheels that happen to lie on the same bearing from the centre never separate at all. **Reassemble** puts it back.
+
+And once a part is out in the open, **Look closely** flies the camera in until it fills the frame, knocking anything in the way down to a ghost on the way past. This is more useful than it sounds, because the interesting parts are the small ones. The pallet fork is two and a half millimetres from horn to horn, and the click is a millimetre long.
+
+It is also the most effective bug-finder in the whole project. The first thing I pointed it at was the click, and the click's nose was sitting a full millimetre *inside* the ratchet wheel — invisible at any sensible zoom and unmissable close up. Fixing that properly meant noticing that where the nose goes was never a free choice: the pivot is somewhere, the wheel's root circle is somewhere, and the nose has to be on that circle, which is a triangle with all three sides known. The cosine rule gives the angle and the only thing left to decide is its sign. And then, with the click finally in the right place, the close-up showed the next problem — the ratchet wheel had ordinary going-train teeth, and a pawl cannot engage those. It is the one wheel in the watch that is not a gear, because it is the one wheel whose job is to refuse to turn, so it wants saw teeth with a radial cliff. It has them now.
+
 ## Where it is wrong
 
 **The hairspring is perfectly linear** and perfectly flat, and real ones are neither. A real spring's coils breathe unevenly, its centre of gravity moves as it winds and unwinds, and that motion is a large part of a real watch's positional errors. Here it only draws a spiral; the restoring torque is $-k\theta$ and nothing else.
@@ -152,6 +225,8 @@ Selecting a part highlights it and tells you what it is for. The **Bridges off**
 **The train has no inertia during drop.** Modelling the escapement as a rigid coupling is what made the problem tractable, but it means the escape wheel is a massless follower of the balance during contact, and the train's own inertia only appears as a fixed efficiency factor. Drop happens instantly. In a real escapement the wheel's inertia during drop is exactly what causes the tooth to bounce off the lock, and the design of the safety roller exists to catch that.
 
 **There is no temperature.** Real hairsprings change stiffness with heat, and the invention of a hairspring alloy that did not is one of the more important events in the subject.
+
+**The wrist is too well behaved.** It is two sinusoids at an incommensurate ratio, which never quite repeats and so does not look like a metronome, but a real arm is nothing like that: it stops, reaches, rests on a table, gets waved about, and spends a good part of the day doing nothing at all. Real winding efficiency is measured on machines that replay recorded wrist traces, precisely because no closed form is any good. The rotor also feels only the in-plane part of the specific force, so the watch is effectively always presented to the swing the same way round.
 
 **The crown is on the left when you look at the dial.** The movement is laid out for viewing from the bridge side, and the dial view is the same geometry seen from behind, so the stem ends up at nine o'clock. Left-crown watches exist, and I have decided this is one.
 
@@ -163,7 +238,15 @@ Selecting a part highlights it and tells you what it is for. The **Bridges off**
 - Slow the speed to 1/50 and choose **Escapement only**. One beat takes ten seconds and you can see all four stages: the fork sitting on its banking pin, the roller jewel arriving and shoving it, the escape wheel surging, and the drop onto the other pallet.
 - Push the mainspring slider to 1.5× and watch the amplitude gauge go red. Then bring it back and notice that the amplitude takes nearly a minute of simulated time to settle — the balance's energy time constant is about fifty seconds, which is why a watchmaker on a timing machine waits before believing the reading.
 - Run the regulator from end to end with the rate readout visible. Nothing else in the watch changes and the rate moves by six minutes a day.
-- Slide **Apart** to pull the movement open along its axis, and drag to rotate while you do it — head on it just looks like a watch. Each part lifts by the height it was assembled at, so it separates into layers in the order a watchmaker meets them: cock on top, then bridges, then the train, then the plate, with the dial side dropping away underneath.
+- Run **Spread** to the end. Nineteen parts that overlapped each other are suddenly all visible at once, still turning, still driving each other. Then add some **Lift** and drag to rotate: the layers pull apart as well, and the barrel, its ratchet wheel and the crown wheel separate into the three wheels they actually are.
+- Select the **Click and spring** and press **Look closely**. A pawl a millimetre long, sitting in a notch between two saw teeth, with a blued blade holding it there. Then wind the crown and watch it ride over the teeth one at a time — one tooth is one audible click of a watch being wound.
+- Do the same with the **Pallet fork** and slow the speed right down. Two jewels and a slot, and it is the only thing standing between the mainspring and the train running away in a second and a half.
 - Select **Motion work** in the parts list and read what the cannon pinion does, then pull the crown and set the time. It is the only part in the watch that is meant to slip.
+- Press **Let it down**, set the wrist to **Walking**, and run the speed up to ×1800. The watch starts within a minute or two of simulated time and is full in about forty. Then set the wrist to **On the table** and watch the reserve drain for forty-four hours.
+- Set the wrist to **Worn, sitting still** on a let-down watch and leave it at high speed. It winds, then stops winding, and settles at four tenths of a turn with an amplitude that never gets healthy. A rotor needs a wrist that actually moves, and this is what "actually" means.
+- Fade the **Rotor** to solid and look at how little of the watch is left. Then set it back to see-through — that is the compromise every display-back automatic makes.
+- Run the wrist to **Running** and the speed to ×1 and just watch the rotor. It does not swing; it goes right round, several times a second, and reverses whenever a stride does.
+- With the bridle slipping, select the **Slipping bridle** and press **Look closely**. The band creeps round the barrel wall while the ratchet wheel keeps turning — the arbor is still being wound and the turns are going nowhere.
+- Use **Spread** with the rotor solid. The rotor stays where it is, because it is homed on the middle of the watch, and everything else walks out from under it.
 
 If you like watching simple rules produce structure rather than being told what the structure is, [building molecules out of two rules](/blog/molecule-builder) gets tetrahedral methane and a cyclohexane chair out of bond lengths and inverse-square repulsion, with no table of angles anywhere.

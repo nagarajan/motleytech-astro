@@ -11,6 +11,7 @@ const result = runCollapse({
   endTime: end,
   maxSteps: Number(process.env.MAXSTEPS ?? '200000'),
 });
+console.log(`failed=${result.failed}`);
 console.log(`steps ${result.steps}, frames ${result.frames.length}, wall ${(result.elapsed / 1000).toFixed(1)}s, bounce ${(result.bounceTime * 1e3).toFixed(1)}ms`);
 
 const want = (process.env.AT ?? '0.005,0.05,0.15,0.3').split(',').map(Number);
@@ -52,6 +53,7 @@ for (const f of result.frames) {
       `${(f.shockRadius / 1e5).toFixed(0).padStart(9)} ${(f.coreRadius / 1e5).toFixed(0).padStart(6)} ` +
       `${(f.neutrinoSphere / 1e5).toFixed(0).padStart(6)} ${(f.coreMass / M_SUN).toFixed(3).padStart(7)} ` +
       `${f.centralDensity.toExponential(2)}  ${f.neutrinoLuminosity.toExponential(2)}   ` +
-      `${(f.explosionEnergy / 1e51).toFixed(3).padStart(8)}  ${(f.nickel / M_SUN).toFixed(3)}`,
+      `${(f.explosionEnergy / 1e51).toFixed(3).padStart(8)}  ${(f.nickel / M_SUN).toFixed(3)}  ` +
+      `dt=${f.dt.toExponential(1)} ${f.limitCause}@${f.limitZone} r=${(f.r[f.limitZone + 1] / 1e5).toExponential(1)}km`,
   );
 }

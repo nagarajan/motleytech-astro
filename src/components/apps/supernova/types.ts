@@ -75,6 +75,11 @@ export interface Frame {
   ejectaMass: number;
   /** Fastest outward velocity anywhere, in cm/s. */
   peakVelocity: number;
+  /** Which zone set the timestep, and why. Diagnostic, but a revealing one. */
+  limitZone: number;
+  limitCause: string;
+  /** Timestep in seconds at the moment this frame was taken. */
+  dt: number;
 }
 
 export interface RunSettings {

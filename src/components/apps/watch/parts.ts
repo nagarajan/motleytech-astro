@@ -554,4 +554,81 @@ export function ratchetGeometry(teeth: number, radius: number, thickness: number
   return geometry;
 }
 
+// ---------------------------------------------------------------- the rotor
+
+/**
+ * The rotor's arm: a disc with most of it cut away, leaving a hub, a ring at the rim and
+ * a pair of spokes between them.
+ *
+ * All of this is the wrong way round from every other wheel in the watch. A train wheel is
+ * lightened because inertia there is energy the balance never sees, so the crossings are
+ * cut to leave as little metal as possible. The rotor is lightened for the opposite
+ * reason: the metal that matters is the heavy segment on one side, and every gram anywhere
+ * else is a gram that is *symmetrical*, and symmetrical mass is mass that produces no
+ * turning moment at all while still having to be accelerated. Cutting the arm away does not
+ * make the rotor lighter in any useful sense — it makes it more lopsided, which is the only
+ * property a rotor has.
+ */
+export function rotorArmGeometry(radius: number, thickness: number): THREE.ExtrudeGeometry {
+  const hub = radius * 0.19;
+  // The ring left at the rim is thin, because the arm is not there to be metal. Everything
+  // between the hub and that ring comes out, and what shows through the gap on the side
+  // away from the weight is the movement — which is the only reason to skeletonise a rotor
+  // rather than just making it lighter.
+  const rim = radius * 0.93;
+  const shape = new THREE.Shape(arc(radius, 0, TAU, 96));
+  shape.holes.push(new THREE.Path(arc(hub * 0.4, 0, TAU, 24)));
+
+  // Two openings, so what is left is two spokes on the axis of the weight. Along that axis
+  // rather than across it because the spokes have to carry the weight's moment back to the
+  // bearing, and a spoke is only stiff along its own length.
+  const spokeHalf = 0.28;
+  for (const side of [0, Math.PI]) {
+    shape.holes.push(
+      new THREE.Path([
+        ...arc(hub, side + spokeHalf, side + Math.PI - spokeHalf, 14),
+        ...arc(rim, side + Math.PI - spokeHalf, side + spokeHalf, 30),
+      ]),
+    );
+  }
+
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: thickness,
+    bevelEnabled: false,
+    curveSegments: 8,
+  });
+  geometry.translate(0, 0, -thickness / 2);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+/**
+ * The weight: a thick segment of tungsten filling a little under half the circle.
+ *
+ * Under half, and that is the point. A half-disc has its centre of gravity at 4r/3π, about
+ * 42% of the radius; pulling the segment in to a crescent that hugs the rim moves it out
+ * past 70%, and since the only number the physics cares about is mass times that distance,
+ * the same metal bought nearly twice the torque by being put somewhere else.
+ *
+ * It grows upwards from the arm rather than straddling it, because downwards is the balance
+ * cock, and there is about a third of a millimetre between them.
+ */
+export function rotorWeightGeometry(
+  radius: number,
+  inner: number,
+  span: number,
+  thickness: number,
+): THREE.ExtrudeGeometry {
+  const from = -span / 2;
+  const to = span / 2;
+  const shape = new THREE.Shape([...arc(radius, from, to, 48), ...arc(inner, to, from, 32)]);
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: thickness,
+    bevelEnabled: false,
+    curveSegments: 8,
+  });
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
 export { TAU, arc };

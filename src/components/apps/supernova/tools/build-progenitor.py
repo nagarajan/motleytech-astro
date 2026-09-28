@@ -50,11 +50,18 @@ SPECIES = ['h', 'he', 'c', 'o', 'si', 'fe', 'free']
 # from one to two with no effect whatsoever.
 #
 # Everything below 1.3 solar masses is excised within milliseconds of bounce and needs only
-# enough zones to collapse properly. The hydrogen envelope holds two thirds of the star's
-# mass and matters only hours later, when the shock finally reaches it; it is graded by log
-# radius, which is the coordinate a shock crosses evenly.
-BY_MASS = [(1.30, 60), (1.80, 320), (4.50, 60)]
-BY_LOG_RADIUS = 50
+# enough zones to collapse properly.
+#
+# The handover from mass grading to log radius happens at 4.25 solar masses, below the edge
+# of the helium core rather than above it, and the exact placement matters. Sitting on that
+# edge is the steepest feature in the star: density falls six orders of magnitude across
+# about a fifth of a solar mass, which the source paper singles out as the one place its
+# own resolution struggles. Graded by mass, four zones covered the whole cliff and one of
+# them spanned a factor of four in radius; that single zone then set the timestep for the
+# entire second half of the run, long after the shock had passed it. Graded by log radius,
+# which is what a shock crosses evenly, the cliff costs a handful of ordinary zones.
+BY_MASS = [(1.30, 60), (1.80, 320), (4.25, 45)]
+BY_LOG_RADIUS = 65
 
 
 def read_model(path):

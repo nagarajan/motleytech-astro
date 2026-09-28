@@ -42,6 +42,18 @@ export const R = {
   slidingPinion: 0.72,
   settingWheel: 1.5,
   roller: 0.78,
+
+  // The automatic work. Each pair shares a module, as any pair that means to mesh must:
+  // 1/9 for the rotor pinion into the reduction wheel, 0.13 for the reduction pinion into
+  // the reversing wheel, and 2/15 for the reversing pinion into the ratchet.
+  rotorPinion: 0.5,
+  reduction: 2.5,
+  reductionPinion: 0.52,
+  reversing: 2.6,
+  reversingPinion: 0.6,
+
+  /** The rotor itself, which is nearly as big as the movement and deliberately so. */
+  rotor: 12.2,
 } as const;
 
 /** Pinion pitch radii, each one the wheel it meshes with divided by the step-up. */
@@ -133,6 +145,38 @@ const CLICK = step(BARREL, R.ratchet + 0.52, 200 * D);
 /** The balance cock is footed clear of the balance and reaches back over its middle. */
 const COCK_FOOT = step(BALANCE, R.balance + 0.95, 55 * D);
 
+/**
+ * The automatic work, which is the same kind of problem as the going train and rather more
+ * constrained, because both of its ends are already nailed down. The rotor turns about the
+ * middle of the watch and the ratchet wheel is on the barrel arbor, so the chain between
+ * them has three fixed link lengths and only one free angle. Sweeping that angle
+ * (`auto-solve.ts`) and asking which setting leaves the most room put it at 141.5°, which
+ * drops the module into the empty quadrant above the barrel and keeps both new pivots
+ * about 1.7 mm clear of the click's.
+ *
+ * What it is *not* constrained by is most of the movement. The automatic work sits above
+ * everything else and sails straight over the ratchet, the click, the crown wheel and half
+ * the going train without touching any of it — which is why a module like this can be
+ * bolted onto a hand-wound calibre, and why so many of them were.
+ */
+const REVERSING = step(BARREL, R.reversingPinion + R.ratchet, 141.5 * D);
+
+/**
+ * And the reduction wheel follows from it: the one point at the right distance from both
+ * the rotor's arbor and the reversing wheel's. Two circles, two crossings, and the one
+ * taken is the one further from the click.
+ */
+const REDUCTION: Spot = (() => {
+  const toRotor = R.rotorPinion + R.reduction;
+  const toReversing = R.reductionPinion + R.reversing;
+  const span = Math.hypot(REVERSING.x, REVERSING.y);
+  const along = (toRotor * toRotor - toReversing * toReversing + span * span) / (2 * span);
+  const off = Math.sqrt(Math.max(0, toRotor * toRotor - along * along));
+  const ux = REVERSING.x / span;
+  const uy = REVERSING.y / span;
+  return { x: along * ux - off * uy, y: along * uy + off * ux };
+})();
+
 export const SPOT = {
   centre: CENTRE,
   barrel: BARREL,
@@ -147,6 +191,8 @@ export const SPOT = {
   minuteWheel: MINUTE_WHEEL,
   click: CLICK,
   cockFoot: COCK_FOOT,
+  reduction: REDUCTION,
+  reversing: REVERSING,
 } as const;
 
 /**
@@ -194,6 +240,19 @@ export const Z = {
   // shows up as a stripe of z-fighting running the length of the arm.
   hairspring: 3.14,
   cock: 3.42,
+
+  // The automatic work, stacked upwards from the ratchet wheel it drives. Each wheel sits
+  // at the level of the pinion that turns it and carries its own pinion at the next level
+  // down, so the whole module climbs half a millimetre a stage and ends up above the
+  // balance cock — where the rotor has to be anyway, since it sweeps over everything.
+  reversingPinion: 2.1,
+  reversingWheel: 2.62,
+  reductionPinion: 2.62,
+  reductionWheel: 3.16,
+  rotorPinion: 3.16,
+  // Underside at 3.70, against the top of the balance cock at 3.57. That is a third of a
+  // millimetre, which sounds like nothing and is what the whole watch has to spare.
+  rotor: 3.95,
 } as const;
 
 export const THICK = {
@@ -209,6 +268,9 @@ export const THICK = {
   balanceRim: 0.5,
   hairspring: 0.22,
   mainspring: 1.0,
+  /** The rotor is thin in the arm and thick in the weight; this is the arm. */
+  rotor: 0.5,
+  rotorWeight: 1.5,
 } as const;
 
 /** The stem runs out to three o'clock. The crown is the only part outside the case. */
@@ -219,7 +281,7 @@ export const CROWN_PULL = SLIDING_OUT - SLIDING_IN;
 
 // ---------------------------------------------------------------- the parts list
 
-export type Group = 'power' | 'train' | 'escapement' | 'keyless' | 'dial' | 'frame';
+export type Group = 'power' | 'auto' | 'train' | 'escapement' | 'keyless' | 'dial' | 'frame';
 
 export interface PartInfo {
   id: string;
@@ -257,6 +319,30 @@ export const PARTS: PartInfo[] = [
     label: 'Click and spring',
     group: 'power',
     note: 'A pawl held against the ratchet by a spring. The only thing between a wound mainspring and the crown spinning out of your fingers.',
+  },
+  {
+    id: 'rotor',
+    label: 'Rotor',
+    group: 'auto',
+    note: 'A half-disc of tungsten on a ball race, free to turn either way. It does not spin because the wrist spins it — it stays still while the watch turns underneath, and that difference is the winding.',
+  },
+  {
+    id: 'reduction',
+    label: 'Reduction wheel',
+    group: 'auto',
+    note: 'First of two reductions between the rotor and the barrel. Together they give 100 rotor turns per turn of the arbor, which is what makes a few grams of metal strong enough to pull against a mainspring.',
+  },
+  {
+    id: 'reversing',
+    label: 'Reversing wheel',
+    group: 'auto',
+    note: 'The part that lets the rotor wind both ways. Whichever way it turns, one pawl bites and the other free-wheels, so the ratchet wheel only ever goes the winding way.',
+  },
+  {
+    id: 'bridle',
+    label: 'Slipping bridle',
+    group: 'auto',
+    note: 'The mainspring’s outer end, pressed against the barrel wall by friction rather than hooked to it. When the spring is full the rotor keeps winding and the end simply slips, which is the only reason a rotor cannot burst a mainspring.',
   },
   {
     id: 'centre',
@@ -376,6 +462,7 @@ export const PARTS: PartInfo[] = [
 
 export const GROUP_NAMES: Record<Group, string> = {
   power: 'Power',
+  auto: 'Automatic winding',
   train: 'Going train',
   escapement: 'Escapement',
   keyless: 'Winding and setting',
@@ -383,6 +470,14 @@ export const GROUP_NAMES: Record<Group, string> = {
   frame: 'Frame',
 };
 
-export const GROUP_ORDER: Group[] = ['power', 'train', 'escapement', 'keyless', 'dial', 'frame'];
+export const GROUP_ORDER: Group[] = [
+  'power',
+  'auto',
+  'train',
+  'escapement',
+  'keyless',
+  'dial',
+  'frame',
+];
 
 export { D, KEYLESS, MOTION_WORK };
