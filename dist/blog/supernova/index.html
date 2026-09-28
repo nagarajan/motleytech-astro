@@ -1,0 +1,290 @@
+<!DOCTYPE html><html lang="en" data-theme="nebula"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v6.0.8"><meta name="description" content="A core-collapse supernova, solved rather than animated: five hundred shells of a real published stellar model, an equation of state, and a hundred thousand timesteps covering eighteen hours and eight orders of magnitude. Watch the core fall, the shock stall, and the neutrinos push it back out — or turn them down and watch the star disappear instead."><link rel="icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="MotleyTech" href="/rss.xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><title>Iron does not burn | MotleyTech</title><!-- Applied before first paint so the chosen theme never flashes. --><script>(function(){const themeIds = ["nebula","synthwave","matrix","ember","aurora","quartz"];
+const defaultTheme = "nebula";
+
+      (function () {
+        var stored = null;
+        try {
+          stored = window.localStorage.getItem('motleytech-theme');
+        } catch (error) {
+          stored = null;
+        }
+        var theme = themeIds.indexOf(stored) === -1 ? defaultTheme : stored;
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    })();</script><script async src="https://www.googletagmanager.com/gtag/js?id=G-V8WZYM91B4"></script><script>(function(){const gaId = "G-V8WZYM91B4";
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', gaId);
+    })();</script><link rel="stylesheet" href="/_astro/BaseLayout.BShXWbRi.css"><link rel="stylesheet" href="/_astro/supernova.CVi43vMa.css"></head> <body> <header class="site-header"> <div class="shell topbar"> <div class="topbar-main"> <a href="/" class="site-title"><span class="gradient-text">MotleyTech</span></a> <nav id="site-nav" class="site-nav" aria-label="Primary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-controls="menu-panel" aria-expanded="false"> <span class="hamburger-icon" aria-hidden="true"> <span></span> <span></span> <span></span> </span> </button> <div id="menu-panel" class="menu-panel"> <div class="theme-row"> <label for="theme-select" class="theme-label">Theme</label> <select id="theme-select" class="theme-select" aria-label="Select theme"> <option value="nebula">Nebula</option><option value="synthwave">Synthwave</option><option value="matrix">Matrix</option><option value="ember">Ember</option><option value="aurora">Aurora (light)</option><option value="quartz">Quartz (light)</option> </select> </div> <nav class="menu-nav" aria-label="Secondary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> </div> </header> <main class="shell site-main">  <article class="post-content"> <p class="kicker">Blog</p> <h1>Iron does not burn</h1> <p class="post-meta"> <time datetime="2026-09-27T00:00:00.000Z"> September 27, 2026 </time>  <span aria-hidden="true">&middot;</span> <span>12 min read</span>  <span aria-hidden="true">&middot;</span> <a href="/categories/blog">Blog</a> </p> <figure class="post-hero"> <img class="trailer-media-blur" src="/images/demos/supernova.webp" alt="" aria-hidden="true"> <img src="/images/demos/supernova.webp" alt="A star in cross-section on a logarithmic radial scale: a white-hot proto-neutron star at the centre, a distorted shock front a few hundred kilometres out, and the banded silicon, oxygen, helium and hydrogen layers of the progenitor beyond it, against a field of stars and distant galaxies"> </figure> <div class="post-tags"> <a class="tag" href="/tags/astrophysics">Astrophysics</a><a class="tag" href="/tags/3d">3D</a><a class="tag" href="/tags/javascript">Javascript</a><a class="tag" href="/tags/physics">Physics</a><a class="tag" href="/tags/simulation">Simulation</a><a class="tag" href="/tags/nuclear">Nuclear</a> </div>  <p>Press the button and wait about a minute. What happens after that is not an animation — there are no keyframes in here, and nothing is told where to be. Five hundred shells of gas are solving the equations of motion under their own gravity, with a real equation of state and real nuclear physics, and the shock front you will watch climb out of the middle is there because the arithmetic put it there.</p>
+<style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>Number.POSITIVE_INFINITY*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="Z1RfKS7" prefix="r1" component-url="/_astro/SupernovaApp.DwC2gBmE.js" component-export="default" renderer-url="/_astro/client.DIQWfPlE.js" props="{}" ssr client="visible" opts="{&quot;name&quot;:&quot;SupernovaApp&quot;,&quot;value&quot;:true}" await-children><div class="sn"><div class="sn-bar"><button type="button" class="sn-btn sn-btn--primary">Collapse the star</button><label class="sn-field sn-field--wide">Neutrino heating<input class="sn-slider" type="range" min="0.5" max="1.8" step="0.05" aria-label="How efficiently neutrinos deposit energy behind the stalled shock" value="1"/><span class="sn-readout">×<!-- -->1.00</span></label><span class="sn-spacer"></span><span class="sn-field">Speed<select class="sn-select" aria-label="Playback speed"><option value="0.125">⅛</option><option value="0.25">¼</option><option value="0.5">½</option><option value="1" selected="">×1</option><option value="2">×2</option><option value="4">×4</option></select></span><button type="button" class="sn-btn" disabled="">◀ Step</button><button type="button" class="sn-btn" disabled="">Play</button><button type="button" class="sn-btn" disabled="">Step ▶</button></div><div class="sn-panes"><div class="sn-stage"><canvas class="sn-canvas" tabindex="0" aria-label="A star in cross-section, cut in half. Drag to orbit, scroll to move the camera."></canvas><div class="sn-splash"><p>Twelve and a half solar masses of star, on the last day of its life. Press<strong> Collapse the star</strong>.</p><p class="sn-splash-small">It takes about a minute. Every frame after that is solved, not drawn: five hundred shells of gas, an equation of state, and a hundred thousand timesteps.</p></div><p class="sn-legend-line">drag to orbit · scroll to zoom the camera · ← → to step · space to play</p></div><div class="sn-side"><section class="sn-block"><h3 class="sn-head">Colour<span>Composition</span></h3><div class="sn-modes"><button type="button" class="sn-chip sn-chip--on">Composition</button><button type="button" class="sn-chip">Entropy</button><button type="button" class="sn-chip">Temperature</button><button type="button" class="sn-chip">Density</button><button type="button" class="sn-chip">Velocity</button><button type="button" class="sn-chip">Nuclear burning</button></div><ul class="sn-legend"><li><span class="sn-swatch" style="background:rgb(107,140,235)"></span>H</li><li><span class="sn-swatch" style="background:rgb(89,199,219)"></span>He</li><li><span class="sn-swatch" style="background:rgb(115,133,148)"></span>C</li><li><span class="sn-swatch" style="background:rgb(92,194,143)"></span>O/Ne</li><li><span class="sn-swatch" style="background:rgb(235,184,79)"></span>Si/S</li><li><span class="sn-swatch" style="background:rgb(217,92,64)"></span>Fe/Ni</li><li><span class="sn-swatch" style="background:rgb(240,237,224)"></span>n, p</li></ul></section><section class="sn-block"><h3 class="sn-head">View<span>following the shock</span></h3><div class="sn-modes"><button type="button" class="sn-chip">Cut face</button><button type="button" class="sn-chip">Three-quarter</button><button type="button" class="sn-chip">Edge on</button><button type="button" class="sn-chip">Behind</button></div><label class="sn-field sn-field--wide">Out to<input class="sn-slider" type="range" min="7" max="14.3" step="0.05" disabled="" aria-label="How far out the picture reaches" value="9.2"/><span class="sn-readout">0.02 R☉</span></label><label class="sn-field sn-field--wide">Asymmetry<input class="sn-slider" type="range" min="0" max="1" step="0.02" aria-label="Strength of the illustrative multidimensional overlay" value="0.45"/><span class="sn-readout">45<!-- -->%</span></label><div class="sn-toggles"><label class="sn-check"><input type="checkbox" checked=""/>Follow the shock</label><label class="sn-check"><input type="checkbox" checked=""/>Decade rings</label><label class="sn-check"><input type="checkbox" checked=""/>Shock marker</label><label class="sn-check"><input type="checkbox"/>Slowly turn</label></div><p class="sn-fine">The radial axis is logarithmic: each ring is a factor of ten. It has to be — the neutron star is twelve kilometres across and the envelope reaches six hundred million.</p></section></div></div></div><!--astro:end--></astro-island>
+<p>The radial axis is logarithmic, and it has to be. The neutron star that forms in the middle is about twelve kilometres across; the star it forms inside reaches six hundred million. On a linear scale, any picture showing the second has the first occupying substantially less than one pixel. The clock is logarithmic too: the recorded frames are spaced evenly in the <em>logarithm</em> of time since bounce, so playing them at a steady rate spends as long on the first millisecond as on the following ten hours. That is the only way a single playback covers the whole thing.</p>
+<h2 id="three-things-i-had-wrong">Three things I had wrong</h2>
+<p>I built this because I wanted to watch a star explode, and I started from a picture I was fairly confident about. The picture was wrong in three specific places, and they turn out to be the three places where the real mechanism is interesting.</p>
+<h3 id="iron-does-not-start-fusing">Iron does not start fusing</h3>
+<p>The version I had: the iron core gets hotter and denser until it starts to fuse, and because iron fusion is endothermic the core cools, contracts, fuses harder, and runs away.</p>
+<p>Iron never fuses. It cannot, in any useful sense — iron-56 and nickel-62 sit at the bottom of the nuclear binding energy curve, which is exactly what makes them ash. There is no reaction available that takes iron and gives energy back, so there is nothing to run away.</p>
+<p>What actually removes the pressure is two other processes, and neither is fusion:</p>
+<p><strong>Photodisintegration.</strong> At around 10¹⁰ K the thermal photon bath contains photons energetic enough to knock iron nuclei apart, back into alpha particles and then into free protons and neutrons. This is the reverse of fusion and it consumes about 124 MeV per iron nucleus taken apart — energy stolen from the thermal pool, which is what the core was partly using to hold itself up.</p>
+<p><strong>Electron capture.</strong> The core is held up mainly by <em>degenerate electrons</em>, and the pressure of a degenerate electron gas depends on how many electrons there are. Protons in nuclei capture those electrons, turning into neutrons and emitting a neutrino that leaves. Every capture removes one of the particles doing the supporting.</p>
+<p>So the runaway is real, and the direction is right, but the mechanism is the opposite of fusion. Nothing is burning. The core is being <em>dismantled</em>, and it falls because the things holding it up are being carried away.</p>
+<h3 id="there-is-no-void-and-the-layers-do-not-free-fall-into-one">There is no void, and the layers do not free-fall into one</h3>
+<p>The version I had: the core collapses to a neutron ball, leaving a gap, and the outer layers free-fall across the gap and hit it.</p>
+<p>There is no gap. The collapse is subsonic in the inner part of the core — the innermost 0.5 M☉ or so falls <em>homologously</em>, meaning it stays self-similar, with velocity proportional to radius, like a shrinking photograph of itself. Outside that the infall is supersonic. Material follows the collapse continuously inwards; there is never an evacuated shell for anything to fall across.</p>
+<p>What stops the collapse is not that it runs out of room, it is that it hits a wall. At about 2.7×10¹⁴ g/cm³ — nuclear saturation density, the density inside an atomic nucleus — the individual nuclei have merged into one continuous fluid, and the strong force turns sharply repulsive. The equation of state stiffens by orders of magnitude over a factor of two in density. The inner core overshoots, stops, and rebounds <em>into the material still falling on it</em>, and that collision is the shock. This is the <strong>bounce</strong>, and it is the single most important number in the whole model.</p>
+<h3 id="the-shock-does-not-cascade-outwards--it-dies">The shock does not cascade outwards — it dies</h3>
+<p>This is the big one, and it is the part I find genuinely surprising.</p>
+<p>The version I had: the shock forms and races outward, triggering fusion in each layer in turn, each layer’s burning strengthening the shock and compressing the next, in a cascade that blows the star apart.</p>
+<p>The bounce shock gets about twenty milliseconds and about two hundred kilometres, and then it <strong>stalls</strong>. It has to climb out through the rest of the iron core, and every gram of iron it passes through costs it roughly 8.8 MeV per nucleon to photodisintegrate — the shock spends its own energy undoing the nuclear binding the star took a million years to assemble. It also loses energy to neutrinos streaming out of the newly transparent material behind it. Within twenty milliseconds it has run out and turned into a <strong>standing accretion shock</strong>: a stationary front at 150–250 km, with matter continuing to rain in through it and pile onto the neutron star below.</p>
+<p>That is where the star sits for the next several hundred milliseconds, and in a purely spherical calculation that is usually where it stays forever.</p>
+<p>What rescues it is <strong>neutrinos</strong>. The proto-neutron star is radiating something like 10⁵³ erg/s, and a small fraction of a percent of that flux is reabsorbed in the layer between the neutron star surface and the stalled shock — the <em>gain region</em>. A small fraction of a percent of 10⁵³ is still an enormous number. If enough is deposited, the gain region inflates, pushes the shock back out, and the explosion happens hundreds of milliseconds after the bounce that was supposed to have caused it. This is the <strong>delayed neutrino-driven mechanism</strong>, proposed by Bethe and Wilson in 1985, and it is the current consensus.</p>
+<p>The energy accounting is worth sitting with. About 3×10⁵³ erg of gravitational binding energy is released by the collapse. Roughly 99% of it leaves as neutrinos. About 1% goes into unbinding the star — the ~10⁵¹ erg we call one <em>foe</em>, and the entire visible supernova. And about 0.01% of it comes out as light.</p>
+<h3 id="where-the-picture-i-had-is-right">Where the picture I had <em>is</em> right</h3>
+<p>Almost exactly, for a different object. A runaway thermonuclear burn that consumes the star and unbinds it with its own fusion energy, with no core collapse and no neutron star, is a <strong>Type Ia supernova</strong> — a white dwarf accreting past its limit. The cascade I had imagined is a decent description of one. It is just not what happens when a massive star’s iron core gives way.</p>
+<h2 id="what-the-model-actually-is">What the model actually is</h2>
+<p>One-dimensional Lagrangian hydrodynamics in spherical symmetry: 490 concentric shells, each holding a fixed mass, whose radii are the unknowns. Staggered leapfrog time integration with von Neumann–Richtmyer artificial viscosity, which is how shocks have been captured in Lagrangian codes since 1950.</p>
+<p><strong>The star is not mine.</strong> The initial model is the s15.0 presupernova from the Garching core-collapse archive — a 15 M☉ zero-age main sequence star evolved to the point of collapse with the KEPLER stellar evolution code, from <a href="https://ui.adsabs.harvard.edu/abs/2016ApJ...821...38S/abstract">Sukhbold, Ertl, Woosley, Brown &amp; Janka (2016)</a>. By the time it collapses it has lost mass to winds and is down to 12.60 M☉, with an iron core of 1.42 M☉ and a radius of 842 R☉.</p>
+<p>I spent a long time trying to build the progenitor myself, and I want to record why it failed, because the reason is interesting. A star like this has an onion structure with known layer masses and known layer radii, and it is in hydrostatic equilibrium. Those three things are <em>not independent</em>: fix any two and the third is determined. Every attempt I made to specify all three produced a temperature spike of 7.9×10⁹ K at the iron–silicon interface, where the real model has 4–5×10⁹, and each time I diagnosed a different proximate cause before realising the problem was that I was over-determining the system. Using the published model instead came with a bonus: relaxing it into hydrostatic equilibrium with <em>my</em> equation of state reproduces its published temperatures to within a few percent, which is an unfitted check that the equation of state is right.</p>
+<p><strong>The equation of state</strong> is degenerate electrons over the full Chandrasekhar relativistic expression (not a fixed polytrope — the core spans the non-relativistic and ultra-relativistic regimes), radiation, ideal ions, and a stiffening term above nuclear density. <strong>Nuclear physics</strong> is nuclear statistical equilibrium via a Saha-like treatment for photodisintegration, a parametrised deleptonisation track fitted to detailed transport calculations (the Liebendörfer 2005 Y<sub>e</sub>(ρ) prescription), and explosive burning of silicon and oxygen to iron-group behind the shock.</p>
+<p><strong>Neutrinos</strong> are not transported. Doing that properly is a Boltzmann problem in six dimensions and is the reason this field needs supercomputers. Here the luminosity is modelled from proto-neutron star cooling plus accretion, and the heating and cooling rates in the gain region use the standard analytic forms. The heating is then multiplied by the slider.</p>
+<h3 id="the-slider-is-the-honest-part">The slider is the honest part</h3>
+<p>The heating factor exists because <strong>spherically symmetric models do not explode</strong>, and that is not a bug in my code — it is a well-established result. Detailed one-dimensional simulations with full neutrino transport also fail to explode for most progenitors. What makes real stars explode is three-dimensional: convective plumes in the gain region, the whole shock sloshing in the standing accretion shock instability, and turbulence increasing the time material spends being heated. None of that exists in a 1D model.</p>
+<p>So the factor stands in for the dimensions that are missing. It is calibrated so the critical value sits just below 1: at ×0.8 and below this star stalls, fails, and collapses to a black hole; at ×0.9 it explodes with 1.46 foe; at ×1.0 it gives 2.07 foe. Drag it and re-run, and you are doing the numerical experiment the field spent thirty years on.</p>
+<p>The failed branch is worth watching. The shock stalls at 350 km, hangs there for over a second while accretion drives the neutron star past 1.8 M☉, and is then swallowed. Nothing comes out. Current estimates put something like a quarter of massive stars in this category — they do not go supernova, they simply vanish, and at least one has now been caught doing it.</p>
+<h3 id="and-the-asymmetry-slider-is-not-physics-at-all">And the asymmetry slider is not physics at all</h3>
+<p>It is scenery, and the demo says so. The model is spherical; the overlay bends the shock front using low-order angular patterns on the timescales that three-dimensional simulations produce, and <em>nothing in the numbers changes when you drag it</em>. It exists because a perfectly spherical shock teaches the wrong lesson about what a supernova looks like — real ones are visibly lopsided, and Cassiopeia A is a museum of Rayleigh–Taylor fingers. Set it to zero to see what was actually computed.</p>
+<h2 id="what-comes-out-and-what-is-wrong-with-it">What comes out, and what is wrong with it</h2>
+<p>At heating ×1.0, running to shock breakout:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th></th><th>model</th><th>reality</th></tr></thead><tbody><tr><td>Bounce</td><td>345 ms after start</td><td>few hundred ms</td></tr><tr><td>Peak central density</td><td>2.98×10¹⁴ g/cm³</td><td>just above nuclear</td></tr><tr><td>Shock stalls at</td><td>251 km</td><td>150–250 km</td></tr><tr><td>Revival</td><td>110 ms after bounce</td><td>200–500 ms</td></tr><tr><td>Explosion energy</td><td>2.07 foe</td><td>~1 foe (0.5–5 observed)</td></tr><tr><td>Neutron star</td><td>1.19 M☉, 24 km</td><td>1.2–1.6 M☉, ~12 km</td></tr><tr><td>Nickel-56</td><td>0.35 M☉</td><td>~0.07 M☉</td></tr><tr><td>Shock breakout</td><td>18.2 hours</td><td>~1 day for a red supergiant</td></tr></tbody></table>
+<p>Two of those are visibly off and I would rather name them than bury them.</p>
+<p><strong>The nickel yield is five times too high.</strong> This is a known failure mode of simplified explosive-burning treatments: without a real reaction network with alpha-rich freeze-out, too much shocked material ends up as iron-group. Everything downstream of the nickel mass — the light curve, in particular — would be wrong, which is part of why there is no light curve here.</p>
+<p><strong>The explosion energy is about twice canonical</strong> at the nominal heating factor, which is within the observed spread but on the high side, and reflects that the factor is a fudge being asked to do the work of three dimensions.</p>
+<p><strong>The neutron star radius is 24 km rather than 12.</strong> The solver excises its deep interior — that matter’s only remaining job is to be heavy, and following it costs more compute than the entire rest of the star — so the reported radius is the boundary of what is still being solved, not a cold neutron star radius.</p>
+<p>There is also no general relativity, which matters at the 10–20% level for the bounce and more for the neutron star structure; no rotation; and no magnetic fields.</p>
+<h2 id="the-thing-that-was-hardest">The thing that was hardest</h2>
+<p>Not the physics. The failing branch’s <em>timestep</em>.</p>
+<p>A Lagrangian hydro code’s timestep is set by the thinnest zone divided by its sound speed, and in a star that fails to explode, matter rains onto the proto-neutron star for seconds and the zones at its surface get squeezed. At one point the run was being paced by a zone forty metres thick sitting at 32 km, inside a neutron star 52 km across, and it took fourteen minutes of wall time to simulate one second.</p>
+<p>The fix is to stop following matter that has settled deep inside the neutron star and let the inner boundary swallow it. But that same region — just above the neutron star’s surface — is the gain region, the thing that powers the explosion. Applied unconditionally it stopped the star exploding at <em>any</em> heating factor. Applied after a fixed half-second delay it still cost a fifth of the explosion energy.</p>
+<p>So it has to be conditional on the model having already failed, and my first two attempts at detecting failure were both wrong in instructive ways. I assumed a failing shock collapses inward: it does not, it stands and oscillates at 250–300 km for over a second. Then I found the phase logic was labelling the failing run as <em>reviving</em>, because the shock-finder’s few-percent jitter was latching the “stall radius” at 50 km while the prompt shock was still climbing, and every later reading looked like a thirty-percent revival by comparison.</p>
+<p>What actually separates the two cases is timing, and it is not close. Models that explode here revive 65 milliseconds after stalling. A failing one is still stalled at 1.5 seconds. So the boundary waits for 300 milliseconds of unbroken stall — nearly five times the margin — and an exploding star never reaches the condition. With it, the exploding branch reproduces the no-excision reference energy to within 0.1%, and the failing branch went from 867 seconds of compute for one second of star, to 130 seconds for the whole thing.</p>
+<h2 id="credits">Credits</h2>
+<p>The progenitor model is from the <a href="https://wwwmpa.mpa-garching.mpg.de/ccsnarchive/">Garching core-collapse supernova archive</a>, and is the work of Sukhbold, Ertl, Woosley, Brown &amp; Janka, <em>ApJ</em> <strong>821</strong>, 38 (2016). The deleptonisation parametrisation is Liebendörfer, <em>ApJ</em> <strong>633</strong>, 1042 (2005). The contracting inner boundary follows Scheck et al., <em>A&amp;A</em> <strong>457</strong>, 963 (2006). The mechanism being modelled is Bethe &amp; Wilson, <em>ApJ</em> <strong>295</strong>, 14 (1985).</p>  <section class="related" aria-labelledby="related-heading" data-related data-here="/blog/supernova"><h2 id="related-heading">Also on MotleyTech</h2><ul class="related-list"><li class="related-item"><a href="/blog/leo_szilard"><img class="related-thumb" src="/images/Szilard-portrait.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2014-03-15T00:00:00.000Z">2014.03.15</time><span aria-hidden="true">&middot;</span><span>10 min read</span></span><span class="related-title">Leo Szilard - The Man who changed the World</span><span class="related-text">He patented the nuclear chain reaction, drafted the letter that Einstein signed, and then spent the rest of his life trying to…</span></span></a></li><li class="related-item"><a href="/blog/task-management"><img class="related-thumb" src="/images/demos/task-board.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2026-03-22T00:00:00.000Z">2026.03.22</time><span aria-hidden="true">&middot;</span><span>1 min read</span></span><span class="related-title">Task management app</span><span class="related-text">A lightweight, visual task board that runs entirely in the browser. Move work between columns, track what is in flight, and keep…</span></span></a></li><li class="related-item"><a href="/blog/reacttodolist"><img class="related-thumb" src="/images/demos/todo-board.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2020-01-26T00:00:00.000Z">2020.01.26</time><span aria-hidden="true">&middot;</span><span>1 min read</span></span><span class="related-title">Todo list with React and LocalStorage</span><span class="related-text">A todo list that lives entirely in your browser: React for the interface, localStorage for memory. Close the tab, come back next…</span></span></a></li><li class="related-item"><a href="/blog/shape-playground"><img class="related-thumb" src="/images/demos/shape-playground.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2026-09-27T00:00:00.000Z">2026.09.27</time><span aria-hidden="true">&middot;</span><span>15 min read</span></span><span class="related-title">The solids that two forces can find, and the ones they cannot</span><span class="related-text">Drop charged vertices into a 3D workspace, join them, and let them settle. Every Platonic solid comes out with its edges equal to…</span></span></a></li></ul></section><script>(function(){const count = 4;
+
+  (function () {
+    const section = document.querySelector('[data-related]');
+    const list = section && section.querySelector('.related-list');
+    if (!list) return;
+
+    const trim = (path) => path.replace(/\/+$/, '');
+    const here = trim(section.dataset.here || location.pathname);
+
+    function draw(items) {
+      const pool = items.filter((item) => trim(item.href) !== here);
+      for (let i = pool.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      const chosen = pool.slice(0, count);
+      if (chosen.length < count) return;
+
+      const fresh = document.createDocumentFragment();
+      for (const item of chosen) {
+        const li = document.createElement('li');
+        li.className = 'related-item';
+
+        const link = document.createElement('a');
+        link.href = item.href;
+
+        if (item.image) {
+          const img = document.createElement('img');
+          img.className = 'related-thumb';
+          img.src = item.image;
+          img.alt = '';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          link.appendChild(img);
+        } else {
+          const badge = document.createElement('span');
+          badge.className = 'related-thumb related-thumb--empty';
+          badge.setAttribute('aria-hidden', 'true');
+          badge.textContent = item.title.slice(0, 2).toUpperCase();
+          link.appendChild(badge);
+        }
+
+        const body = document.createElement('span');
+        body.className = 'related-body';
+
+        const meta = document.createElement('span');
+        meta.className = 'related-meta';
+        const time = document.createElement('time');
+        time.dateTime = item.isoDate;
+        time.textContent = item.stamp;
+        const dot = document.createElement('span');
+        dot.setAttribute('aria-hidden', 'true');
+        dot.innerHTML = '&middot;';
+        const read = document.createElement('span');
+        read.textContent = item.readMinutes + ' min read';
+        meta.append(time, dot, read);
+
+        const title = document.createElement('span');
+        title.className = 'related-title';
+        title.textContent = item.title;
+
+        const text = document.createElement('span');
+        text.className = 'related-text';
+        text.textContent = item.snippet;
+
+        body.append(meta, title, text);
+        link.appendChild(body);
+        li.appendChild(link);
+        fresh.appendChild(li);
+      }
+
+      list.replaceChildren(fresh);
+    }
+
+    // The build already picked a set. Only swap it while the list is out of
+    // sight, so nothing shifts under someone who is reading it.
+    function onScreen() {
+      const box = section.getBoundingClientRect();
+      return box.top < window.innerHeight && box.bottom > 0;
+    }
+
+    fetch('/api/related.json')
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!data || !Array.isArray(data.items) || onScreen()) return;
+        draw(data.items);
+      })
+      .catch(() => {
+        /* the server-rendered set is already on the page */
+      });
+  })();
+})();</script> <section id="comments" style="margin-top:2rem;"> <h2>Comments</h2> <div id="disqus_thread"></div> <script>(function(){const identifier = "supernova";
+const title = "Iron does not burn";
+const canonical = "https://motleytech.net/blog/supernova/";
+
+    /*
+     * This has to be `window.disqus_config`, not a bare `var`: embed.js reads it
+     * off the global object, and `define:vars` compiles this block into an IIFE,
+     * so a `var` here stays local and Disqus silently falls back to keying the
+     * thread by URL. That loses every comment made before the page moved.
+     */
+    window.disqus_config = function () {
+      this.page.identifier = identifier;
+      this.page.title = title;
+      this.page.url = canonical;
+    };
+    (function () {
+      var d = document;
+      var s = d.createElement('script');
+      s.src = 'https://motleytech.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', String(+new Date()));
+      (d.head || d.body).appendChild(s);
+    })();
+  })();</script> </section> </article>  </main> <footer class="shell site-footer"> <p>&copy; 2017&ndash;2026 Nagarajan</p> <p><a href="/rss.xml">RSS</a> &middot; <a href="/archives">Archive</a></p> </footer> <script>
+      (function () {
+        const select = document.getElementById('theme-select');
+        if (select) {
+          select.value = document.documentElement.getAttribute('data-theme');
+          select.addEventListener('change', function (event) {
+            const theme = event.target.value;
+            document.documentElement.setAttribute('data-theme', theme);
+            try {
+              window.localStorage.setItem('motleytech-theme', theme);
+            } catch (error) {
+              /* private browsing: the theme simply will not persist */
+            }
+          });
+        }
+
+        const header = document.querySelector('.site-header');
+        const menu = document.getElementById('menu-panel');
+        const button = document.getElementById('nav-toggle');
+        if (!header || !menu || !button) {
+          return;
+        }
+
+        function closeMenu() {
+          header.classList.remove('menu-open');
+          button.setAttribute('aria-expanded', 'false');
+        }
+
+        button.addEventListener('click', function () {
+          const isOpen = header.classList.toggle('menu-open');
+          button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        menu.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', closeMenu);
+        });
+
+        document.addEventListener('click', function (event) {
+          if (!header.classList.contains('menu-open')) {
+            return;
+          }
+          const target = event.target;
+          if (target instanceof Node && (menu.contains(target) || button.contains(target))) {
+            return;
+          }
+          closeMenu();
+        });
+
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') {
+            closeMenu();
+          }
+        });
+      })();
+    </script> </body> </html>

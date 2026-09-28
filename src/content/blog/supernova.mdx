@@ -1,0 +1,129 @@
+---
+title: "Iron does not burn"
+pubDate: 2026-09-27
+category: "Blog"
+tags: ["Astrophysics", "3D", "Javascript", "Physics", "Simulation", "Nuclear"]
+author: "Nagarajan"
+description: "A core-collapse supernova, solved rather than animated: five hundred shells of a real published stellar model, an equation of state, and a hundred thousand timesteps covering eighteen hours and eight orders of magnitude. Watch the core fall, the shock stall, and the neutrinos push it back out — or turn them down and watch the star disappear instead."
+trailer: "Almost everything I thought I knew about how a massive star dies turned out to be a description of a different kind of supernova. The iron core does not start fusing. The collapse is not stopped by a void. The shock does not cascade outwards lighting each layer as it goes — it dies twenty milliseconds in, two hundred kilometres up, and something else has to come and rescue it."
+heroImage: "/images/demos/supernova.webp"
+heroAlt: "A star in cross-section on a logarithmic radial scale: a white-hot proto-neutron star at the centre, a distorted shock front a few hundred kilometres out, and the banded silicon, oxygen, helium and hydrogen layers of the progenitor beyond it, against a field of stars and distant galaxies"
+disqusIdentifier: "supernova"
+---
+
+import SupernovaApp from '../../components/apps/SupernovaApp.tsx';
+
+Press the button and wait about a minute. What happens after that is not an animation — there are no keyframes in here, and nothing is told where to be. Five hundred shells of gas are solving the equations of motion under their own gravity, with a real equation of state and real nuclear physics, and the shock front you will watch climb out of the middle is there because the arithmetic put it there.
+
+<SupernovaApp client:visible />
+
+The radial axis is logarithmic, and it has to be. The neutron star that forms in the middle is about twelve kilometres across; the star it forms inside reaches six hundred million. On a linear scale, any picture showing the second has the first occupying substantially less than one pixel. The clock is logarithmic too: the recorded frames are spaced evenly in the *logarithm* of time since bounce, so playing them at a steady rate spends as long on the first millisecond as on the following ten hours. That is the only way a single playback covers the whole thing.
+
+## Three things I had wrong
+
+I built this because I wanted to watch a star explode, and I started from a picture I was fairly confident about. The picture was wrong in three specific places, and they turn out to be the three places where the real mechanism is interesting.
+
+### Iron does not start fusing
+
+The version I had: the iron core gets hotter and denser until it starts to fuse, and because iron fusion is endothermic the core cools, contracts, fuses harder, and runs away.
+
+Iron never fuses. It cannot, in any useful sense — iron-56 and nickel-62 sit at the bottom of the nuclear binding energy curve, which is exactly what makes them ash. There is no reaction available that takes iron and gives energy back, so there is nothing to run away.
+
+What actually removes the pressure is two other processes, and neither is fusion:
+
+**Photodisintegration.** At around 10¹⁰ K the thermal photon bath contains photons energetic enough to knock iron nuclei apart, back into alpha particles and then into free protons and neutrons. This is the reverse of fusion and it consumes about 124 MeV per iron nucleus taken apart — energy stolen from the thermal pool, which is what the core was partly using to hold itself up.
+
+**Electron capture.** The core is held up mainly by *degenerate electrons*, and the pressure of a degenerate electron gas depends on how many electrons there are. Protons in nuclei capture those electrons, turning into neutrons and emitting a neutrino that leaves. Every capture removes one of the particles doing the supporting.
+
+So the runaway is real, and the direction is right, but the mechanism is the opposite of fusion. Nothing is burning. The core is being *dismantled*, and it falls because the things holding it up are being carried away.
+
+### There is no void, and the layers do not free-fall into one
+
+The version I had: the core collapses to a neutron ball, leaving a gap, and the outer layers free-fall across the gap and hit it.
+
+There is no gap. The collapse is subsonic in the inner part of the core — the innermost 0.5 M☉ or so falls *homologously*, meaning it stays self-similar, with velocity proportional to radius, like a shrinking photograph of itself. Outside that the infall is supersonic. Material follows the collapse continuously inwards; there is never an evacuated shell for anything to fall across.
+
+What stops the collapse is not that it runs out of room, it is that it hits a wall. At about 2.7×10¹⁴ g/cm³ — nuclear saturation density, the density inside an atomic nucleus — the individual nuclei have merged into one continuous fluid, and the strong force turns sharply repulsive. The equation of state stiffens by orders of magnitude over a factor of two in density. The inner core overshoots, stops, and rebounds *into the material still falling on it*, and that collision is the shock. This is the **bounce**, and it is the single most important number in the whole model.
+
+### The shock does not cascade outwards — it dies
+
+This is the big one, and it is the part I find genuinely surprising.
+
+The version I had: the shock forms and races outward, triggering fusion in each layer in turn, each layer's burning strengthening the shock and compressing the next, in a cascade that blows the star apart.
+
+The bounce shock gets about twenty milliseconds and about two hundred kilometres, and then it **stalls**. It has to climb out through the rest of the iron core, and every gram of iron it passes through costs it roughly 8.8 MeV per nucleon to photodisintegrate — the shock spends its own energy undoing the nuclear binding the star took a million years to assemble. It also loses energy to neutrinos streaming out of the newly transparent material behind it. Within twenty milliseconds it has run out and turned into a **standing accretion shock**: a stationary front at 150–250 km, with matter continuing to rain in through it and pile onto the neutron star below.
+
+That is where the star sits for the next several hundred milliseconds, and in a purely spherical calculation that is usually where it stays forever.
+
+What rescues it is **neutrinos**. The proto-neutron star is radiating something like 10⁵³ erg/s, and a small fraction of a percent of that flux is reabsorbed in the layer between the neutron star surface and the stalled shock — the *gain region*. A small fraction of a percent of 10⁵³ is still an enormous number. If enough is deposited, the gain region inflates, pushes the shock back out, and the explosion happens hundreds of milliseconds after the bounce that was supposed to have caused it. This is the **delayed neutrino-driven mechanism**, proposed by Bethe and Wilson in 1985, and it is the current consensus.
+
+The energy accounting is worth sitting with. About 3×10⁵³ erg of gravitational binding energy is released by the collapse. Roughly 99% of it leaves as neutrinos. About 1% goes into unbinding the star — the ~10⁵¹ erg we call one *foe*, and the entire visible supernova. And about 0.01% of it comes out as light.
+
+### Where the picture I had *is* right
+
+Almost exactly, for a different object. A runaway thermonuclear burn that consumes the star and unbinds it with its own fusion energy, with no core collapse and no neutron star, is a **Type Ia supernova** — a white dwarf accreting past its limit. The cascade I had imagined is a decent description of one. It is just not what happens when a massive star's iron core gives way.
+
+## What the model actually is
+
+One-dimensional Lagrangian hydrodynamics in spherical symmetry: 490 concentric shells, each holding a fixed mass, whose radii are the unknowns. Staggered leapfrog time integration with von Neumann–Richtmyer artificial viscosity, which is how shocks have been captured in Lagrangian codes since 1950.
+
+**The star is not mine.** The initial model is the s15.0 presupernova from the Garching core-collapse archive — a 15 M☉ zero-age main sequence star evolved to the point of collapse with the KEPLER stellar evolution code, from [Sukhbold, Ertl, Woosley, Brown & Janka (2016)](https://ui.adsabs.harvard.edu/abs/2016ApJ...821...38S/abstract). By the time it collapses it has lost mass to winds and is down to 12.60 M☉, with an iron core of 1.42 M☉ and a radius of 842 R☉.
+
+I spent a long time trying to build the progenitor myself, and I want to record why it failed, because the reason is interesting. A star like this has an onion structure with known layer masses and known layer radii, and it is in hydrostatic equilibrium. Those three things are *not independent*: fix any two and the third is determined. Every attempt I made to specify all three produced a temperature spike of 7.9×10⁹ K at the iron–silicon interface, where the real model has 4–5×10⁹, and each time I diagnosed a different proximate cause before realising the problem was that I was over-determining the system. Using the published model instead came with a bonus: relaxing it into hydrostatic equilibrium with *my* equation of state reproduces its published temperatures to within a few percent, which is an unfitted check that the equation of state is right.
+
+**The equation of state** is degenerate electrons over the full Chandrasekhar relativistic expression (not a fixed polytrope — the core spans the non-relativistic and ultra-relativistic regimes), radiation, ideal ions, and a stiffening term above nuclear density. **Nuclear physics** is nuclear statistical equilibrium via a Saha-like treatment for photodisintegration, a parametrised deleptonisation track fitted to detailed transport calculations (the Liebendörfer 2005 Y<sub>e</sub>(ρ) prescription), and explosive burning of silicon and oxygen to iron-group behind the shock.
+
+**Neutrinos** are not transported. Doing that properly is a Boltzmann problem in six dimensions and is the reason this field needs supercomputers. Here the luminosity is modelled from proto-neutron star cooling plus accretion, and the heating and cooling rates in the gain region use the standard analytic forms. The heating is then multiplied by the slider.
+
+### The slider is the honest part
+
+The heating factor exists because **spherically symmetric models do not explode**, and that is not a bug in my code — it is a well-established result. Detailed one-dimensional simulations with full neutrino transport also fail to explode for most progenitors. What makes real stars explode is three-dimensional: convective plumes in the gain region, the whole shock sloshing in the standing accretion shock instability, and turbulence increasing the time material spends being heated. None of that exists in a 1D model.
+
+So the factor stands in for the dimensions that are missing. It is calibrated so the critical value sits just below 1: at ×0.8 and below this star stalls, fails, and collapses to a black hole; at ×0.9 it explodes with 1.46 foe; at ×1.0 it gives 2.07 foe. Drag it and re-run, and you are doing the numerical experiment the field spent thirty years on.
+
+The failed branch is worth watching. The shock stalls at 350 km, hangs there for over a second while accretion drives the neutron star past 1.8 M☉, and is then swallowed. Nothing comes out. Current estimates put something like a quarter of massive stars in this category — they do not go supernova, they simply vanish, and at least one has now been caught doing it.
+
+### And the asymmetry slider is not physics at all
+
+It is scenery, and the demo says so. The model is spherical; the overlay bends the shock front using low-order angular patterns on the timescales that three-dimensional simulations produce, and *nothing in the numbers changes when you drag it*. It exists because a perfectly spherical shock teaches the wrong lesson about what a supernova looks like — real ones are visibly lopsided, and Cassiopeia A is a museum of Rayleigh–Taylor fingers. Set it to zero to see what was actually computed.
+
+## What comes out, and what is wrong with it
+
+At heating ×1.0, running to shock breakout:
+
+| | model | reality |
+|---|---|---|
+| Bounce | 345 ms after start | few hundred ms |
+| Peak central density | 2.98×10¹⁴ g/cm³ | just above nuclear |
+| Shock stalls at | 251 km | 150–250 km |
+| Revival | 110 ms after bounce | 200–500 ms |
+| Explosion energy | 2.07 foe | ~1 foe (0.5–5 observed) |
+| Neutron star | 1.19 M☉, 24 km | 1.2–1.6 M☉, ~12 km |
+| Nickel-56 | 0.35 M☉ | ~0.07 M☉ |
+| Shock breakout | 18.2 hours | ~1 day for a red supergiant |
+
+Two of those are visibly off and I would rather name them than bury them.
+
+**The nickel yield is five times too high.** This is a known failure mode of simplified explosive-burning treatments: without a real reaction network with alpha-rich freeze-out, too much shocked material ends up as iron-group. Everything downstream of the nickel mass — the light curve, in particular — would be wrong, which is part of why there is no light curve here.
+
+**The explosion energy is about twice canonical** at the nominal heating factor, which is within the observed spread but on the high side, and reflects that the factor is a fudge being asked to do the work of three dimensions.
+
+**The neutron star radius is 24 km rather than 12.** The solver excises its deep interior — that matter's only remaining job is to be heavy, and following it costs more compute than the entire rest of the star — so the reported radius is the boundary of what is still being solved, not a cold neutron star radius.
+
+There is also no general relativity, which matters at the 10–20% level for the bounce and more for the neutron star structure; no rotation; and no magnetic fields.
+
+## The thing that was hardest
+
+Not the physics. The failing branch's *timestep*.
+
+A Lagrangian hydro code's timestep is set by the thinnest zone divided by its sound speed, and in a star that fails to explode, matter rains onto the proto-neutron star for seconds and the zones at its surface get squeezed. At one point the run was being paced by a zone forty metres thick sitting at 32 km, inside a neutron star 52 km across, and it took fourteen minutes of wall time to simulate one second.
+
+The fix is to stop following matter that has settled deep inside the neutron star and let the inner boundary swallow it. But that same region — just above the neutron star's surface — is the gain region, the thing that powers the explosion. Applied unconditionally it stopped the star exploding at *any* heating factor. Applied after a fixed half-second delay it still cost a fifth of the explosion energy.
+
+So it has to be conditional on the model having already failed, and my first two attempts at detecting failure were both wrong in instructive ways. I assumed a failing shock collapses inward: it does not, it stands and oscillates at 250–300 km for over a second. Then I found the phase logic was labelling the failing run as *reviving*, because the shock-finder's few-percent jitter was latching the "stall radius" at 50 km while the prompt shock was still climbing, and every later reading looked like a thirty-percent revival by comparison.
+
+What actually separates the two cases is timing, and it is not close. Models that explode here revive 65 milliseconds after stalling. A failing one is still stalled at 1.5 seconds. So the boundary waits for 300 milliseconds of unbroken stall — nearly five times the margin — and an exploding star never reaches the condition. With it, the exploding branch reproduces the no-excision reference energy to within 0.1%, and the failing branch went from 867 seconds of compute for one second of star, to 130 seconds for the whole thing.
+
+## Credits
+
+The progenitor model is from the [Garching core-collapse supernova archive](https://wwwmpa.mpa-garching.mpg.de/ccsnarchive/), and is the work of Sukhbold, Ertl, Woosley, Brown & Janka, *ApJ* **821**, 38 (2016). The deleptonisation parametrisation is Liebendörfer, *ApJ* **633**, 1042 (2005). The contracting inner boundary follows Scheck et al., *A&A* **457**, 963 (2006). The mechanism being modelled is Bethe & Wilson, *ApJ* **295**, 14 (1985).

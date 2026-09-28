@@ -90,8 +90,6 @@ export interface RunSettings {
    * convection and shock sloshing that a one-dimensional model cannot represent.
    */
   heatingFactor: number;
-  /** Zone count scale, for trading accuracy against how long the run takes. */
-  resolution: 'coarse' | 'normal' | 'fine';
 }
 
 export interface RunResult {

@@ -104,11 +104,11 @@ const PNS_CONTRACTION_TIME = 0.5;
 const EXCISE_FRACTION = 0.003;
 
 /** How much of the proto-neutron star is kept live; the rest is only gravity. */
-const PNS_EXCISE_FRACTION = 0.7;
+const PNS_EXCISE_FRACTION = 0.85;
 
 /**
- * How far the shock must fall back below its stalling radius before the proto-neutron
- * star may be trimmed.
+ * How long the shock must sit stalled, without reviving, before the proto-neutron star
+ * may be trimmed.
  *
  * The trimming is only ever needed in a model that fails, where matter goes on raining
  * onto the star for seconds and the zones at its surface are squeezed to nothing. But it
@@ -117,13 +117,12 @@ const PNS_EXCISE_FRACTION = 0.7;
  * from the start it stopped the star exploding at any heating factor, and applied after
  * half a second regardless it still cost a fifth of the explosion energy.
  *
- * The condition it waits for instead is a shock that has stalled and not come back. A
- * model on its way to exploding has revived long before this — revival happens within two
- * to five hundred milliseconds of bounce — so an exploding star never notices this code
- * exists, and a failing one gets cheap at exactly the moment its fate stops being in
- * question.
+ * What it waits for instead is a shock that has stalled and not come back. Models that
+ * explode here revive about sixty-five milliseconds after stalling, so a threshold nearly
+ * five times that leaves an exploding star untouched, while one that has sat still for
+ * three hundred milliseconds has stopped being in question.
  */
-const PNS_EXCISE_AFTER = 0.6;
+const PNS_EXCISE_AFTER = 0.3;
 
 /** Fraction of the escape speed above which matter counts as ejecta and is never retired. */
 const ESCAPE_MARGIN = 0.05; // s
@@ -189,7 +188,9 @@ export function runCollapse(options: Options): RunResult {
   let maxShockRadius = 0;
   let stalledAt = 0;
   let maxShockTime = 0;
+  let stallTime = 0;
   let revivalSince = 0;
+  let swallowedSince = 0;
   let reviving = false;
   let excisionStart = 0;
   let luminosity = 0;
@@ -586,6 +587,7 @@ export function runCollapse(options: Options): RunResult {
         if (stalledAt === 0 && maxShockRadius > 5e6 && time - maxShockTime > 0.03) {
           phase = 'stalled';
           stalledAt = maxShockRadius;
+          stallTime = time;
         }
         // Revival has to be held, not just touched. A stalled shock breathes, and a single
         // reading thirty per cent out is a breath; a reviving one never comes back down.
@@ -602,9 +604,24 @@ export function runCollapse(options: Options): RunResult {
       if (reviving && shockRadius > 3e8) phase = 'exploding';
       if (reviving && shockRadius > 2e10) phase = 'coasting';
       if (shockRadius > 0.85 * r[n]) phase = 'breakout';
+      // Two ways to lose. The obvious one is the neutron star growing past what the
+      // nuclear equation of state can hold up. The other is the shock being swallowed:
+      // once the front has fallen back onto the neutron star's own surface there is
+      // nothing between the accreting envelope and the core, no explosion is coming, and
+      // the rest is bookkeeping. This model reaches the second well before the first,
+      // because its inner boundary stops the deepest matter being followed all the way in
+      // and so undercounts the final mass, but either one settles the outcome.
       if (pnsMass > MAX_NS_MASS) {
         failed = true;
         phase = 'failed';
+      } else if (!reviving && stallTime > 0 && time - stallTime > 0.5 && shockRadius < 1.5 * pnsRadius) {
+        if (swallowedSince === 0) swallowedSince = time;
+        if (time - swallowedSince > 0.02) {
+          failed = true;
+          phase = 'failed';
+        }
+      } else {
+        swallowedSince = 0;
       }
     }
 
@@ -656,7 +673,9 @@ export function runCollapse(options: Options): RunResult {
       const wanted = Math.max(
         contracting,
         EXCISE_FRACTION * shockRadius,
-        !reviving && sb > PNS_EXCISE_AFTER ? PNS_EXCISE_FRACTION * pnsRadius : 0,
+        stallTime > 0 && !reviving && time - stallTime > PNS_EXCISE_AFTER
+          ? PNS_EXCISE_FRACTION * pnsRadius
+          : 0,
       );
 
       const leaving = (i: number): boolean =>
@@ -847,7 +866,7 @@ export function runCollapse(options: Options): RunResult {
     initialEntropy,
     layers: star.layers.map((l) => ({ name: l.name, outer: l.outer, outerMass: l.outerMass })),
     failed,
-    settings: { heatingFactor: options.heatingFactor, resolution: options.resolution },
+    settings: { heatingFactor: options.heatingFactor },
     elapsed: Date.now() - started,
     steps: step,
   };
