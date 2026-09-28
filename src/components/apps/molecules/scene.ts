@@ -243,10 +243,15 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
       skin.emissive.set(info.colour);
       (parts.shell.material as THREE.ShaderMaterial).uniforms.tint.value.set(info.colour);
 
-      const nucleusRadius = Math.max(NUCLEUS_FLOOR, info.covalent * NUCLEUS_SHARE);
       // An ion is a different size from the atom it came from, sometimes dramatically so, and
       // the shell is the one part of the picture that can show it.
-      const shellRadius = shellOf(atom.symbol, chargeAt(molecule, atom.id)) * options.shell;
+      const outer = shellOf(atom.symbol, chargeAt(molecule, atom.id));
+      const shellRadius = outer * options.shell;
+
+      // The nucleus shrinks with the shell, or a small cation ends up with its marker poking
+      // out through its own shell: sodium's covalent radius is 1.54 but Na+ is only 1.02 across.
+      const squash = outer / info.waals;
+      const nucleusRadius = Math.max(NUCLEUS_FLOOR, info.covalent * NUCLEUS_SHARE * squash);
       shellRadii.push(options.showShells ? shellRadius : nucleusRadius);
       sizes.set(atom.id, { nucleus: nucleusRadius, shell: shellRadius });
 

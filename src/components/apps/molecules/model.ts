@@ -392,16 +392,18 @@ export function settle(molecule: Molecule, options: SettleOptions = {}): Molecul
   // told an answer instead of working one out.
   //
   // Four ligands on a copper(II) sit in a square rather than a tetrahedron, for reasons that live
-  // in the d orbitals and are invisible to anything counting electron pairs. And they really are
-  // invisible to this one: the square and a lopsided alternative sit within one part in six
-  // thousand of each other here, and left to itself the relaxer picks the lopsided one from every
-  // starting point tried, with any weighting of the poles, however many hops it is given.
+  // in the d orbitals and are invisible to anything counting electron pairs.
   //
-  // So the square is placed rather than predicted — the four ligands put where copper is known to
-  // put them, plus two bodies above and below the plane to hold them there, shoving like lone
-  // pairs because that is the only vocabulary this program has for "something is sitting here".
-  // They are not recorded as lone pairs afterwards, because they are not lone pairs. The relaxer
-  // then confirms the arrangement is at rest, which is all it is being asked to do.
+  // With two extra bodies above and below the plane the square is a perfectly good minimum here —
+  // push a ligand a fifth of an angstrom out of plane and it springs straight back. What it is
+  // not is the *lowest* minimum: a lopsided alternative sits one part in six thousand below it,
+  // and the search, doing exactly what it is built to do, goes and finds it. So the two poles are
+  // pinned, which stops it looking. The axis is an input, not a result, and pinning is the honest
+  // way to say so.
+  //
+  // The poles shove like lone pairs because that is the only vocabulary this program has for
+  // "something is sitting here", but they are not recorded as lone pairs afterwards, because they
+  // are not lone pairs.
   for (const atom of molecule.atoms) {
     const info = element(atom.symbol);
     const attached = neighboursOf(molecule, atom.id);

@@ -514,7 +514,9 @@ export default function MoleculeBuilder(): ReactElement {
                           {atom.id}
                         </span>
                         <span className="mb-atom-meta">
-                          {count} of {info.valence}
+                          {/* Against the most it manages, not the fewest, so that sulfur
+                              hexafluoride reads as 6 of 6 rather than the alarming 6 of 2. */}
+                          {count} of {info.most}
                           {lonePairsAt(molecule, atom.id) > 0 && (
                             <span className="mb-pairs" title={`${lonePairsAt(molecule, atom.id)} lone pairs`}>
                               {'·'.repeat(lonePairsAt(molecule, atom.id) * 2)}
