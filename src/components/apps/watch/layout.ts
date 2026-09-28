@@ -38,8 +38,14 @@ export const R = {
   balance: 3.3,
   ratchet: 2.4,
   crownWheel: 1.6,
-  windingPinion: 0.95,
-  slidingPinion: 0.72,
+  // Both of these are small, and they have to be: they are discs standing on edge, so a
+  // millimetre of radius costs two millimetres of the movement's height, and the height
+  // between the top of the barrel and the underside of the crown wheel is all they get.
+  windingPinion: 0.6,
+  // Deliberately shorter than the winding pinion. It sits directly under the crown wheel
+  // and must not reach it — that is the winding pinion's job, and the whole point of the
+  // clutch is that only one of the two is ever engaged.
+  slidingPinion: 0.55,
   settingWheel: 1.5,
   roller: 0.78,
 
@@ -104,11 +110,17 @@ export const SLIDING_OUT = SLIDING_IN + 1.5;
  * The setting wheel sits where it is tangent to the sliding pinion when the crown is out
  * and clear of it when the crown is in, which means it has to be *outboard* of the
  * engaged position rather than beside it.
+ *
+ * It goes on the far side of the stem from the barrel. That is not for looks: the setting
+ * wheel is the one part of the keyless works that has to reach through to the dial side,
+ * and its arbor is the only thing in the whole train that would otherwise have to pass
+ * through the barrel. Put it at negative y and the arbor comes down outside the barrel's
+ * rim with a tenth of a millimetre to spare.
  */
 const SETTING: Spot = (() => {
   const x = SLIDING_OUT + 0.55;
   const gap = R.settingWheel + R.slidingPinion;
-  return { x, y: Math.sqrt(gap * gap - (x - SLIDING_OUT) ** 2) };
+  return { x, y: -Math.sqrt(gap * gap - (x - SLIDING_OUT) ** 2) };
 })();
 
 /**
@@ -227,13 +239,26 @@ export const Z = {
   centrePinion: 0.9,
   thirdWheel: 1.35,
   fourthPinion: 1.35,
-  barrelLid: 1.5,
-  stem: 1.0,
-  setting: 1.0,
+  /** Flush with the top of the barrel wall, so 1.50 is the whole barrel's ceiling. */
+  barrelLid: 1.39,
+
+  // The keyless works rides over the barrel, not beside it. There is no choice about that.
+  // The crown wheel has to be within a ratchet radius plus its own of the barrel arbor —
+  // four millimetres — and the barrel is 5.77 in radius, so the crown wheel is always
+  // somewhere over the barrel's lid, and the stem that reaches it always crosses the
+  // barrel. Making the ratchet or the crown wheel bigger only makes it worse, because the
+  // winding pinion moves inboard faster than the crown wheel moves out. So the stem goes
+  // up and over, clearing the lid by four tenths, and everything it drives goes up with it.
+  stem: 2.25,
+  setting: 2.25,
   bridge: 1.77,
-  ratchet: 2.1,
-  crownWheel: 2.1,
-  click: 2.1,
+  // The crown wheel sits one winding-pinion radius above the stem, which is what makes the
+  // two mesh. The ratchet is a whisker higher so that the winding pinion's tooth tips,
+  // which just clear the crown wheel's underside, pass beneath it instead of into it. The
+  // two still share a quarter of a millimetre of face, which is all a mesh needs.
+  ratchet: 3.05,
+  crownWheel: 3.0,
+  click: 3.05,
   balanceWheel: 2.75,
   // Clear of the top of the balance arms at 3.00 and the underside of the cock at 3.27.
   // The hairspring is 0.22 tall, so anything that overlaps it by even a few hundredths
@@ -245,14 +270,13 @@ export const Z = {
   // at the level of the pinion that turns it and carries its own pinion at the next level
   // down, so the whole module climbs half a millimetre a stage and ends up above the
   // balance cock — where the rotor has to be anyway, since it sweeps over everything.
-  reversingPinion: 2.1,
-  reversingWheel: 2.62,
-  reductionPinion: 2.62,
-  reductionWheel: 3.16,
-  rotorPinion: 3.16,
-  // Underside at 3.70, against the top of the balance cock at 3.57. That is a third of a
-  // millimetre, which sounds like nothing and is what the whole watch has to spare.
-  rotor: 3.95,
+  reversingPinion: 3.0,
+  reversingWheel: 3.52,
+  reductionPinion: 3.52,
+  reductionWheel: 4.06,
+  rotorPinion: 4.06,
+  /** Underside at 4.60, well over the top of the balance cock at 3.57. */
+  rotor: 4.85,
 } as const;
 
 export const THICK = {

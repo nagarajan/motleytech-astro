@@ -121,9 +121,10 @@ const VIEWPOINTS: Record<Viewpoint, { at: [number, number, number]; target: [num
   movement: { at: [3, -9, 45], target: [0.5, 0, 0.6] },
   dial: { at: [0, 0, -46], target: [0, 0, -1.5] },
   escapement: { at: [-12.0, -16.4, 20.5], target: [-5.2, -5.3, 0.6] },
-  // Low and from outside the case, because the pinions that do the switching live on the
-  // stem itself and the crown wheel sits directly over them.
-  keyless: { at: [19.0, 9.5, 17.0], target: [8.6, 0.6, 1.0] },
+  // From outside the case and from the side the setting wheel is on, because the pinions
+  // that do the switching live on the stem itself and the crown wheel sits over them. High
+  // enough to look down on the barrel the whole works now rides over.
+  keyless: { at: [20.0, -11.0, 16.0], target: [9.0, -0.8, 2.4] },
   edge: { at: [5, -42, 8], target: [0, -1, 0.6] },
 };
 
@@ -344,8 +345,6 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
             { ...SPOT.balance, r: 0.3 },
             { ...SPOT.setting, r: 0.32 },
             { ...SPOT.minuteWheel, r: 0.28 },
-            // The pocket the keyless works drop into, cut right through at the edge.
-            { x: STEM.start + 2.2, y: 0, r: 1.7 },
           ],
           THICK.plate,
         ),
@@ -398,8 +397,14 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
             { ...SPOT.barrel, r: 0.5 },
             { ...SPOT.crownWheel, r: 0.44 },
             { ...SPOT.click, r: 0.28 },
-            // A bite out of the bridge for the winding pinion to reach up through.
-            { ...SPOT.windingPinion, r: R.windingPinion + 0.3 },
+            { ...SPOT.setting, r: 0.32 },
+            // A slot down the stem's axis. The keyless works sits above the bridge, but
+            // the pinions on the stem hang below their own centreline and would foul it,
+            // so the bridge is cut away from the winding pinion out past the sliding
+            // pinion's travel — overlapping circles, since holes here are round.
+            ...[SPOT.windingPinion.x, SLIDING_IN, SLIDING_IN + CROWN_PULL / 2, SLIDING_IN + CROWN_PULL].map(
+              (x) => ({ x, y: 0, r: R.windingPinion + 0.35 }),
+            ),
           ],
           THICK.bridge,
         ),

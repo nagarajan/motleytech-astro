@@ -1,0 +1,274 @@
+/**
+ * Scratch harness. Asks whether any two parts of the movement occupy the same place.
+ *
+ * check.ts proves the movement runs; this proves it could be built. They are different
+ * questions and the second one is easier to get wrong, because nothing in the physics
+ * notices when two solids pass through each other — the winding stem ran straight through
+ * the barrel's toothed rim for a long time and every number still came out right.
+ *
+ * Each part is reduced to a handful of solids of revolution: a circle or an annulus in
+ * plan, swept through a band of height. The stem is the one exception and gets a capsule,
+ * being a rod lying on its side. Two solids clash when their plan shapes overlap *and*
+ * their heights overlap. Pairs that are meant to touch — a wheel and the pinion it drives,
+ * two parts on one arbor — are named in MESHING and skipped.
+ *
+ *   ./run.sh clearance.ts
+ */
+import {
+  CASE_RADIUS,
+  CROWN_PULL,
+  MOTION,
+  R,
+  SLIDING_IN,
+  SPOT,
+  STEM,
+  THICK,
+  Z,
+  type Spot,
+} from './layout';
+
+/** A ring (or disc, when `inner` is 0) standing on the z axis at `at`. */
+type Solid = {
+  part: string;
+  what: string;
+  at: Spot;
+  /** For the stem, the far end of the rod; the plan shape is then a capsule. */
+  to?: Spot;
+  outer: number;
+  inner: number;
+  lo: number;
+  hi: number;
+  /** Ways through: round holes, and for the bridge a slot, given as a capsule. */
+  holes: { at: Spot; to?: Spot; r: number }[];
+};
+
+const solids: Solid[] = [];
+
+function add(
+  part: string,
+  what: string,
+  at: Spot,
+  outer: number,
+  z: number,
+  thickness: number,
+  opts: { inner?: number; to?: Spot; holes?: Solid['holes'] } = {},
+): void {
+  solids.push({
+    part,
+    what,
+    at,
+    to: opts.to,
+    outer,
+    inner: opts.inner ?? 0,
+    lo: z - thickness / 2,
+    hi: z + thickness / 2,
+    holes: opts.holes ?? [],
+  });
+}
+
+/** Tooth tips stand proud of the pitch radius by about a module; parts.ts uses 3%. */
+const tips = (radius: number) => radius * 1.03;
+
+// ------------------------------------------------------------------ the barrel
+
+add('barrel', 'toothed wall', SPOT.barrel, tips(R.barrel), Z.barrelTeeth, THICK.barrelWall, {
+  inner: R.barrel * 0.845,
+});
+add('barrel', 'floor', SPOT.barrel, R.barrel * 0.85, Z.barrelTeeth - THICK.barrelWall / 2 + 0.1, 0.2, {
+  inner: 0.64,
+});
+add('barrel', 'lid', SPOT.barrel, R.barrel * 0.87, Z.barrelLid, 0.22, { inner: 0.64 });
+add('barrel', 'mainspring', SPOT.barrel, R.barrel * 0.79, Z.barrelTeeth, THICK.mainspring, { inner: 0.7 });
+add('barrel', 'arbor', SPOT.barrel, 0.5, (Z.plate + Z.ratchet) / 2, Z.ratchet - Z.plate);
+
+// ------------------------------------------------------------ the keyless works
+
+add('stem', 'rod', { x: STEM.start, y: 0 }, STEM.radius, Z.stem, 2 * STEM.radius, {
+  to: { x: STEM.end, y: 0 },
+});
+add('windingPinion', 'pinion', SPOT.windingPinion, tips(R.windingPinion), Z.stem, 2 * tips(R.windingPinion));
+for (const [name, x] of [
+  ['in', SLIDING_IN],
+  ['out', SLIDING_IN + CROWN_PULL],
+] as const) {
+  add('slidingPinion', name, { x, y: 0 }, tips(R.slidingPinion), Z.stem, 2 * tips(R.slidingPinion));
+}
+add('crownWheel', 'wheel', SPOT.crownWheel, tips(R.crownWheel), Z.crownWheel, 0.3);
+add('setting', 'wheel', SPOT.setting, tips(R.settingWheel), Z.setting, 0.34);
+add('setting', 'pinion', SPOT.setting, tips(MOTION.settingPinion), Z.settingPinion, 0.34);
+add('setting', 'arbor', SPOT.setting, 0.3, (Z.setting + Z.settingPinion) / 2, Z.setting - Z.settingPinion);
+
+// ------------------------------------------------------------- winding and plates
+
+add('ratchet', 'wheel', SPOT.barrel, tips(R.ratchet), Z.ratchet, 0.3);
+add('click', 'body', SPOT.click, 1.45, Z.click, 0.3);
+
+// The barrel bridge is the hull of two circles — approximated here by the two circles
+// themselves, which is close enough to catch anything that matters. Both carry the same
+// cutouts as scene.ts punches in them: the arbor holes, and the slot down the stem's axis
+// that lets the pinions on the stem hang through.
+const BRIDGE_HOLES: Solid['holes'] = [
+  { at: SPOT.crownWheel, r: 0.44 },
+  { at: SPOT.click, r: 0.28 },
+  { at: SPOT.setting, r: 0.32 },
+  {
+    at: SPOT.windingPinion,
+    to: { x: SLIDING_IN + CROWN_PULL, y: 0 },
+    r: R.windingPinion + 0.35,
+  },
+];
+add('bridge', 'over the barrel', SPOT.barrel, R.barrel + 0.8, Z.bridge, THICK.bridge, {
+  holes: BRIDGE_HOLES,
+});
+add('bridge', 'over the crown wheel', SPOT.crownWheel, 2.2, Z.bridge, THICK.bridge, {
+  holes: BRIDGE_HOLES,
+});
+add('cock', 'over the balance', SPOT.balance, 3.3, Z.cock, THICK.bridge);
+
+// --------------------------------------------------------------- the balance
+
+add('balance', 'wheel', SPOT.balance, 3.3, Z.balanceWheel, THICK.balanceRim);
+add('balance', 'hairspring', SPOT.balance, 2.3, Z.hairspring, THICK.hairspring);
+
+// ----------------------------------------------------------- the automatic work
+
+add('reversing', 'pinion', SPOT.reversing, tips(R.reversingPinion), Z.reversingPinion, THICK.pinion);
+add('reversing', 'wheel', SPOT.reversing, tips(R.reversing), Z.reversingWheel, THICK.wheel);
+add('reduction', 'pinion', SPOT.reduction, tips(R.reductionPinion), Z.reductionPinion, THICK.pinion);
+add('reduction', 'wheel', SPOT.reduction, tips(R.reduction), Z.reductionWheel, THICK.wheel);
+add('rotor', 'pinion', SPOT.centre, tips(R.rotorPinion), Z.rotorPinion, THICK.pinion);
+add('rotor', 'arm', SPOT.centre, R.rotor, Z.rotor, THICK.rotor);
+add('rotor', 'weight', SPOT.centre, R.rotor, Z.rotor - THICK.rotor / 2 + THICK.rotorWeight / 2, THICK.rotorWeight, {
+  inner: R.rotor * 0.76,
+});
+
+// ------------------------------------------------------------------- the pairs
+
+/**
+ * Pairs that are supposed to be in contact, either because one drives the other or
+ * because they share an arbor. Written as `a+b` with the part names in either order.
+ */
+const MESHING = new Set(
+  [
+    // On one arbor, or bolted to each other.
+    'barrel+barrel',
+    'stem+stem',
+    'setting+setting',
+    'rotor+rotor',
+    'reversing+reversing',
+    'reduction+reduction',
+    // Two lobes of one bridge.
+    'bridge+bridge',
+    'barrel+ratchet',
+    'balance+balance',
+    // Driving each other.
+    'stem+windingPinion',
+    'stem+slidingPinion',
+    'slidingPinion+windingPinion',
+    'windingPinion+crownWheel',
+    'slidingPinion+setting',
+    'crownWheel+ratchet',
+    'ratchet+click',
+    'ratchet+reversing',
+    'reversing+reduction',
+    'reduction+rotor',
+    // The bridges hold the arbors that pass through them.
+    'bridge+barrel',
+    'bridge+crownWheel',
+    'bridge+click',
+    'cock+balance',
+  ].flatMap((pair) => {
+    const [a, b] = pair.split('+');
+    return [`${a}+${b}`, `${b}+${a}`];
+  }),
+);
+
+/** How close two solids may come before it counts as a clash. Parts are not perfect. */
+const SLACK = 0.02;
+
+/**
+ * Closest approach in plan between two solids, negative when they overlap. A disc against
+ * a disc is centre distance less the two radii; an annulus can also be missed by passing
+ * through its hole, which is the case that matters for anything reaching into the barrel.
+ */
+function planGap(a: Solid, b: Solid): number {
+  const d = axisGap(a, b);
+  const outside = d - a.outer - b.outer;
+  // Through the hole: b fits inside a's bore if it never reaches the bore's wall.
+  const throughA = a.inner > 0 ? a.inner - d - b.outer : -Infinity;
+  const throughB = b.inner > 0 ? b.inner - d - a.outer : -Infinity;
+  // Or through one of the cutouts, if it stays clear of the cutout's edge all the way round.
+  const viaHole = (holder: Solid, other: Solid) =>
+    Math.max(-Infinity, ...holder.holes.map((h) => h.r - axisGap(h, other) - other.outer));
+  return Math.max(outside, throughA, throughB, viaHole(a, b), viaHole(b, a));
+}
+
+/**
+ * Distance between two plan centrelines, each a point or — where `to` is given — a
+ * segment. Sampling is crude but everything here is straight and under twenty millimetres
+ * long, so two hundred steps resolves to a tenth of a tenth of a millimetre.
+ */
+function axisGap(a: { at: Spot; to?: Spot }, b: { at: Spot; to?: Spot }): number {
+  const [p0, p1] = [a.at, a.to ?? a.at];
+  const [q0, q1] = [b.at, b.to ?? b.at];
+  let best = Infinity;
+  for (let i = 0; i <= 200; i++) {
+    const px = p0.x + ((p1.x - p0.x) * i) / 200;
+    const py = p0.y + ((p1.y - p0.y) * i) / 200;
+    for (let j = 0; j <= 200; j++) {
+      const qx = q0.x + ((q1.x - q0.x) * j) / 200;
+      const qy = q0.y + ((q1.y - q0.y) * j) / 200;
+      best = Math.min(best, Math.hypot(px - qx, py - qy));
+    }
+  }
+  return best;
+}
+
+const zGap = (a: Solid, b: Solid) => Math.max(a.lo, b.lo) - Math.min(a.hi, b.hi);
+
+console.log(`--- ${solids.length} solids, ${(solids.length * (solids.length - 1)) / 2} pairs ---\n`);
+
+let clashes = 0;
+let tight = 0;
+for (let i = 0; i < solids.length; i++) {
+  for (let j = i + 1; j < solids.length; j++) {
+    const a = solids[i];
+    const b = solids[j];
+    if (MESHING.has(`${a.part}+${b.part}`)) continue;
+
+    const plan = planGap(a, b);
+    const z = zGap(a, b);
+    // They miss each other if they miss in plan *or* in height. The clearance is whichever
+    // of the two is more comfortable.
+    const gap = Math.max(plan, z);
+    const label = `${a.part} ${a.what} / ${b.part} ${b.what}`;
+
+    if (gap < SLACK) {
+      clashes++;
+      const how = plan > z ? 'plan' : 'height';
+      console.log(
+        `CLASH  ${label.padEnd(46)} ${gap.toFixed(3)} mm  (plan ${plan.toFixed(2)}, height ${z.toFixed(2)}, ` +
+          `closer in ${how === 'plan' ? 'height' : 'plan'})`,
+      );
+    } else if (gap < 0.12) {
+      tight++;
+      console.log(`tight  ${label.padEnd(46)} ${gap.toFixed(3)} mm`);
+    }
+  }
+}
+
+console.log(`\n${clashes} clash${clashes === 1 ? '' : 'es'}, ${tight} tight`);
+
+// --------------------------------------------------------------- the case
+
+console.log('\n--- inside the case ---');
+for (const s of solids) {
+  const far = Math.max(
+    Math.hypot(s.at.x, s.at.y) + s.outer,
+    s.to ? Math.hypot(s.to.x, s.to.y) + s.outer : 0,
+  );
+  if (far > CASE_RADIUS) {
+    const note = s.part === 'stem' ? '  (the crown is meant to be outside)' : '  OUT OF THE CASE';
+    console.log(`  ${`${s.part} ${s.what}`.padEnd(30)} reaches ${far.toFixed(2)} of ${CASE_RADIUS}${note}`);
+  }
+}
