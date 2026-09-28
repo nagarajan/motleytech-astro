@@ -134,11 +134,35 @@ export interface RelaxLink {
   b: number;
   /** A multiple bond is shorter. 1 for single, and below 1 for anything stronger. */
   squeeze?: number;
+  /**
+   * Whether this bond resists being twisted about. Double and aromatic bonds do — that is
+   * what makes a conjugated system flat and what stops ethene folding in half — and single
+   * bonds instead prefer their neighbours staggered.
+   */
+  stiff?: boolean;
 }
 
 const BOND_PULL = 2;
 const NEIGHBOUR_PUSH = 1;
 const CLASH_PUSH = 1.1;
+/**
+ * How hard a double or aromatic bond holds its two ends in one plane, and how hard a single bond
+ * prefers the groups at its two ends staggered.
+ *
+ * The first is the larger, as it should be — twisting about ethene's double bond costs something
+ * like 65 kcal/mol and about ethane's single bond roughly 3 — but not by anything like the real
+ * factor of twenty. Both are instead set as low as will still do their job, and the planarity
+ * one has an upper limit that has nothing to do with chemistry: above roughly 0.25 the landscape
+ * gets stiff enough that the relaxer stops reliably finding a regular hexagon for benzene, and
+ * starts settling for a planar ring with bonds alternating by a tenth of an angstrom. A term
+ * strong enough to beat the search is worse than a term that is merely too gentle.
+ *
+ * What they buy, measured: without them ethene settles fifty degrees twisted, ethane settles
+ * eclipsed, and cyclohexane's chair is half flattened. With them at these values every bond
+ * length, every bond angle and the whole AXnEm table are unchanged to the last digit.
+ */
+const TWIST_FLAT = 0.12;
+const STAGGER_PUSH = 0.008;
 /** How close two atoms that are not bonded may come, as a multiple of a bond length. */
 const CLASH_RATIO = 1.15;
 const STEP = 0.05;
@@ -158,24 +182,11 @@ export function relax(bodies: RelaxBody[], links: RelaxLink[], steps = 900): num
     return 0;
   }
 
-  const adjacency: number[][] = bodies.map(() => []);
-  for (const link of links) {
-    adjacency[link.a].push(link.b);
-    adjacency[link.b].push(link.a);
-  }
-
-  // Atoms sharing a neighbour: these are the pairs whose mutual shoving creates angles.
-  const wedges: Array<{ centre: number; a: number; b: number }> = [];
-  for (let middle = 0; middle < count; middle += 1) {
-    const ring = adjacency[middle];
-    for (let i = 0; i < ring.length; i += 1) {
-      for (let j = i + 1; j < ring.length; j += 1) {
-        wedges.push({ centre: middle, a: ring[i], b: ring[j] });
-      }
-    }
-  }
-
+  const adjacency = adjacencyOf(count, links);
+  const wedges = wedgesOf(adjacency);
   const clashes = loosePairs(bodies, adjacency);
+  const flats = flatsOf(links, adjacency);
+  const staggers = staggersOf(links, adjacency);
 
   const force: Vec3[] = bodies.map(() => vec(0, 0, 0));
   const drift: Vec3[] = bodies.map(() => vec(0, 0, 0));
@@ -183,21 +194,7 @@ export function relax(bodies: RelaxBody[], links: RelaxLink[], steps = 900): num
 
   for (let iteration = 0; iteration < steps; iteration += 1) {
     used = iteration + 1;
-    for (let index = 0; index < count; index += 1) force[index] = vec(0, 0, 0);
-
-    for (const link of links) {
-      const ideal = idealLength(bodies, link);
-      apply(force, bodies, link.a, link.b, (gap) => BOND_PULL * (gap - ideal));
-    }
-
-    for (const wedge of wedges) {
-      push(force, bodies, wedge);
-    }
-
-    for (const [a, b] of clashes) {
-      const floor = CLASH_RATIO * (bodies[a].covalent + bodies[b].covalent);
-      apply(force, bodies, a, b, (gap) => (gap < floor ? CLASH_PUSH * (gap - floor) : 0));
-    }
+    gather(force, bodies, links, wedges, clashes, flats, staggers);
 
     let largest = 0;
     for (let index = 0; index < count; index += 1) {
@@ -215,6 +212,92 @@ export function relax(bodies: RelaxBody[], links: RelaxLink[], steps = 900): num
   // Recentring would move the pinned bodies, which is the one thing they are for.
   if (!bodies.some((body) => body.pinned)) centre(bodies);
   return used;
+}
+
+interface Wedge {
+  centre: number;
+  a: number;
+  b: number;
+}
+
+/**
+ * Every force, summed into `force`, which is overwritten.
+ *
+ * This is the one place forces are computed, and it must be the exact negative gradient of
+ * `strain`. That is not a style preference: basin hopping compares candidate shapes using
+ * `strain`, so if the two disagree the relaxer walks away from arrangements its own scoring
+ * calls better. It has happened, it cost a week, and there is now a test that differentiates
+ * `strain` numerically and checks it against this function term by term.
+ */
+function gather(
+  force: Vec3[],
+  bodies: RelaxBody[],
+  links: RelaxLink[],
+  wedges: Wedge[],
+  clashes: Array<[number, number]>,
+  flats: Flat[],
+  staggers: Stagger[],
+): void {
+  for (let index = 0; index < bodies.length; index += 1) force[index] = vec(0, 0, 0);
+
+  for (const link of links) {
+    const ideal = idealLength(bodies, link);
+    apply(force, bodies, link.a, link.b, (gap) => BOND_PULL * (gap - ideal));
+  }
+
+  for (const wedge of wedges) push(force, bodies, wedge);
+
+  for (const [a, b] of clashes) {
+    const floor = CLASH_RATIO * (bodies[a].covalent + bodies[b].covalent);
+    apply(force, bodies, a, b, (gap) => (gap < floor ? CLASH_PUSH * (gap - floor) : 0));
+  }
+
+  for (const flat of flats) flatForce(force, bodies, flat);
+
+  for (const term of staggers) staggerForce(force, bodies, term);
+}
+
+/** Neighbours of `adjacency` sharing a middle: the pairs whose shoving creates angles. */
+function wedgesOf(adjacency: number[][]): Wedge[] {
+  const wedges: Wedge[] = [];
+  for (let middle = 0; middle < adjacency.length; middle += 1) {
+    const ring = adjacency[middle];
+    for (let i = 0; i < ring.length; i += 1) {
+      for (let j = i + 1; j < ring.length; j += 1) {
+        wedges.push({ centre: middle, a: ring[i], b: ring[j] });
+      }
+    }
+  }
+  return wedges;
+}
+
+function adjacencyOf(count: number, links: RelaxLink[]): number[][] {
+  const adjacency: number[][] = Array.from({ length: count }, () => []);
+  for (const link of links) {
+    adjacency[link.a].push(link.b);
+    adjacency[link.b].push(link.a);
+  }
+  return adjacency;
+}
+
+/**
+ * The forces on a given arrangement, for anything that needs them without running the
+ * relaxation — which in practice means the test that checks they are the gradient of
+ * `strain`.
+ */
+export function forcesOn(bodies: RelaxBody[], links: RelaxLink[]): Vec3[] {
+  const adjacency = adjacencyOf(bodies.length, links);
+  const force: Vec3[] = bodies.map(() => vec(0, 0, 0));
+  gather(
+    force,
+    bodies,
+    links,
+    wedgesOf(adjacency),
+    loosePairs(bodies, adjacency),
+    flatsOf(links, adjacency),
+    staggersOf(links, adjacency),
+  );
+  return force;
 }
 
 /**
@@ -245,6 +328,8 @@ export function relaxBest(bodies: RelaxBody[], links: RelaxLink[], steps = 900, 
     // Big shoves explore, small ones polish, so alternate between the two.
     const reach = hop % 2 === 0 ? 0.5 : 1.6;
     bodies.forEach((body, index) => {
+      // A pinned body is pinned between hops as well, or it is not pinned at all.
+      if (body.pinned) return;
       body.position = add(best[index], scale(vec(random() - 0.5, random() - 0.5, random() - 0.5), reach));
     });
     relax(bodies, links, steps);
@@ -279,11 +364,7 @@ function seeded(seed: number): () => number {
  * flattened.
  */
 export function strain(bodies: RelaxBody[], links: RelaxLink[]): number {
-  const adjacency: number[][] = bodies.map(() => []);
-  for (const link of links) {
-    adjacency[link.a].push(link.b);
-    adjacency[link.b].push(link.a);
-  }
+  const adjacency = adjacencyOf(bodies.length, links);
 
   let total = 0;
   for (const link of links) {
@@ -291,19 +372,25 @@ export function strain(bodies: RelaxBody[], links: RelaxLink[]): number {
     total += 0.5 * BOND_PULL * stretch * stretch;
   }
 
-  for (let middle = 0; middle < bodies.length; middle += 1) {
-    const ring = adjacency[middle];
-    for (let i = 0; i < ring.length; i += 1) {
-      for (let j = i + 1; j < ring.length; j += 1) {
-        total += (NEIGHBOUR_PUSH * shove(bodies, ring[i], ring[j])) / apart(bodies, middle, ring[i], ring[j]);
-      }
-    }
+  for (const wedge of wedgesOf(adjacency)) {
+    total +=
+      (NEIGHBOUR_PUSH * shove(bodies, wedge.a, wedge.b)) / apart(bodies, wedge.centre, wedge.a, wedge.b);
   }
 
   for (const [a, b] of loosePairs(bodies, adjacency)) {
     const floor = CLASH_RATIO * (bodies[a].covalent + bodies[b].covalent);
     const overlap = distance(bodies[a].position, bodies[b].position) - floor;
     if (overlap < 0) total += 0.5 * CLASH_PUSH * overlap * overlap;
+  }
+
+  for (const flat of flatsOf(links, adjacency)) {
+    const found = boxiness(bodies, flat);
+    if (found) total += TWIST_FLAT * found.amount * found.amount;
+  }
+
+  for (const term of staggersOf(links, adjacency)) {
+    const found = staggerAt(bodies, term);
+    if (found) total += found.energy;
   }
 
   return total;
@@ -385,6 +472,258 @@ function push(
 /** The part of `force` perpendicular to `spoke`, which must already be a unit vector. */
 function across(force: Vec3, spoke: Vec3): Vec3 {
   return sub(force, scale(spoke, dot(force, spoke)));
+}
+
+export function cross(a: Vec3, b: Vec3): Vec3 {
+  return vec(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+}
+
+/** Some unit vector at right angles to `axis`. Which one is arbitrary and never matters. */
+export function perpendicular(axis: Vec3): Vec3 {
+  const away = Math.abs(axis.x) < 0.9 ? vec(1, 0, 0) : vec(0, 1, 0);
+  return unit(cross(axis, away));
+}
+
+/**
+ * Four bodies in a chain a-b-c-d whose bond to bond twist is being resisted.
+ *
+ * The obvious way to write this down is as a dihedral angle, and it is a trap. The derivative
+ * of a dihedral carries a factor of 1/|b1 x b2|, which blows up the instant three of the four
+ * bodies line up — and during a relaxation they transiently do. Benzene came apart into a
+ * three-dimensional tangle because of it, and clamping the denominator only traded the
+ * explosion for a discontinuity in the energy, which basin hopping then got stuck against.
+ *
+ * So it is written a different way instead. What the term really wants to say is "these four
+ * should be coplanar", and coplanarity has a clean algebraic measure: the volume of the box
+ * spanned by the three bond vectors, which is zero exactly when they lie in a plane. Dividing
+ * by the three lengths makes it a pure shape, independent of how long the bonds are.
+ *
+ * The two turn out to be the same thing. Because (b1 x b2) x (b2 x b3) = det[b1,b2,b3] b2, the
+ * normalised volume equals sin(dihedral) sin(angle at b) sin(angle at c) — a dihedral term that
+ * has already been faded out near collinearity, which is precisely where a dihedral stops
+ * meaning anything. No cutoff, no singularity, nothing to tune.
+ */
+interface Flat {
+  a: number;
+  b: number;
+  c: number;
+  d: number;
+}
+
+/**
+ * The normalised box volume of the three bond vectors, and its derivative with respect to each
+ * of the four positions. Zero when the four bodies are coplanar, plus or minus one when the
+ * three bonds are mutually square on.
+ */
+function boxiness(
+  bodies: RelaxBody[],
+  flat: Flat,
+): { amount: number; slope: [Vec3, Vec3, Vec3, Vec3] } | null {
+  const first = sub(bodies[flat.b].position, bodies[flat.a].position);
+  const middle = sub(bodies[flat.c].position, bodies[flat.b].position);
+  const last = sub(bodies[flat.d].position, bodies[flat.c].position);
+
+  const firstSize = dot(first, first);
+  const middleSize = dot(middle, middle);
+  const lastSize = dot(last, last);
+  // Only ever true if two bodies are exactly on top of each other, which the springs prevent.
+  if (firstSize < 1e-12 || middleSize < 1e-12 || lastSize < 1e-12) return null;
+
+  const volume = dot(first, cross(middle, last));
+  const shrink = 1 / Math.sqrt(firstSize * middleSize * lastSize);
+  const amount = volume * shrink;
+
+  // d(volume)/d(bond) is the cross product of the other two, and the normalisation contributes
+  // a term along the bond itself.
+  const onFirst = scale(sub(cross(middle, last), scale(first, volume / firstSize)), shrink);
+  const onMiddle = scale(sub(cross(last, first), scale(middle, volume / middleSize)), shrink);
+  const onLast = scale(sub(cross(first, middle), scale(last, volume / lastSize)), shrink);
+
+  // The bonds are differences of positions, so each body picks up the bonds it takes part in.
+  return {
+    amount,
+    slope: [
+      scale(onFirst, -1),
+      sub(onFirst, onMiddle),
+      sub(onMiddle, onLast),
+      onLast,
+    ],
+  };
+}
+
+function flatForce(force: Vec3[], bodies: RelaxBody[], flat: Flat): void {
+  const found = boxiness(bodies, flat);
+  if (!found) return;
+  // E = TWIST_FLAT * amount^2, so dE/d(amount) = 2 * TWIST_FLAT * amount.
+  const rate = 2 * TWIST_FLAT * found.amount;
+  const indices = [flat.a, flat.b, flat.c, flat.d];
+  indices.forEach((index, which) => {
+    force[index] = sub(force[index], scale(found.slope[which], rate));
+  });
+}
+
+/**
+ * Every planarity term in the structure: one per pair of outer neighbours across each bond
+ * with pi character. Lone pairs count as neighbours here as they do everywhere else.
+ */
+function flatsOf(links: RelaxLink[], adjacency: number[][]): Flat[] {
+  const flats: Flat[] = [];
+  for (const link of links) {
+    if (!link.stiff) continue;
+    const b = link.a;
+    const c = link.b;
+    for (const a of adjacency[b]) {
+      if (a === c) continue;
+      for (const d of adjacency[c]) {
+        if (d === b || d === a) continue;
+        flats.push({ a, b, c, d });
+      }
+    }
+  }
+  return flats;
+}
+
+/**
+ * A single bond's preference for having the groups at its two ends staggered rather than
+ * eclipsed, which is what makes ethane ethane.
+ *
+ * This one cannot be dodged. Ethane has nine of these across its central bond, and if you write
+ * down what a onefold or twofold term contributes summed over all nine, it comes to a constant:
+ * the three substituents at each end are 120 degrees apart, so everything but a threefold
+ * harmonic cancels exactly. Simply having the far atoms push each other apart does work, and was
+ * tried, but a repulsion between two atoms three bonds apart acts partly along the bonds and so
+ * stretches them — it put a fifth of an angstrom into ethanol — which is the same mistake the
+ * angle term is written on the unit sphere to avoid.
+ *
+ * So: a real threefold term, in a form with nothing to blow up. Writing S for the product of the
+ * sines of the two bond angles, the two combinations
+ *
+ *     u = S sin(dihedral)      the normalised box volume used above
+ *     w = S cos(dihedral)      cos(angle at b) cos(angle at c) - cos(angle from b1 to b3)
+ *
+ * are both free of small denominators, and
+ *
+ *     S^3 (1 + cos 3*dihedral) = S^3 + 4w^3 - 3w S^2
+ *
+ * which is the whole term. S^2 is a plain rational function; S^3 is its three-halves power,
+ * whose derivative carries a factor of S and therefore vanishes quietly at collinearity instead
+ * of exploding there. Zero when staggered, and flat as well as zero, so it perturbs nothing it
+ * was not asked to.
+ */
+interface Stagger {
+  a: number;
+  b: number;
+  c: number;
+  d: number;
+}
+
+/**
+ * The energy of one staggering term and its derivative with respect to each position.
+ *
+ * Everything is routed through six scalars — the three dot products between the bond vectors and
+ * their three squared lengths — because then the derivative is six scalar partials and a little
+ * bookkeeping, rather than a page of vector calculus with a mistake hidden in it.
+ */
+function staggerAt(
+  bodies: RelaxBody[],
+  term: Stagger,
+): { energy: number; slope: [Vec3, Vec3, Vec3, Vec3] } | null {
+  const first = sub(bodies[term.b].position, bodies[term.a].position);
+  const middle = sub(bodies[term.c].position, bodies[term.b].position);
+  const last = sub(bodies[term.d].position, bodies[term.c].position);
+
+  const lengthFirst = dot(first, first);
+  const lengthMiddle = dot(middle, middle);
+  const lengthLast = dot(last, last);
+  if (lengthFirst < 1e-12 || lengthMiddle < 1e-12 || lengthLast < 1e-12) return null;
+
+  const nearDot = dot(first, middle);
+  const farDot = dot(middle, last);
+  const acrossDot = dot(first, last);
+
+  // The two squared sines, and their product.
+  const sineNear = 1 - (nearDot * nearDot) / (lengthFirst * lengthMiddle);
+  const sineFar = 1 - (farDot * farDot) / (lengthMiddle * lengthLast);
+  const square = sineNear * sineFar;
+  if (square <= 0) return { energy: 0, slope: [vec(0, 0, 0), vec(0, 0, 0), vec(0, 0, 0), vec(0, 0, 0)] };
+
+  const reach = Math.sqrt(lengthFirst * lengthLast);
+  const lean = ((nearDot * farDot) / lengthMiddle - acrossDot) / reach;
+
+  const energy =
+    STAGGER_PUSH * (Math.pow(square, 1.5) + 4 * lean * lean * lean - 3 * lean * square);
+
+  const bySquare = STAGGER_PUSH * (1.5 * Math.sqrt(square) - 3 * lean);
+  const byLean = STAGGER_PUSH * (12 * lean * lean - 3 * square);
+
+  // How the two shape numbers depend on each of the six scalars.
+  const squareByNear = sineFar * ((-2 * nearDot) / (lengthFirst * lengthMiddle));
+  const squareByFar = sineNear * ((-2 * farDot) / (lengthMiddle * lengthLast));
+  const squareByLengthFirst = (sineFar * (nearDot * nearDot)) / (lengthFirst * lengthFirst * lengthMiddle);
+  const squareByLengthMiddle =
+    (sineFar * (nearDot * nearDot)) / (lengthFirst * lengthMiddle * lengthMiddle) +
+    (sineNear * (farDot * farDot)) / (lengthMiddle * lengthMiddle * lengthLast);
+  const squareByLengthLast = (sineNear * (farDot * farDot)) / (lengthMiddle * lengthLast * lengthLast);
+
+  const leanByNear = farDot / (lengthMiddle * reach);
+  const leanByFar = nearDot / (lengthMiddle * reach);
+  const leanByAcross = -1 / reach;
+  const leanByLengthMiddle = -(nearDot * farDot) / (lengthMiddle * lengthMiddle * reach);
+  const leanByLengthFirst = -lean / (2 * lengthFirst);
+  const leanByLengthLast = -lean / (2 * lengthLast);
+
+  const byNear = bySquare * squareByNear + byLean * leanByNear;
+  const byFar = bySquare * squareByFar + byLean * leanByFar;
+  const byAcross = byLean * leanByAcross;
+  const byLengthFirst = bySquare * squareByLengthFirst + byLean * leanByLengthFirst;
+  const byLengthMiddle = bySquare * squareByLengthMiddle + byLean * leanByLengthMiddle;
+  const byLengthLast = bySquare * squareByLengthLast + byLean * leanByLengthLast;
+
+  // And how each scalar depends on the three bond vectors.
+  const onFirst = add(
+    add(scale(middle, byNear), scale(last, byAcross)),
+    scale(first, 2 * byLengthFirst),
+  );
+  const onMiddle = add(
+    add(scale(first, byNear), scale(last, byFar)),
+    scale(middle, 2 * byLengthMiddle),
+  );
+  const onLast = add(
+    add(scale(middle, byFar), scale(first, byAcross)),
+    scale(last, 2 * byLengthLast),
+  );
+
+  return {
+    energy,
+    slope: [scale(onFirst, -1), sub(onFirst, onMiddle), sub(onMiddle, onLast), onLast],
+  };
+}
+
+function staggerForce(force: Vec3[], bodies: RelaxBody[], term: Stagger): void {
+  const found = staggerAt(bodies, term);
+  if (!found) return;
+  const indices = [term.a, term.b, term.c, term.d];
+  indices.forEach((index, which) => {
+    force[index] = sub(force[index], found.slope[which]);
+  });
+}
+
+/** Every staggering term: one per pair of outer neighbours across each single bond. */
+function staggersOf(links: RelaxLink[], adjacency: number[][]): Stagger[] {
+  const terms: Stagger[] = [];
+  for (const link of links) {
+    if (link.stiff) continue;
+    const b = link.a;
+    const c = link.b;
+    for (const a of adjacency[b]) {
+      if (a === c) continue;
+      for (const d of adjacency[c]) {
+        if (d === b || d === a) continue;
+        terms.push({ a, b, c, d });
+      }
+    }
+  }
+  return terms;
 }
 
 export function idealLength(bodies: RelaxBody[], link: RelaxLink): number {

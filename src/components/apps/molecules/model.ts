@@ -2,7 +2,10 @@ import { element, known } from './elements';
 import {
   add,
   centre,
+  cross,
+  length,
   openDirection,
+  perpendicular,
   relax,
   relaxBest,
   scale,
@@ -132,8 +135,41 @@ export function suggestKind(first: string, second: string): BondKind {
   return gap >= IONIC_GAP ? 'ionic' : 'covalent';
 }
 
-export function bondLength(first: string, second: string, order: BondOrder = 1): number {
+export function bondLength(
+  first: string,
+  second: string,
+  order: BondOrder = 1,
+  kind: BondKind = 'covalent',
+): number {
+  // An ionic bond is two ions in contact, so its length is the sum of the ionic radii — 2.83 Å
+  // for sodium chloride, which is what the crystal measures. Using covalent radii would give
+  // 2.53, the length of a bond that in this case does not exist.
+  if (kind === 'ionic') {
+    const gap = ionicPair(first, second);
+    if (gap) return gap;
+  }
   return (element(first).covalent + element(second).covalent) * squeezeOf(order);
+}
+
+/** The sum of the two ionic radii, when both elements have one and the charges oppose. */
+function ionicPair(first: string, second: string): number | null {
+  const one = element(first).ion;
+  const other = element(second).ion;
+  if (!one || !other) return null;
+  if (Math.sign(one.charge) === Math.sign(other.charge)) return null;
+  return one.radius + other.radius;
+}
+
+/**
+ * The ideal length of a bond as a fraction of the two covalent radii, which is the form the
+ * relaxer wants it in: multiple bonds pull in, ionic bonds stand off at the ionic radii instead.
+ */
+function stretchOf(molecule: Molecule, bond: Bond): number {
+  const a = atomAt(molecule, bond.a);
+  const b = atomAt(molecule, bond.b);
+  if (!a || !b) return squeezeOf(bond.order);
+  const plain = element(a.symbol).covalent + element(b.symbol).covalent;
+  return bondLength(a.symbol, b.symbol, bond.order, bond.kind) / plain;
 }
 
 /**
@@ -149,14 +185,44 @@ export function bondLength(first: string, second: string, order: BondOrder = 1):
  * Only the main group. Electron counting does not predict the shape of a transition metal
  * complex, so the d block is given none and left alone.
  */
+/**
+ * An atom's charge: what was set by hand, plus what its ionic bonds have handed over.
+ *
+ * An ionic bond is one electron moving from the less electronegative atom to the more
+ * electronegative one, so marking a bond ionic is the same statement as saying the two atoms are
+ * now ions. Taking it as derived rather than stored means the two can never disagree: change a
+ * bond from covalent to ionic and the charges follow, change it back and they follow back.
+ */
+export function chargeAt(molecule: Molecule, id: number): number {
+  const atom = atomAt(molecule, id);
+  if (!atom) return 0;
+
+  let total = atom.charge;
+  for (const bond of bondsAt(molecule, id)) {
+    if (bond.kind !== 'ionic') continue;
+    const other = atomAt(molecule, bond.a === id ? bond.b : bond.a);
+    if (!other) continue;
+    const mine = element(atom.symbol).electronegativity;
+    const theirs = element(other.symbol).electronegativity;
+    if (mine === theirs) continue;
+    total += mine > theirs ? -1 : 1;
+  }
+  return total;
+}
+
 export function lonePairsAt(molecule: Molecule, id: number): number {
   const atom = atomAt(molecule, id);
   if (!atom) return 0;
   const info = element(atom.symbol);
   if (info.block !== 'main') return 0;
 
-  const spent = bondsAt(molecule, id).reduce((sum, bond) => sum + bond.order, 0);
-  const spare = info.electrons - atom.charge - spent;
+  // An ionic bond shares nothing, so it spends no electrons: the pair stays with whichever atom
+  // won it. That is why chloride ends up with a full four lone pairs and sodium with none.
+  const spent = bondsAt(molecule, id).reduce(
+    (sum, bond) => sum + (bond.kind === 'ionic' ? 0 : bond.order),
+    0,
+  );
+  const spare = info.electrons - chargeAt(molecule, id) - spent;
   return Math.max(0, Math.floor(spare / 2));
 }
 
@@ -176,6 +242,11 @@ export function shapeAt(molecule: Molecule, id: number): string {
   // An atom with one bond has no arrangement to describe, however many lone pairs it holds,
   // so it is terminal and that is all there is to say about it.
   if (bonds === 1) return 'terminal';
+
+  // Looked up rather than worked out, for the elements where working it out gives the wrong
+  // answer. Copper is the whole reason this branch exists.
+  const atom = atomAt(molecule, id);
+  if (atom && element(atom.symbol).flat === bonds) return 'square planar';
   const table: Record<string, string> = {
     '2,0': 'linear',
     '2,1': 'bent',
@@ -247,7 +318,14 @@ export function settle(molecule: Molecule, options: SettleOptions = {}): Molecul
   }));
   const links: RelaxLink[] = molecule.bonds
     .filter((bond) => index.has(bond.a) && index.has(bond.b))
-    .map((bond) => ({ a: index.get(bond.a)!, b: index.get(bond.b)!, squeeze: squeezeOf(bond.order) }));
+    .map((bond) => ({
+      a: index.get(bond.a)!,
+      b: index.get(bond.b)!,
+      squeeze: stretchOf(molecule, bond),
+      // Anything above a single bond has pi character and so resists being twisted about. An
+      // ionic bond has no shared pair to twist, so it is free either way.
+      stiff: bond.kind === 'covalent' && bond.order >= 1.5,
+    }));
 
   const ghosts: Array<{ atom: number; index: number; body: number; shaping: boolean }> = [];
 
@@ -309,6 +387,59 @@ export function settle(molecule: Molecule, options: SettleOptions = {}): Molecul
   }
 
   for (const id of shaping) hang(molecule, id, lonePairsAt(molecule, id), true);
+
+  // The one place the element table overrules the geometry, and the one place this program is
+  // told an answer instead of working one out.
+  //
+  // Four ligands on a copper(II) sit in a square rather than a tetrahedron, for reasons that live
+  // in the d orbitals and are invisible to anything counting electron pairs. And they really are
+  // invisible to this one: the square and a lopsided alternative sit within one part in six
+  // thousand of each other here, and left to itself the relaxer picks the lopsided one from every
+  // starting point tried, with any weighting of the poles, however many hops it is given.
+  //
+  // So the square is placed rather than predicted — the four ligands put where copper is known to
+  // put them, plus two bodies above and below the plane to hold them there, shoving like lone
+  // pairs because that is the only vocabulary this program has for "something is sitting here".
+  // They are not recorded as lone pairs afterwards, because they are not lone pairs. The relaxer
+  // then confirms the arrangement is at rest, which is all it is being asked to do.
+  for (const atom of molecule.atoms) {
+    const info = element(atom.symbol);
+    const attached = neighboursOf(molecule, atom.id);
+    if (info.flat === undefined || attached.length !== info.flat) continue;
+
+    const home = index.get(atom.id)!;
+    const axis = unit(openDirection(attached.map((other) => sub(other.position, atom.position))));
+    const sideways = perpendicular(axis);
+    const other = cross(axis, sideways);
+
+    // The ligands onto the corners of a square, each left at the distance it already had.
+    attached.forEach((leg, corner) => {
+      const seat = index.get(leg.id);
+      if (seat === undefined) return;
+      const span = length(sub(leg.position, atom.position)) || bondLength(atom.symbol, leg.symbol);
+      const turn = (corner * Math.PI) / 2;
+      bodies[seat].position = add(
+        atom.position,
+        scale(add(scale(sideways, Math.cos(turn)), scale(other, Math.sin(turn))), span),
+      );
+    });
+
+    const reach = info.covalent * LONE_PAIR_REACH;
+    for (const way of [axis, scale(axis, -1)]) {
+      bodies.push({
+        position: add(atom.position, scale(way, reach)),
+        covalent: reach,
+        weight: LONE_PAIR_WEIGHT,
+        ghost: true,
+        // Held still, which is the whole point. Left free they wander off to the lopsided
+        // arrangement the energy marginally prefers, taking the ligands with them. Pinning them
+        // is the honest version of what is happening: the axis is an input, not a result.
+        pinned: true,
+      });
+      links.push({ a: home, b: bodies.length - 1, squeeze: reach / (info.covalent + reach) });
+    }
+  }
+
   relaxBest(bodies, links, steps, hops);
 
   if (trailing.length > 0) {
@@ -340,6 +471,8 @@ export function settle(molecule: Molecule, options: SettleOptions = {}): Molecul
 
 /** The second pass has only a few free bodies and a fixed cage, so it converges quickly. */
 const TRAILING_STEPS = 600;
+
+const FLAT_POLE_WEIGHT = 3;
 
 /** Lone pairs are derived, so every edit hands back a molecule with none and lets settle fill them in. */
 function shaped(atoms: Atom[], bonds: Bond[]): Molecule {
@@ -484,10 +617,17 @@ export function formulaText(molecule: Molecule): string {
     .join('');
 }
 
-/** Atoms carrying more bonds than the element usually manages. Reported, never blocked. */
+/**
+ * Atoms carrying more bonds than the element manages even generously. Reported, never blocked.
+ *
+ * Measured against `most` rather than `valence`, because the two are different questions and the
+ * warning is only interesting for the second. Sulfur's valence is two and sulfur hexafluoride is
+ * a real substance sitting in the preset list; complaining about it would be the program
+ * doubting one of its own examples.
+ */
 export function crowded(molecule: Molecule): Array<{ atom: Atom; bonds: number; usual: number }> {
   return molecule.atoms
-    .map((atom) => ({ atom, bonds: bondsAt(molecule, atom.id).length, usual: element(atom.symbol).valence }))
+    .map((atom) => ({ atom, bonds: bondsAt(molecule, atom.id).length, usual: element(atom.symbol).most }))
     .filter((report) => report.bonds > report.usual);
 }
 
@@ -658,7 +798,12 @@ const RECIPES: Recipe[] = [
   {
     name: 'Table salt',
     atoms: [['Na', null], ['Cl', 0]],
-    note: 'Sodium and chlorine differ by 2.23 on the Pauling scale, so the bond is drawn as ionic.',
+    note: 'Ionic, so the electron moves across: sodium shrinks to Na+ and chlorine swells to Cl−.',
+  },
+  {
+    name: 'Copper(II) chloride',
+    atoms: [['Cu', null], ['Cl', 0], ['Cl', 0], ['Cl', 0], ['Cl', 0]],
+    note: 'Square, not tetrahedral. The one shape here that is looked up rather than worked out.',
   },
 ];
 

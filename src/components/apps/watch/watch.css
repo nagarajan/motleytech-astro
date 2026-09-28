@@ -1,0 +1,431 @@
+.wm {
+  margin: 1.8rem 0;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-solid);
+  font-family: var(--font-body);
+  color: var(--text);
+}
+
+.wm-bar,
+.wm-views {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.wm-bar {
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.wm-views {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.wm-spacer {
+  flex: 1 1 0.5rem;
+}
+
+.wm-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.wm-field--wide {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.wm-select {
+  font: inherit;
+  font-size: 0.84rem;
+  max-width: 14rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text);
+}
+
+.wm-slider {
+  flex: 1 1 5rem;
+  min-width: 4.5rem;
+  max-width: 9rem;
+  accent-color: var(--accent);
+}
+
+.wm-slider--short {
+  max-width: 6rem;
+}
+
+.wm-readout {
+  min-width: 3.4rem;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+
+.wm-btn {
+  font: inherit;
+  font-size: 0.86rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 120ms, color 120ms;
+}
+
+.wm-btn:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.wm-btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.wm-btn--quiet {
+  font-size: 0.76rem;
+  padding: 0.18rem 0.45rem;
+  color: var(--text-faint);
+}
+
+.wm-chip {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--chip-bg);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.wm-chip:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+/* ---------- layout ---------- */
+
+.wm-panes {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+@media (max-width: 900px) {
+  .wm-panes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.wm-stage {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--code-bg);
+  overflow: hidden;
+}
+
+.wm-canvas {
+  display: block;
+  width: 100%;
+  height: 34rem;
+  touch-action: none;
+  cursor: grab;
+}
+
+.wm-canvas:active {
+  cursor: grabbing;
+}
+
+@media (max-width: 900px) {
+  .wm-canvas {
+    height: 22rem;
+  }
+}
+
+.wm-legend {
+  margin: 0;
+  padding: 0.4rem 0.55rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-solid);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-faint);
+}
+
+.wm-legend strong {
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
+.wm-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.wm-block {
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.wm-block--parts {
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.wm-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  border: 0;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.wm-head span {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ---------- readouts ---------- */
+
+.wm-time {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 1.85rem;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  /* Digits that change ten times a second must not shuffle the ones beside them. */
+  font-variant-numeric: tabular-nums;
+}
+
+.wm-gauge {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.35rem;
+}
+
+.wm-gauge-name {
+  flex: 0 0 4.6rem;
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}
+
+.wm-gauge-track {
+  flex: 1 1 auto;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  overflow: hidden;
+}
+
+.wm-gauge-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent-2);
+  transition: width 140ms linear;
+}
+
+.wm-gauge-fill--wind {
+  background: var(--accent);
+}
+
+.wm-gauge-fill--bad {
+  background: #e0563f;
+}
+
+.wm-gauge-value {
+  flex: 0 0 4.4rem;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.wm-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.3rem 0.6rem;
+  margin: 0.65rem 0 0;
+}
+
+.wm-stats div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 7px;
+  background: var(--surface-solid);
+}
+
+.wm-stats dt {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+}
+
+.wm-stats dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.wm-warn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  border: 1px dashed var(--border-strong);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+/* ---------- the parts list ---------- */
+
+.wm-group {
+  margin-bottom: 0.5rem;
+}
+
+.wm-group-name {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.wm-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wm-part {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.1rem 0.25rem;
+  border-radius: 7px;
+  border: 1px solid transparent;
+}
+
+.wm-part--on {
+  border-color: var(--accent);
+  background: var(--surface-solid);
+}
+
+.wm-part-name {
+  flex: 1 1 auto;
+  padding: 0.16rem 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.wm-part-name:hover {
+  color: var(--accent-2);
+}
+
+.wm-shades {
+  display: inline-flex;
+  gap: 0.1rem;
+}
+
+.wm-shade {
+  width: 1.3rem;
+  padding: 0.05rem 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  font-size: 0.72rem;
+  line-height: 1.1;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.wm-shade:hover {
+  color: var(--text);
+}
+
+.wm-shade--on {
+  border-color: var(--border-strong);
+  color: var(--accent-2);
+}
+
+/* ---------- the detail strip ---------- */
+
+.wm-detail {
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border);
+}
+
+.wm-detail-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.wm-notice {
+  margin: 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+}

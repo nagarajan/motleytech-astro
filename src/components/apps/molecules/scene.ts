@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { element } from './elements';
+import { element, shellOf } from './elements';
 import { extent, type Vec3 } from './geometry';
-import type { Molecule } from './model';
+import { chargeAt, type Molecule } from './model';
 
 /** Covalent bonds are drawn in steel, ionic ones in a warm amber. */
 export const BOND_COLOURS = { covalent: '#b9c2d0', ionic: '#f59f0a' } as const;
@@ -244,7 +244,9 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
       (parts.shell.material as THREE.ShaderMaterial).uniforms.tint.value.set(info.colour);
 
       const nucleusRadius = Math.max(NUCLEUS_FLOOR, info.covalent * NUCLEUS_SHARE);
-      const shellRadius = info.waals * options.shell;
+      // An ion is a different size from the atom it came from, sometimes dramatically so, and
+      // the shell is the one part of the picture that can show it.
+      const shellRadius = shellOf(atom.symbol, chargeAt(molecule, atom.id)) * options.shell;
       shellRadii.push(options.showShells ? shellRadius : nucleusRadius);
       sizes.set(atom.id, { nucleus: nucleusRadius, shell: shellRadius });
 

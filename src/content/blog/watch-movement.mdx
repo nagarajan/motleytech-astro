@@ -1,0 +1,169 @@
+---
+title: "A watch that is not animated"
+pubDate: 2026-09-27
+category: "Blog"
+tags: ["Horology", "3D", "Javascript", "Physics", "Mechanics"]
+author: "Nagarajan"
+description: "A hand-wound mechanical watch, simulated rather than animated: a mainspring holding a torque, a train that is only gearing, and a balance wheel obeying an equation of motion. Wind it, set it, and fade any part away to see what is under it."
+trailer: "The seconds hand moves because a balance wheel is vibrating, and for no other reason. Wind the crown, pull it out to set the time, and fade the bridges away to watch the escapement lock, unlock and impulse five times a second."
+heroImage: "/images/demos/watch-movement.webp"
+heroAlt: "A close-up of the escapement: a gilt balance wheel with timing screws around its rim and a blued hairspring coiled inside it, the steel pallet fork beside it, and the escape wheel and fourth wheel to the right, with the rest of the movement faded to a ghost behind them"
+disqusIdentifier: "watchMovement"
+---
+
+import WatchMovement from '../../components/apps/WatchMovement.tsx';
+
+<WatchMovement client:visible />
+
+Everything in there is turning because something else pushed it. Drag the crown to the right of the case and you will feel the mainspring take up; pull the crown out and drag again and the hands move while the seconds hand carries on undisturbed. Click any part to fade it and see what is underneath.
+
+The one thing worth knowing before anything else: **there is no animation in this**. Nothing has a keyframe, nothing is told what angle to be at, and the seconds hand is not advancing once a second because a timer fired. A balance wheel is solving an equation of motion at five thousand steps a second, an escapement is converting its swings into rotation, and the hands are geared off the result. If the rate comes out wrong, it comes out wrong, and you can watch it happen.
+
+It comes out **0.6 seconds a day slow**, which is a genuinely good watch.
+
+## What a watch actually is
+
+Four things, in a chain, and almost all the confusion about mechanical watches comes from not separating them.
+
+A **mainspring** stores energy and gives back a torque. A **going train** is a set of gears, and gears are boring: they only multiply speed and divide torque. An **escapement** is where the interesting part is. And a **balance wheel** is a thing that vibrates at its own frequency and does not much care what you do to it.
+
+The order matters, and so does which of them decides the rate. It is the balance, alone. The mainspring and the train have nothing to do with timekeeping; their entire job is to keep handing the balance small pushes so it does not stop. The escapement is the awkward middleman that has to take a steady torque coming in and turn it into discrete shoves timed by the balance itself — while also holding the entire train still for nine tenths of the time, and counting.
+
+## The train is arithmetic
+
+The tooth counts are not chosen for looks. They have one job, which is to make the centre wheel turn exactly once an hour and the fourth wheel exactly once a minute, out of whole numbers of teeth.
+
+| | Teeth | Driven pinion | Ratio |
+| --- | --- | --- | --- |
+| Barrel | 80 | 10 | 8 |
+| Centre wheel | 64 | 8 | 8 |
+| Third wheel | 60 | 8 | 7.5 |
+| Fourth wheel | 70 | 7 | 10 |
+
+From centre to escape that is $8 \times 7.5 \times 10 = 600$, so the escape wheel turns 600 times an hour. It has 15 teeth, and each tooth is let past in two stages — one for each pallet — so a turn of the escape wheel is 30 beats:
+
+$$
+600 \times 30 = 18\,000 \text{ beats per hour}
+$$
+
+which is five a second, which is a balance vibrating at 2.5 Hz. That number is not an input to the simulation anywhere; it is what the tooth counts produce. The harness measures **17,999.88 beats an hour** by counting them.
+
+The same arithmetic gives the power reserve for free. Barrel to escape is $8 \times 600 = 4800$, and the barrel turns once every eight hours, so five and a half turns of wind is about forty-four hours. Measured: **44.2 hours**, of which **35.3** are above 200° of amplitude, which is the part a watchmaker would call useful.
+
+## The balance is a pendulum that does not care
+
+This is the whole of the timekeeping:
+
+$$
+I\ddot{\theta} = -k\theta - c_1\dot{\theta} - c_2\dot{\theta}|\dot{\theta}| + \tau_{\text{esc}}
+$$
+
+A hairspring pulling back proportionally to angle, two drag terms, and whatever the escapement is doing at this instant. Integrated with Euler–Cromer at a fixed 0.2 ms step, which is symplectic and therefore does not leak energy — an ordinary Euler step would have the watch gaining or losing minutes a day from arithmetic alone.
+
+The reason a watch works at all is in the first two terms. A linear spring gives a period that does not depend on amplitude, so a balance swinging 280° and a balance swinging 200° keep the same time. That is **isochronism**, and it is why a watch can run for forty hours on a torque that falls by two thirds over that span and still be worth wearing.
+
+It is not perfect here, and it is instructive that it is not:
+
+| Wind | Amplitude | Rate |
+| --- | --- | --- |
+| 5.5 turns | 287° | −0.6 s/day |
+| 3.0 turns | 251° | −2.7 s/day |
+| 1.5 turns | 216° | −3.0 s/day |
+| 0.6 turns | 175° | −6.3 s/day |
+
+The hairspring in here is perfectly linear, so every one of those six seconds comes from the escapement — from the fact that unlocking costs the balance energy at a moment that depends on how fast it is going. Real watches have this defect too, from the same place, and a large part of what an adjuster is doing is trading it off against the hairspring's own errors.
+
+## The escapement, which is the hard part
+
+The Swiss lever escapement does four things per beat and they are worth naming, because the simulation's phase indicator tells you which one it is in.
+
+**Lock.** An escape wheel tooth is resting against the flat of a pallet jewel. The whole train is stationary, held by a wheel that wants to turn and a jewel that will not let it. The jewel's face is cut at an angle that makes the tooth pull the fork *harder* onto the banking pin rather than pushing it off — this is **draw**, and without it every jolt to the watch would unlock the escapement and it would run away.
+
+**Unlock.** The balance swings back through the middle, and a jewel on its roller catches the fork's slot and shoves the fork sideways. This costs the balance energy. It is the price of admission.
+
+**Impulse.** The lock releases, the escape wheel surges forward, and its tooth slides along the sloping face of the pallet, driving the fork — which is still engaged with the balance's roller jewel — and pushing the balance on its way. This is the only moment in the entire beat when the mainspring's energy reaches the balance. It lasts about 52° of swing out of the 570° the balance covers in a beat — under a tenth of it.
+
+**Drop.** The tooth falls off the end of the pallet, the wheel turns until the next tooth hits the other pallet, and everything stops again. The balance is now **detached** — free, unconnected to anything, swinging out to 280° and back with nothing touching it. That is the whole point of the design and the reason it beat every escapement that came before it.
+
+Modelling this properly turned out to need one idea, which is to stop thinking of the escapement as a force and start thinking of it as a **rigid coupling**. While the tooth is on the pallet, the escape wheel's position is a function of the balance's position — call it $\varphi(\theta)$ — and there is no freedom left. So the torque the balance feels is just the torque on the escape wheel scaled by the gearing between them:
+
+$$
+\tau_{\text{balance}} = \tau_{\text{esc}} \cdot \frac{d\varphi}{d\theta}
+$$
+
+Unlocking and impulse then fall out of one expression. During unlocking the balance is pushing the wheel *backwards*, so that derivative is negative and the balance loses energy. During impulse it is positive and the balance gains. Nobody has to write down two cases and decide when to switch between them; the sign of a derivative does it.
+
+## Checking it without looking at it
+
+Before any of it was drawn, there was a headless harness that ran the movement and printed numbers, and it earned its keep immediately.
+
+The most useful check in it is an independent one. Rather than only integrating until the amplitude settles, the harness also *solves* for where it should settle, by balancing the energy the escapement puts in per beat against the energy the two drag terms take out, and bisecting on amplitude. That prediction has no integrator in it at all, and it agrees with the integrated result to within a degree everywhere from 135° to 287°. Two different methods reaching the same number is worth a great deal more than one method reaching a plausible one.
+
+It also caught the bug I would never have found by eye. The rate came out at exactly **−86.3 seconds a day**, and — this is the tell — it stayed at exactly −86.3 no matter what I changed. Different amplitude, different torque, different mainspring: −86.3. A physical error would have moved.
+
+$$
+\frac{0.0002 \text{ s}}{0.2 \text{ s}} \times 86\,400 = 86.4
+$$
+
+The beat period is 0.2 s and the timestep is 0.2 ms. The escapement code was returning early when it released the tooth, skipping the balance's integration for exactly one step per beat. One missing line, one part in a thousand, and a watch that would have lost an hour and a half a month.
+
+## Laying it out
+
+A gear mesh fixes exactly one thing: the distance between two arbors is the sum of their pitch radii. So the plan of a movement is a chain of rigid links with free joints, and designing one is choosing the angles.
+
+I tried to choose them by hand and kept producing watches where the balance overlapped the barrel or the escape wheel sat outside the case. The five angles in there now came out of a grid search and coordinate descent against the obvious constraints — everything inside a 27 mm case, no two arbors closer than a couple of millimetres, the escapement not buried. Every mesh distance is exact, and two things fell out that I did not ask for: the fourth wheel landed at almost exactly six o'clock, which is where a subsidiary seconds dial belongs, and the crown wheel landed on the stem's axis, which it has to, because the bevel between them only works if the axes meet.
+
+The teeth themselves taught me something too. My first attempt scaled the tooth profile by the wheel's radius, and the 64-tooth centre wheel came out looking like a circular saw. A tooth's size is set by the *pitch* — the distance from one tooth to the next — not by how big the wheel is, which is why watchmakers measure it in **modules**. Once the profile was expressed in modules, the big wheel and the seven-leaf pinion got teeth of nearly the same size, and the thing stopped looking like a toy.
+
+## Winding, and the trick that makes it keyless
+
+The crown does two completely different jobs and does them with one part sliding a millimetre and a half.
+
+Pushed in, the **sliding pinion** is coupled to the **winding pinion** by a ring of facing ratchet teeth. Turning the crown turns the winding pinion, which drives the crown wheel through a bevel, which drives the ratchet wheel, which is screwed to the barrel arbor and winds the mainspring. The click drops between the ratchet wheel's teeth and stops it unwinding. Turn the crown the other way and those facing ratchet teeth simply ride over each other, which is why winding backwards does nothing but click.
+
+Pulled out, the sliding pinion leaves the winding pinion behind and takes up with the **setting wheel** instead, which reaches through the plate to the **minute wheel** and moves the hands.
+
+Here is the part that is genuinely clever. The minute hand is not fixed to the centre wheel; it is on a **cannon pinion**, which is a friction fit on the centre arbor — tight enough to be dragged round by it for forty hours, loose enough to be twisted against it by hand. So setting the time slides the hands past a train that never stops. The harness checks exactly this: five turns of the crown while pulled out moved the hands **60 minutes** and moved the train by **0.0000 seconds**. That is why the seconds hand does not flinch while you are setting a watch.
+
+Winding it from empty takes **14.15 turns of the crown** for five and a half turns in the barrel, which is about right, and about as tedious as the real thing.
+
+## Two adjustments, and what happens when you push them
+
+A watch has exactly two things you can change, and both are in the panel.
+
+The **regulator** is a pair of pins that pinch the hairspring near its outer end, shortening its working length. Shorter spring, stiffer spring, faster watch. Its full range here is **±173 seconds a day**, which is a lot — a real regulator is deliberately coarse, because the adjuster wants to be able to fix a watch that is badly out.
+
+The **mainspring** slider is not an adjustment any watchmaker would make; it is there because getting it wrong is so instructive. Fit a spring 1.5 times too strong and the amplitude does not settle at a sensible 340°. It pins at **332°**, the **knocking** warning comes on, and the rate jumps to **+873 seconds a day** — a quarter of an hour a day fast.
+
+What is happening is called knocking, or rebanking, and it is a real failure mode. The balance is swinging so far that the impulse jewel comes all the way round and strikes the *outside* of the fork horn. Instead of being detached for most of the swing it is now being slammed to a stop and bounced back early, and the period has nothing to do with the hairspring any more. A watch that is wildly fast and has a wild amplitude is almost always this, and the cure is a weaker spring, not the regulator.
+
+## Seeing through it
+
+A movement is five layers of overlapping metal in four millimetres, and the only way to see the escape wheel work is to look through the bridge sitting on top of it. So every part in here owns its own materials rather than sharing one brass and one steel, which costs some draw calls and buys the ability to fade any single one of them independently.
+
+Selecting a part highlights it and tells you what it is for. The **Bridges off** preset is the one to start with — it is the view a watchmaker gets by taking four screws out. **Escapement only** fades everything except the escape wheel, fork, balance and hairspring, and is worth looking at with the speed slowed to a fiftieth.
+
+## Where it is wrong
+
+**The hairspring is perfectly linear** and perfectly flat, and real ones are neither. A real spring's coils breathe unevenly, its centre of gravity moves as it winds and unwinds, and that motion is a large part of a real watch's positional errors. Here it only draws a spiral; the restoring torque is $-k\theta$ and nothing else.
+
+**There is no gravity and there are no positions.** A real watch is adjusted in five or six positions — dial up, crown down, and so on — because an out-of-poise balance runs at a different rate in each of them. This one has a single rate. That is a large fraction of real watchmaking simply absent.
+
+**The train has no inertia during drop.** Modelling the escapement as a rigid coupling is what made the problem tractable, but it means the escape wheel is a massless follower of the balance during contact, and the train's own inertia only appears as a fixed efficiency factor. Drop happens instantly. In a real escapement the wheel's inertia during drop is exactly what causes the tooth to bounce off the lock, and the design of the safety roller exists to catch that.
+
+**There is no temperature.** Real hairsprings change stiffness with heat, and the invention of a hairspring alloy that did not is one of the more important events in the subject.
+
+**The crown is on the left when you look at the dial.** The movement is laid out for viewing from the bridge side, and the dial view is the same geometry seen from behind, so the stem ends up at nine o'clock. Left-crown watches exist, and I have decided this is one.
+
+## Things worth trying
+
+- Press **Let it down** and watch it die. The amplitude decays over several seconds, the balance rings down, and the watch stops mid-beat with a tooth against a pallet. Then press **Shake it** — a wound watch that has stopped only needs the balance started once, which is why shaking your wrist works.
+- Let it down, then wind with the crown a little at a time. Somewhere around a fifth of a turn there is enough torque to push the balance through the lock and it starts on its own.
+- Pull the crown out and set the time while watching the seconds hand. It does not move. Then push the crown back in and wind: now everything turns except the hands, because the click is holding the ratchet and the barrel is being wound rather than unwinding.
+- Slow the speed to 1/50 and choose **Escapement only**. One beat takes ten seconds and you can see all four stages: the fork sitting on its banking pin, the roller jewel arriving and shoving it, the escape wheel surging, and the drop onto the other pallet.
+- Push the mainspring slider to 1.5× and watch the amplitude gauge go red. Then bring it back and notice that the amplitude takes nearly a minute of simulated time to settle — the balance's energy time constant is about fifty seconds, which is why a watchmaker on a timing machine waits before believing the reading.
+- Run the regulator from end to end with the rate readout visible. Nothing else in the watch changes and the rate moves by six minutes a day.
+- Slide **Apart** to pull the movement open along its axis, and drag to rotate while you do it — head on it just looks like a watch. Each part lifts by the height it was assembled at, so it separates into layers in the order a watchmaker meets them: cock on top, then bridges, then the train, then the plate, with the dial side dropping away underneath.
+- Select **Motion work** in the parts list and read what the cannon pinion does, then pull the crown and set the time. It is the only part in the watch that is meant to slip.
+
+If you like watching simple rules produce structure rather than being told what the structure is, [building molecules out of two rules](/blog/molecule-builder) gets tetrahedral methane and a cyclohexane chair out of bond lengths and inverse-square repulsion, with no table of angles anywhere.

@@ -1,11 +1,12 @@
 import { type ReactElement, useEffect, useMemo, useRef, useState } from 'react';
-import { element, ELEMENTS, GROUP_NAMES, GROUP_ORDER } from './molecules/elements';
+import { element, shellOf, ELEMENTS, GROUP_NAMES, GROUP_ORDER } from './molecules/elements';
 import { BOND_COLOURS, createViewer, PAIR_COLOUR, type Viewer } from './molecules/scene';
 import {
   addAtom,
   atomAt,
   BOND_ORDERS,
   bondsAt,
+  chargeAt,
   crowded,
   decode,
   deleteAtom,
@@ -315,6 +316,9 @@ export default function MoleculeBuilder(): ReactElement {
   const ionicCount = molecule.bonds.filter((bond) => bond.kind === 'ionic').length;
   const chosen = selected === null ? null : atomAt(molecule, selected);
   const chosenBonds = chosen ? bondsAt(molecule, chosen.id) : [];
+  // Hand-set charge plus whatever the ionic bonds have transferred, which is what the chemistry
+  // and the drawn shell both go by.
+  const chosenCharge = chosen ? chargeAt(molecule, chosen.id) : 0;
   const nextKind: BondKind | null =
     bondChoice !== 'auto' ? bondChoice : chosen ? suggestKind(chosen.symbol, symbol) : null;
 
@@ -529,6 +533,11 @@ export default function MoleculeBuilder(): ReactElement {
                 <p className="mb-chosen-head">
                   {element(chosen.symbol).name} {chosen.id}
                   <span className="mb-shape">{shapeAt(molecule, chosen.id)}</span>
+                  {chosenCharge !== 0 && (
+                    <span className="mb-shape">
+                      ion, {shellOf(chosen.symbol, chosenCharge).toFixed(2)} Å across
+                    </span>
+                  )}
                 </p>
                 {/* The electron sum, spelled out, because the shape is a consequence of it and
                     the whole point is that you can check the arithmetic yourself. */}
@@ -536,9 +545,10 @@ export default function MoleculeBuilder(): ReactElement {
                   {element(chosen.symbol).block === 'main' ? (
                     <>
                       {element(chosen.symbol).electrons} valence electrons
-                      {chosen.charge !== 0 && <> {chosen.charge > 0 ? '−' : '+'} {Math.abs(chosen.charge)} for the charge</>}
+                      {chosenCharge !== 0 && <> {chosenCharge > 0 ? '−' : '+'} {Math.abs(chosenCharge)} for the charge</>}
                       {' − '}
-                      {chosenBonds.reduce((sum, bond) => sum + bond.order, 0)} in bonds{' = '}
+                      {chosenBonds.reduce((sum, bond) => sum + (bond.kind === 'ionic' ? 0 : bond.order), 0)} in
+                      shared bonds{' = '}
                       {lonePairsAt(molecule, chosen.id)}{' '}
                       {lonePairsAt(molecule, chosen.id) === 1 ? 'lone pair' : 'lone pairs'}
                       {', '}
@@ -559,7 +569,7 @@ export default function MoleculeBuilder(): ReactElement {
                     >
                       −
                     </button>
-                    <span className="mb-charge">{chosen.charge > 0 ? `+${chosen.charge}` : chosen.charge}</span>
+                    <span className="mb-charge">{chosenCharge > 0 ? `+${chosenCharge}` : chosenCharge}</span>
                     <button
                       type="button"
                       className="mb-btn mb-btn--quiet"
