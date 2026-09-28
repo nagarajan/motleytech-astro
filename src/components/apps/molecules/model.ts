@@ -1,4 +1,4 @@
-import { element, known } from './elements';
+import { coordinationOf, element, flatAt, known, stateOf } from './elements';
 import {
   add,
   centre,
@@ -140,21 +140,43 @@ export function bondLength(
   second: string,
   order: BondOrder = 1,
   kind: BondKind = 'covalent',
+  chargeFirst = 0,
+  chargeSecond = 0,
 ): number {
   // An ionic bond is two ions in contact, so its length is the sum of the ionic radii — 2.83 Å
   // for sodium chloride, which is what the crystal measures. Using covalent radii would give
   // 2.53, the length of a bond that in this case does not exist.
   if (kind === 'ionic') {
-    const gap = ionicPair(first, second);
+    const gap = ionicPair(first, second, chargeFirst, chargeSecond);
     if (gap) return gap;
   }
   return (element(first).covalent + element(second).covalent) * squeezeOf(order);
 }
 
+/**
+ * The ion an atom is acting as: the oxidation state its charge names, or the element's usual
+ * one when the charge says nothing useful.
+ *
+ * This is what makes an ionic bond to iron(III) shorter than one to iron(II), which it is by
+ * 0.135 Å, entirely because the ion is smaller.
+ */
+function ionAt(symbol: string, charge: number): { charge: number; radius: number } | undefined {
+  if (charge !== 0) {
+    const exact = stateOf(symbol, charge);
+    if (exact) return exact;
+  }
+  return element(symbol).ion;
+}
+
 /** The sum of the two ionic radii, when both elements have one and the charges oppose. */
-function ionicPair(first: string, second: string): number | null {
-  const one = element(first).ion;
-  const other = element(second).ion;
+function ionicPair(
+  first: string,
+  second: string,
+  chargeFirst = 0,
+  chargeSecond = 0,
+): number | null {
+  const one = ionAt(first, chargeFirst);
+  const other = ionAt(second, chargeSecond);
   if (!one || !other) return null;
   if (Math.sign(one.charge) === Math.sign(other.charge)) return null;
   return one.radius + other.radius;
@@ -169,7 +191,15 @@ function stretchOf(molecule: Molecule, bond: Bond): number {
   const b = atomAt(molecule, bond.b);
   if (!a || !b) return squeezeOf(bond.order);
   const plain = element(a.symbol).covalent + element(b.symbol).covalent;
-  return bondLength(a.symbol, b.symbol, bond.order, bond.kind) / plain;
+  const ideal = bondLength(
+    a.symbol,
+    b.symbol,
+    bond.order,
+    bond.kind,
+    chargeAt(molecule, a.id),
+    chargeAt(molecule, b.id),
+  );
+  return ideal / plain;
 }
 
 /**
@@ -244,9 +274,10 @@ export function shapeAt(molecule: Molecule, id: number): string {
   if (bonds === 1) return 'terminal';
 
   // Looked up rather than worked out, for the elements where working it out gives the wrong
-  // answer. Copper is the whole reason this branch exists.
+  // answer. Copper is the whole reason this branch exists, and platinum is the reason the
+  // lookup is per oxidation state: Pt(II) is square with four, Pt(IV) octahedral with six.
   const atom = atomAt(molecule, id);
-  if (atom && element(atom.symbol).flat === bonds) return 'square planar';
+  if (atom && flatAt(atom.symbol, chargeAt(molecule, id)) === bonds) return 'square planar';
   const table: Record<string, string> = {
     '2,0': 'linear',
     '2,1': 'bent',
@@ -407,7 +438,7 @@ export function settle(molecule: Molecule, options: SettleOptions = {}): Molecul
   for (const atom of molecule.atoms) {
     const info = element(atom.symbol);
     const attached = neighboursOf(molecule, atom.id);
-    if (info.flat === undefined || attached.length !== info.flat) continue;
+    if (flatAt(atom.symbol, chargeAt(molecule, atom.id)) !== attached.length) continue;
 
     const home = index.get(atom.id)!;
     const axis = unit(openDirection(attached.map((other) => sub(other.position, atom.position))));
@@ -629,7 +660,13 @@ export function formulaText(molecule: Molecule): string {
  */
 export function crowded(molecule: Molecule): Array<{ atom: Atom; bonds: number; usual: number }> {
   return molecule.atoms
-    .map((atom) => ({ atom, bonds: bondsAt(molecule, atom.id).length, usual: element(atom.symbol).most }))
+    .map((atom) => ({
+      atom,
+      bonds: bondsAt(molecule, atom.id).length,
+      // Per oxidation state, so six ligands on a cobalt(III) is unremarkable while six on a
+      // vanadium(V) — which gathers four, as vanadate — is worth mentioning.
+      usual: coordinationOf(atom.symbol, chargeAt(molecule, atom.id)),
+    }))
     .filter((report) => report.bonds > report.usual);
 }
 
@@ -806,6 +843,37 @@ const RECIPES: Recipe[] = [
     name: 'Copper(II) chloride',
     atoms: [['Cu', null], ['Cl', 0], ['Cl', 0], ['Cl', 0], ['Cl', 0]],
     note: 'Square, not tetrahedral. The one shape here that is looked up rather than worked out.',
+  },
+  // The next two are the same metal wearing the same ligand, and they are here together
+  // deliberately: change nothing but the oxidation state and both the coordination number and
+  // the shape change with it. Nothing that counts electrons can tell them apart.
+  {
+    name: 'Tetrachloroplatinate(II)',
+    atoms: [['Pt', null], ['Cl', 0], ['Cl', 0], ['Cl', 0], ['Cl', 0]],
+    charges: [[0, 2]],
+    note: 'Platinum(II) takes four and puts them in a square. Cisplatin is this with two of the chlorides swapped for ammonia.',
+  },
+  {
+    name: 'Hexachloroplatinate(IV)',
+    atoms: [['Pt', null], ['Cl', 0], ['Cl', 0], ['Cl', 0], ['Cl', 0], ['Cl', 0], ['Cl', 0]],
+    charges: [[0, 4]],
+    note: 'The same platinum two oxidation states up: six now, and an octahedron. Only the charge changed.',
+  },
+  {
+    name: 'Tetrachlorocobaltate(II)',
+    atoms: [['Co', null], ['Cl', 0], ['Cl', 0], ['Cl', 0], ['Cl', 0]],
+    charges: [[0, 2]],
+    note: 'The blue one. Switch the cobalt to Co(III) and watch it shrink by a quarter without changing shape.',
+  },
+  {
+    name: 'Diamminesilver(I)',
+    atoms: [
+      ['Ag', null],
+      ['N', 0], ['H', 1], ['H', 1], ['H', 1],
+      ['N', 0], ['H', 5], ['H', 5], ['H', 5],
+    ],
+    charges: [[0, 1]],
+    note: 'Two ligands, so linear — a coordination number of two, which no electron count would have guessed.',
   },
 ];
 

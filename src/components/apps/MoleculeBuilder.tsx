@@ -1,5 +1,14 @@
 import { type ReactElement, useEffect, useMemo, useRef, useState } from 'react';
-import { element, shellOf, ELEMENTS, GROUP_NAMES, GROUP_ORDER } from './molecules/elements';
+import {
+  coordinationOf,
+  element,
+  shellOf,
+  stateOf,
+  statesOf,
+  ELEMENTS,
+  GROUP_NAMES,
+  GROUP_ORDER,
+} from './molecules/elements';
 import { BOND_COLOURS, createViewer, PAIR_COLOUR, type Viewer } from './molecules/scene';
 import {
   addAtom,
@@ -37,6 +46,14 @@ import './molecules/molecules.css';
 
 const STORE = 'motleytech-molecules';
 const SHELL_DEFAULT = 0.45;
+
+const NUMERALS = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+
+/** Oxidation states are written in Roman numerals, so Co(III) reads the way a textbook writes it. */
+function roman(value: number): string {
+  const size = Math.abs(value);
+  return (value < 0 ? '−' : '') + (NUMERALS[size] ?? String(size));
+}
 
 interface Saved {
   name: string;
@@ -319,6 +336,9 @@ export default function MoleculeBuilder(): ReactElement {
   // Hand-set charge plus whatever the ionic bonds have transferred, which is what the chemistry
   // and the drawn shell both go by.
   const chosenCharge = chosen ? chargeAt(molecule, chosen.id) : 0;
+  // The oxidation state that charge names, when the table knows one. What makes the panel able
+  // to say 'low spin, and a quarter smaller for it' rather than just printing a number.
+  const chosenState = chosen ? stateOf(chosen.symbol, chosenCharge) : undefined;
   const nextKind: BondKind | null =
     bondChoice !== 'auto' ? bondChoice : chosen ? suggestKind(chosen.symbol, symbol) : null;
 
@@ -425,7 +445,13 @@ export default function MoleculeBuilder(): ReactElement {
                       key={entry.symbol}
                       type="button"
                       className={entry.symbol === symbol ? 'mb-el mb-el--on' : 'mb-el'}
-                      title={`${entry.name} — usually makes ${entry.valence} bond${entry.valence === 1 ? '' : 's'}`}
+                      title={
+                        entry.block === 'transition'
+                          ? `${entry.name} — ${entry.states
+                              .map((state) => `${entry.symbol}(${roman(state.charge)})`)
+                              .join(', ')}`
+                          : `${entry.name} — usually makes ${entry.valence} bond${entry.valence === 1 ? '' : 's'}`
+                      }
                       aria-label={entry.name}
                       onClick={() => {
                         setSymbol(entry.symbol);
@@ -515,8 +541,9 @@ export default function MoleculeBuilder(): ReactElement {
                         </span>
                         <span className="mb-atom-meta">
                           {/* Against the most it manages, not the fewest, so that sulfur
-                              hexafluoride reads as 6 of 6 rather than the alarming 6 of 2. */}
-                          {count} of {info.most}
+                              hexafluoride reads as 6 of 6 rather than the alarming 6 of 2, and
+                              against the chosen oxidation state where there is one. */}
+                          {count} of {coordinationOf(atom.symbol, chargeAt(molecule, atom.id))}
                           {lonePairsAt(molecule, atom.id) > 0 && (
                             <span className="mb-pairs" title={`${lonePairsAt(molecule, atom.id)} lone pairs`}>
                               {'·'.repeat(lonePairsAt(molecule, atom.id) * 2)}
@@ -557,9 +584,41 @@ export default function MoleculeBuilder(): ReactElement {
                       {domainsAt(molecule, chosen.id)} domains in all
                     </>
                   ) : (
-                    <>A transition metal: counting electrons does not predict its shape, so it gets no lone pairs.</>
+                    <>
+                      A transition metal: counting electrons does not predict its shape, so it
+                      gets no lone pairs. Its coordination number is looked up, not worked out:{' '}
+                      {coordinationOf(chosen.symbol, chosenCharge)} ligands.
+                    </>
                   )}
                 </p>
+                {/* Cobalt is the reason this control exists. Co(II) and Co(III) are different
+                    sizes and different shapes, and no amount of counting gets from one to the
+                    other — so the state is chosen, and everything else follows from it. */}
+                {element(chosen.symbol).block === 'transition' && (
+                  <div className="mb-tools">
+                    <label className="mb-field">
+                      State
+                      <select
+                        className="mb-select"
+                        value={chosen.charge}
+                        aria-label="Oxidation state"
+                        onChange={(event) =>
+                          setMolecule(setCharge(molecule, chosen.id, Number(event.target.value), rules))
+                        }
+                      >
+                        <option value={0}>uncharged — the metal on its own</option>
+                        {statesOf(chosen.symbol).map((state) => (
+                          <option key={state.charge} value={state.charge}>
+                            {chosen.symbol}({roman(state.charge)}) · {state.radius.toFixed(3)} Å ·{' '}
+                            {state.coordination} ligands
+                            {state.flat === state.coordination ? ', square' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                )}
+                {chosenState?.note && <p className="mb-sum">{chosenState.note}.</p>}
                 <div className="mb-tools">
                   <span className="mb-readout">Charge</span>
                   <div className="mb-step">
