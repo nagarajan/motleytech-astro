@@ -1,25 +1,34 @@
 import { type ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { element, ELEMENTS, GROUP_NAMES, GROUP_ORDER } from './molecules/elements';
-import { BOND_COLOURS, createViewer, type Viewer } from './molecules/scene';
+import { BOND_COLOURS, createViewer, PAIR_COLOUR, type Viewer } from './molecules/scene';
 import {
   addAtom,
   atomAt,
+  BOND_ORDERS,
   bondsAt,
   crowded,
   decode,
   deleteAtom,
+  domainsAt,
   EMPTY,
   encode,
   formula,
   formulaText,
   IONIC_GAP,
   linkAtoms,
+  lonePairsAt,
+  ORDER_NAMES,
   PRESETS,
+  reorderBond,
   retypeBond,
+  setCharge,
+  settle,
+  shapeAt,
   suggestKind,
   tidy,
   unlink,
   type BondKind,
+  type BondOrder,
   type Molecule,
   type SavedMolecule,
 } from './molecules/model';
@@ -65,7 +74,9 @@ export default function MoleculeBuilder(): ReactElement {
   const [linking, setLinking] = useState(false);
   const [shell, setShell] = useState(SHELL_DEFAULT);
   const [showShells, setShowShells] = useState(true);
+  const [usePairs, setUsePairs] = useState(true);
   const [bondChoice, setBondChoice] = useState<'auto' | BondKind>('auto');
+  const [orderChoice, setOrderChoice] = useState<BondOrder>(1);
   const [saves, setSaves] = useState<Saved[]>([]);
   const [saveName, setSaveName] = useState('');
   const [notice, setNotice] = useState('');
@@ -104,19 +115,32 @@ export default function MoleculeBuilder(): ReactElement {
     viewerRef.current?.draw(molecule, {
       shell,
       showShells,
+      showPairs: usePairs,
       selected,
       pending: linking ? selected : null,
     });
-  }, [molecule, shell, showShells, selected, linking]);
+  }, [molecule, shell, showShells, usePairs, selected, linking]);
 
   // ---------------------------------------------------------------- editing
   const anchor = selected !== null && atomAt(molecule, selected) ? selected : null;
 
+  /** Every edit relaxes, and every relaxation needs to know whether lone pairs count. */
+  const rules = useMemo(() => ({ lonePairs: usePairs }), [usePairs]);
+
+  const newBond = (): { kind?: BondKind; order: BondOrder } => ({
+    kind: bondChoice === 'auto' ? undefined : bondChoice,
+    order: orderChoice,
+  });
+
   const place = (which: string): void => {
-    const kind = bondChoice === 'auto' ? undefined : bondChoice;
-    const step = addAtom(molecule, which, anchor, kind);
+    const step = addAtom(molecule, which, anchor, newBond(), rules);
     setMolecule(step.molecule);
-    setSelected(step.id);
+    // Selecting the atom just added is what makes a chain grow, but an atom that can only
+    // manage one bond has nothing left to hang anything off, so keep the anchor instead.
+    // Otherwise clicking carbon and then hydrogen four times builds a chain of hydrogens
+    // rather than the methane everybody means.
+    const canAnchor = element(which).valence > 1;
+    setSelected(canAnchor || anchor === null ? step.id : anchor);
     setLinking(false);
     setNotice(
       anchor === null
@@ -132,7 +156,7 @@ export default function MoleculeBuilder(): ReactElement {
         setNotice('An atom cannot bond to itself, so that is off again.');
         return;
       }
-      const joined = linkAtoms(molecule, selected, id, bondChoice === 'auto' ? undefined : bondChoice);
+      const joined = linkAtoms(molecule, selected, id, newBond(), rules);
       setLinking(false);
       if (joined.error) {
         setNotice(joined.error);
@@ -174,7 +198,7 @@ export default function MoleculeBuilder(): ReactElement {
 
   const remove = (): void => {
     if (selected === null) return;
-    setMolecule(deleteAtom(molecule, selected));
+    setMolecule(deleteAtom(molecule, selected, rules));
     setSelected(null);
     setLinking(false);
     setNotice('');
@@ -205,7 +229,7 @@ export default function MoleculeBuilder(): ReactElement {
 
   const straighten = (): void =>
     slowly(() => {
-      setMolecule((current) => tidy(current));
+      setMolecule((current) => tidy(current, rules));
       setNotice('Tidied up.');
     });
 
@@ -213,11 +237,29 @@ export default function MoleculeBuilder(): ReactElement {
     const found = PRESETS.find((entry) => entry.name === name);
     if (!found) return;
     slowly(() => {
-      setMolecule(found.build());
+      setMolecule(found.build(rules));
       setSelected(null);
       setLinking(false);
       setNotice(found.note);
       viewerRef.current?.frame();
+    });
+  };
+
+  /**
+   * Turning lone pairs on or off changes the geometry, not just the picture, so the molecule
+   * has to be rebuilt either way. That is the whole demonstration: water is straight without
+   * them and bent with them, and nothing else about the model changes.
+   */
+  const togglePairs = (on: boolean): void => {
+    setUsePairs(on);
+    if (molecule.bonds.length === 0) return;
+    slowly(() => {
+      setMolecule((current) => tidy(current, { lonePairs: on }));
+      setNotice(
+        on
+          ? 'Lone pairs are counted again, and everything with a spare pair has bent.'
+          : 'Lone pairs ignored. This is the older, simpler model, where water comes out straight.',
+      );
     });
   };
 
@@ -253,7 +295,9 @@ export default function MoleculeBuilder(): ReactElement {
       setNotice(`"${entry.name}" could not be read back.`);
       return;
     }
-    setMolecule(restored);
+    // Lone pairs are not saved, so the loaded molecule has none until it settles. Downhill
+    // only, from coordinates that were already at rest, so the shape does not jump.
+    setMolecule(settle(restored, { ...rules, steps: 900, hops: 1 }));
     setSelected(null);
     setLinking(false);
     setNotice(`Loaded "${entry.name}".`);
@@ -306,6 +350,15 @@ export default function MoleculeBuilder(): ReactElement {
           <input type="checkbox" checked={showShells} onChange={(event) => setShowShells(event.target.checked)} />
           Shells
         </label>
+        <label className="mb-field" title="Lone pairs change the shape, so this rebuilds the molecule">
+          <input
+            type="checkbox"
+            checked={usePairs}
+            disabled={busy}
+            onChange={(event) => togglePairs(event.target.checked)}
+          />
+          Lone pairs
+        </label>
         <label className="mb-field">
           Size
           <input
@@ -344,6 +397,11 @@ export default function MoleculeBuilder(): ReactElement {
           <p className="mb-legend">
             <span className="mb-key" style={{ background: BOND_COLOURS.covalent }} /> covalent
             <span className="mb-key" style={{ background: BOND_COLOURS.ionic }} /> ionic
+            {usePairs && (
+              <>
+                <span className="mb-key" style={{ background: PAIR_COLOUR }} /> lone pair
+              </>
+            )}
             <span className="mb-legend-note">drag to rotate · scroll to zoom · click an atom to select it</span>
           </p>
         </div>
@@ -391,7 +449,26 @@ export default function MoleculeBuilder(): ReactElement {
                   <option value="ionic">always ionic</option>
                 </select>
               </label>
-              {nextKind && <span className="mb-readout">next: {nextKind}</span>}
+              <label className="mb-field">
+                Order
+                <select
+                  className="mb-select"
+                  value={orderChoice}
+                  aria-label="Bond order for new bonds"
+                  onChange={(event) => setOrderChoice(Number(event.target.value) as BondOrder)}
+                >
+                  {BOND_ORDERS.map((order) => (
+                    <option key={order} value={order}>
+                      {ORDER_NAMES[order]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {nextKind && (
+                <span className="mb-readout">
+                  next: {ORDER_NAMES[orderChoice]} {nextKind}
+                </span>
+              )}
             </div>
           </section>
 
@@ -413,6 +490,7 @@ export default function MoleculeBuilder(): ReactElement {
                 {molecule.atoms.length} {molecule.atoms.length === 1 ? 'atom' : 'atoms'} ·{' '}
                 {molecule.bonds.length} {molecule.bonds.length === 1 ? 'bond' : 'bonds'}
                 {ionicCount > 0 ? ` · ${ionicCount} ionic` : ''}
+                {molecule.lonePairs.length > 0 ? ` · ${molecule.lonePairs.length} lone pairs` : ''}
               </span>
             </h3>
 
@@ -433,6 +511,11 @@ export default function MoleculeBuilder(): ReactElement {
                         </span>
                         <span className="mb-atom-meta">
                           {count} of {info.valence}
+                          {lonePairsAt(molecule, atom.id) > 0 && (
+                            <span className="mb-pairs" title={`${lonePairsAt(molecule, atom.id)} lone pairs`}>
+                              {'·'.repeat(lonePairsAt(molecule, atom.id) * 2)}
+                            </span>
+                          )}
                         </span>
                       </button>
                     </li>
@@ -445,7 +528,48 @@ export default function MoleculeBuilder(): ReactElement {
               <div className="mb-chosen">
                 <p className="mb-chosen-head">
                   {element(chosen.symbol).name} {chosen.id}
+                  <span className="mb-shape">{shapeAt(molecule, chosen.id)}</span>
                 </p>
+                {/* The electron sum, spelled out, because the shape is a consequence of it and
+                    the whole point is that you can check the arithmetic yourself. */}
+                <p className="mb-sum">
+                  {element(chosen.symbol).block === 'main' ? (
+                    <>
+                      {element(chosen.symbol).electrons} valence electrons
+                      {chosen.charge !== 0 && <> {chosen.charge > 0 ? '−' : '+'} {Math.abs(chosen.charge)} for the charge</>}
+                      {' − '}
+                      {chosenBonds.reduce((sum, bond) => sum + bond.order, 0)} in bonds{' = '}
+                      {lonePairsAt(molecule, chosen.id)}{' '}
+                      {lonePairsAt(molecule, chosen.id) === 1 ? 'lone pair' : 'lone pairs'}
+                      {', '}
+                      {domainsAt(molecule, chosen.id)} domains in all
+                    </>
+                  ) : (
+                    <>A transition metal: counting electrons does not predict its shape, so it gets no lone pairs.</>
+                  )}
+                </p>
+                <div className="mb-tools">
+                  <span className="mb-readout">Charge</span>
+                  <div className="mb-step">
+                    <button
+                      type="button"
+                      className="mb-btn mb-btn--quiet"
+                      aria-label="Decrease formal charge"
+                      onClick={() => setMolecule(setCharge(molecule, chosen.id, chosen.charge - 1, rules))}
+                    >
+                      −
+                    </button>
+                    <span className="mb-charge">{chosen.charge > 0 ? `+${chosen.charge}` : chosen.charge}</span>
+                    <button
+                      type="button"
+                      className="mb-btn mb-btn--quiet"
+                      aria-label="Increase formal charge"
+                      onClick={() => setMolecule(setCharge(molecule, chosen.id, chosen.charge + 1, rules))}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
                 <div className="mb-tools">
                   <button
                     type="button"
@@ -480,6 +604,22 @@ export default function MoleculeBuilder(): ReactElement {
                           <span className="mb-atom-meta" title="difference in electronegativity">
                             Δχ {gap.toFixed(2)}
                           </span>
+                          <select
+                            className="mb-select mb-select--tight"
+                            value={bond.order}
+                            aria-label={`Order of the bond to ${element(other.symbol).symbol}${other.id}`}
+                            onChange={(event) =>
+                              setMolecule(
+                                reorderBond(molecule, bond.id, Number(event.target.value) as BondOrder, rules),
+                              )
+                            }
+                          >
+                            {BOND_ORDERS.map((order) => (
+                              <option key={order} value={order}>
+                                {ORDER_NAMES[order]}
+                              </option>
+                            ))}
+                          </select>
                           <button
                             type="button"
                             className="mb-btn mb-btn--quiet"
@@ -494,7 +634,7 @@ export default function MoleculeBuilder(): ReactElement {
                           <button
                             type="button"
                             className="mb-btn mb-btn--quiet"
-                            onClick={() => setMolecule(unlink(molecule, bond.id))}
+                            onClick={() => setMolecule(unlink(molecule, bond.id, rules))}
                           >
                             break
                           </button>

@@ -350,9 +350,59 @@
 }
 
 .mb-chosen-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
   margin: 0 0 0.4rem;
   font-size: 0.86rem;
   color: var(--text-dim);
+}
+
+/* The VSEPR name for what the selected atom looks like. */
+.mb-shape {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--accent-2);
+}
+
+/* The electron arithmetic behind that name, laid out to be checked rather than trusted. */
+.mb-sum {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.mb-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.mb-charge {
+  min-width: 1.8rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
+/* Lone pairs as dots beside an atom's bond count, two dots to a pair. */
+.mb-pairs {
+  margin-left: 0.35rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-2);
+}
+
+/* The bond rows are already crowded, so the order picker has to be narrow. */
+.mb-select--tight {
+  font-size: 0.72rem;
+  padding: 0.14rem 0.3rem;
 }
 
 .mb-bonds {

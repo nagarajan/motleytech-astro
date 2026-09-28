@@ -4,16 +4,16 @@ pubDate: 2026-09-27
 category: "Blog"
 tags: ["Chemistry", "3D", "Javascript", "Physics", "Geometry"]
 author: "Nagarajan"
-description: "A 3D playground for building molecules, where the shapes are not looked up in a table but fall out of bond lengths and the fact that neighbours push each other away."
-trailer: "Drop atoms into a 3D workspace, bond them together, and watch the geometry arrange itself. Methane finds its tetrahedron, benzene flattens into a hexagon, and cyclohexane buckles into a chair — from two rules and no table of angles."
+description: "A 3D playground for building molecules, where the shapes are not looked up in a table but fall out of bond lengths and the fact that things attached to the same atom push each other away."
+trailer: "Drop atoms into a 3D workspace, bond them together, and watch the geometry arrange itself. Methane finds its tetrahedron, benzene flattens into a hexagon, water bends to 104.5° — from two rules, one fitted number, and no table of angles."
 heroImage: "/images/demos/molecule-builder.webp"
-heroAlt: "Sulfur hexafluoride in 3D: a yellow sulfur nucleus with six green fluorines at the corners of an octahedron, each inside a transparent shell"
+heroAlt: "Sulfur dioxide in 3D: a yellow sulfur nucleus bent between two red oxygens, each joined by a pair of cylinders for the double bond, with a pale blue lone-pair lobe rising from the sulfur"
 disqusIdentifier: "moleculeBuilder"
 ---
 
 import MoleculeBuilder from '../../components/apps/MoleculeBuilder.tsx';
 
-Pick an element, and it appears. Select an atom, pick another element, and the new one arrives bonded to it. Every atom is a small nucleus inside a transparent shell, and every bond is a cylinder between two nuclei — steel for covalent, amber for ionic.
+Pick an element, and it appears. Select an atom, pick another element, and the new one arrives bonded to it. Every atom is a small nucleus inside a transparent shell, and every bond is a cylinder between two nuclei — steel for covalent, amber for ionic, one cylinder per bond order.
 
 <MoleculeBuilder client:visible />
 
@@ -21,9 +21,9 @@ What is worth knowing is that nothing in there consults a table of bond angles. 
 
 ## The two rules
 
-**Bonds have a length.** The distance between two nuclei is the sum of the two atoms' covalent radii, which is where those radii come from in the first place: they were reverse-engineered from measured bond lengths precisely so that adding them up works. Carbon's is 0.77 Å and hydrogen's is 0.37 Å, so a C–H bond is 1.14 Å, and the real thing is 1.09 Å. Close enough to be recognisable, which is all this is trying to be.
+**Bonds have a length.** The distance between two nuclei is the sum of the two atoms' covalent radii, which is where those radii come from in the first place: they were reverse-engineered from measured bond lengths precisely so that adding them up works. Carbon's is 0.77 Å and hydrogen's is 0.37 Å, so a C–H bond is 1.14 Å, and the real thing is 1.09 Å. Close enough to be recognisable, which is all this is trying to be. Multiple bonds are shorter, by factors chosen to land on the familiar carbon–carbon series: 1.54 Å single, 1.42 aromatic, 1.32 double, 1.20 triple.
 
-**Neighbours of the same atom push each other away.** Two atoms bonded to the same third atom repel, with an inverse-square force. That is the whole of the second rule.
+**Things attached to the same atom push each other away,** with an inverse-square force. That is the whole of the second rule.
 
 Then the program rolls downhill: nudge everything along the forces, over and over, until nothing is moving.
 
@@ -41,25 +41,69 @@ Fix a central atom and ask where its $k$ neighbours go. Bond lengths are already
 | 5 | triangular bipyramid | trigonal bipyramidal |
 | 6 | octahedron | octahedral, 90° |
 
-So VSEPR, the rule every chemistry course teaches for predicting molecular shape, is the Thomson problem wearing a different hat. The playground is not approximating a table of ideal angles; it is solving the problem the table was an answer to. Load carbon dioxide for the two-neighbour case, boron trifluoride for three, methane for four, sulfur hexafluoride for six, and watch each one find its own answer.
+So VSEPR, the rule every chemistry course teaches for predicting molecular shape, is the Thomson problem wearing a different hat. The playground is not approximating a table of ideal angles; it is solving the problem the table was an answer to.
 
-The nicest demonstration is to build methane by hand. Drop a carbon, then add hydrogens one at a time. The second hydrogen swings round to sit opposite the first; the third pushes all three into a flat triangle; the fourth makes the triangle pucker into a tetrahedron. Each new neighbour re-solves the problem for everybody.
+The nicest demonstration is to build methane by hand. Drop a carbon, then add hydrogens one at a time. Each new neighbour re-solves the problem for everybody, and the shape jumps to the next row of the table as you watch.
 
-## Where it is wrong, on purpose
+## What counts as a thing
 
-Water comes out straight. Real water is bent, at 104.5°, and the reason is the two lone pairs on the oxygen: pairs of electrons that are not in any bond but still take up room and still shove. This model only knows about bonded neighbours, so oxygen with two of them puts them at opposite poles and gets a straight line.
+The first version of this only let *atoms* push. Water came out straight, because an oxygen with two bonded neighbours puts them at opposite poles, and real water is bent at 104.5°.
 
-That is the main simplification, and it is a deliberate one — modelling lone pairs properly means counting electrons, which means knowing about oxidation states and hybridisation and all the chemistry this was trying to avoid. Ammonia is wrong in the same way, coming out flat where it should be a shallow pyramid. Bond order is missing too: every bond here is a single stick, so the double bonds in carbon dioxide and the delocalised ring in benzene are drawn as plain connections. Their geometry still comes out right, because it was never the double bonds that set those angles.
+The reason is famous: the oxygen is carrying two **lone pairs**, pairs of electrons that are in no bond but still take up room and still shove. Adding them turns out not to need a third rule. A lone pair is a thing attached to an atom, so rule two already covers it. All it needs is a position in the simulation and a note that it pushes slightly harder than a bonding pair does, since it is held by one nucleus rather than shared between two.
 
-Everything with only bonded neighbours around it — methane, the boron and sulfur halides, the carbon skeleton of anything organic — comes out very close to correct.
+Counting them is plain bookkeeping. Take the atom's valence electrons, subtract its formal charge, subtract one for each bond order it is carrying, and halve what is left:
+
+$$
+\text{lone pairs} = \left\lfloor \frac{\text{valence} - \text{charge} - \sum \text{bond orders}}{2} \right\rfloor
+$$
+
+Select any atom in the playground and it shows you that sum, so you can check it rather than take it on faith.
+
+The bond-order term is not a detail. It is why bond order had to be built *first*, before any of this. Carbon dioxide's carbon has four valence electrons and two double bonds, so 4 − 4 = 0 lone pairs and the molecule stays straight. Count those same bonds as single and the carbon is left holding a pair it does not have, acquires a third thing to make room for, and bends to 120° — the model would have gone *backwards* on a molecule it already had right. You can do this to it deliberately: load carbon dioxide, select the carbon, and drop either bond back to single.
+
+## One number, fitted once
+
+There is exactly one new constant: how much harder a lone pair pushes than a bonding pair. I fitted it to a single measurement — water's 104.5° — and got **1.2442**.
+
+Fitting one parameter to one number is not impressive on its own. What the parameter then does elsewhere is the whole test, because nothing was adjusted afterwards:
+
+| | Domains | The model says | Measured |
+| --- | --- | --- | --- |
+| Water, H₂O | AX₂E₂ | 104.5° | 104.5° *(fitted)* |
+| Ammonia, NH₃ | AX₃E₁ | **106.7°** | 106.7° |
+| Ammonium, NH₄⁺ | AX₄ | 109.5° | 109.5° |
+| Xenon difluoride, XeF₂ | AX₂E₃ | linear, 180° | linear, 180° |
+| Xenon tetrafluoride, XeF₄ | AX₄E₂ | square planar, 90° | square planar, 90° |
+| Chlorine trifluoride, ClF₃ | AX₃E₂ | T-shaped, 85.5° | T-shaped, 87.5° |
+| Bromine pentafluoride, BrF₅ | AX₅E₁ | square pyramidal, 87.7° | square pyramidal, 84.8° |
+| Sulfur dioxide, SO₂ | AX₂E₁ | 114.2° | 119.5° |
+| Sulfur tetrafluoride, SF₄ | AX₄E₁ | see-saw, 123.5° | see-saw, 102° |
+
+Ammonia is the one I would point at. Its angle was not fitted, its molecule was not consulted, and it lands on the measured value exactly. And the qualitative cases are all correct: ammonium spends its lone pair on a positive charge and snaps back to a clean tetrahedron; xenon difluoride has five domains but three of them are lone pairs, which fill the equator and leave the fluorines linear; xenon tetrafluoride's two pairs take opposite poles of an octahedron, which is what squashes the fluorines flat.
+
+There is a small bonus in there too. Textbook VSEPR has to state as a separate rule that lone-pair/lone-pair repulsion beats lone-pair/bond, which beats bond/bond. Here each pair's shove is the *product* of the two weights, so 1.2442² > 1.2442 > 1, and that ordering comes free rather than being asserted.
+
+## Where it is still wrong
+
+**Sulfur tetrafluoride is a real failure**, and worth looking at because of *how* it fails. The lone pair correctly takes an equatorial seat of a trigonal bipyramid. It then pushes the two axial fluorines away from itself, they lean into the two remaining equatorial ones, and those get prised apart to 123.5°. Reality does the opposite: that angle closes to 102°. No choice of weight fixes this, because the thing holding those fluorines in is the lone pair occupying a *wider cone* near the nucleus, not pushing harder along a line. It needs a shape, and a point charge does not have one.
+
+**Sulfur dioxide is off by five degrees** for a related reason. One scalar weight cannot be right at every coordination number: a lone pair's advantage over a bonding pair is not the same fraction when there are three things around an atom as when there are four. The weight was fitted at four. Bend it to fit SO₂ and water stops being 104.5°.
+
+**Nothing resists twisting.** There is no torsion term at all, so nothing prefers staggered ethane over eclipsed, and nothing but the local angles keeps a conjugated system flat. Benzene does come out flat, but only just: a hexagon can pucker while every atom keeps its neighbours at 120° on its own little sphere, so out-of-plane is a near-zero mode. A tenth of an ångström of pucker costs under two parts in a million of the total strain.
+
+**Ions are drawn at neutral size.** Table salt's sodium is drawn with neutral sodium's 2.27 Å shell when Na⁺ is nearer 1.0 Å, which gets the comparison exactly backwards — in the real crystal the chloride is the big one.
+
+**A lone pair on a terminal atom shapes nothing**, and the program admits it by drawing those ones smaller and fainter. An atom with a single bond has no arrangement to make: rotating its pairs about that bond costs nothing at all. That sounds like a technicality and it cost me an afternoon. Letting those free-floating pairs into the main relaxation fed noise into everything else, and the noise was enough to lose xenon tetrafluoride its square — the flat arrangement and a bent alternative were separated by six parts in a hundred thousand, and the fluorines' own lone pairs tipped it the wrong way. They are placed afterwards now, against a molecule already frozen.
 
 ## Rings, and a thing that surprised me
 
-Load benzene: a flat, regular hexagon. Each carbon has three neighbours — two ring carbons and a hydrogen — and a flat hexagon is the one arrangement that gives all three of them 120° at every carbon simultaneously. Everything agrees, and the ring has no reason to leave the plane.
+Load benzene: a flat, regular hexagon, each ring bond drawn as the one-and-a-half it is counted as. Each carbon has three neighbours and no lone pair, and a flat hexagon is the one arrangement that gives all three of them 120° at every carbon simultaneously.
 
 Then load cyclohexane, the same six-carbon ring with two hydrogens on each carbon instead of one. Now every carbon has four neighbours and wants 109.47°, but a flat hexagon forces 120° on the ring bonds. Something has to give, and what gives is the plane: the ring buckles into the shape chemists call a **chair**. It arrives there with no idea that it is famous for doing so.
 
-Rings are also where rolling downhill stops being enough. Closing a ring yanks together two ends that were nowhere near each other, and the strain of that can settle into a twist where every atom is genuinely in equilibrium and the molecule is genuinely the wrong shape — benzene stuck at 115° in a shallow saddle. The fix is to shove the whole thing in a random direction and roll downhill again, keeping the result only if it came out calmer. That is called basin hopping, and it is what the **tidy up** button does. If something you have built looks wrong, press it.
+Rings are also where rolling downhill stops being enough. Closing a ring yanks together two ends that were nowhere near each other, and the strain of that can settle into a twist where every atom is genuinely in equilibrium and the molecule is genuinely the wrong shape — benzene stuck at 115° in a shallow saddle. The fix is to shove the whole thing and roll downhill again, keeping the result only if it came out calmer. That is basin hopping, and it is what the **tidy up** button does. If something you have built looks wrong, press it.
+
+Getting that working taught me the single most useful thing in this whole exercise. Basin hopping compares candidate shapes by scoring them, so the force the relaxer follows must be the *exact gradient* of the score it is judged by. My first attempt at the repulsion projected the force sideways by hand, to stop it stretching bonds, which worked and was not the derivative of anything. The relaxer then cheerfully walked *away* from arrangements its own scoring called better, and benzene never flattened. The real fix was to make the repulsion act between unit vectors, so the chain rule does the projecting for you and a genuine potential exists again.
 
 ## Ionic or covalent
 
@@ -69,10 +113,13 @@ That cutoff is a convention rather than a fact — real bonds shade continuously
 
 ## Things worth trying
 
-- Build methane one hydrogen at a time and watch the geometry re-solve itself at each step.
-- Turn the shells off, or slide them up to 100%, which is their true van der Waals size. At full size they overlap heavily — which is correct, and is why space-filling models look like clumps of fused bubbles rather than balls on sticks.
+- Load water and untick **lone pairs**. It snaps straight, which is the older model, and gives you the before-and-after in one click.
+- Load ammonia, select the nitrogen, and press **+** on the charge. You have made ammonium: the lone pair is spent, the pyramid opens out, and 106.7° becomes 109.5°.
+- Load carbon dioxide and drop one of the double bonds to single. The carbon inherits a lone pair it should not have and the molecule bends. This is the failure that made bond order a prerequisite rather than a nicety.
+- Build methane one hydrogen at a time. Watch it pass through bent CH₂ — which really is bent, and for the right reason — and flat CH₃ on the way.
+- Turn the shells off, or slide them up to 100%, which is their true van der Waals size. At full size they overlap heavily, which is correct, and is why space-filling models look like clumps of fused bubbles rather than balls on sticks.
 - Make a six-carbon chain, then use **bond to…** to join the ends, and press tidy up. You have made cyclohexane, and it will find the chair.
-- Force a bond to be ionic that has no business being one — carbon to hydrogen, say — and note that the geometry does not change at all. In this model the bond type is paint. Whether that bothers you is a good measure of how much chemistry the two rules are actually doing.
+- Force a bond to be ionic that has no business being one — carbon to hydrogen, say — and note that the geometry does not change at all. Bond *type* is paint here; bond *order* is not.
 - Put six fluorines on a sulfur, then a seventh. The program will tell you that sulfur does not usually do that, and then draw it anyway.
 
 If you like watching simple rules produce structure, [the game behind TREE(3)](/blog/tree-sequence-game) is two rules about coloured trees that produce a number too large to write down.

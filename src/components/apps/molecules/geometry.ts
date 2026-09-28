@@ -1,19 +1,19 @@
 /**
- * The geometry engine. No chemistry here beyond one idea: atoms bonded to the same
- * atom push each other away, and bonds have a preferred length. Everything else —
- * methane's tetrahedron, carbon dioxide's straight line, benzene's flat hexagon —
+ * The geometry engine. No chemistry here beyond one idea: things attached to the same atom
+ * push each other away, and bonds have a preferred length. Everything else — methane's
+ * tetrahedron, carbon dioxide's straight line, benzene's flat hexagon, water's 104.5° —
  * falls out of those two rules on its own.
  *
  * Which is a nicer result than it sounds. Repelling k points on a sphere with an
- * inverse-square force is the Thomson problem, and its answers for small k are
- * exactly the shapes VSEPR predicts: antipodal for two, a triangle for three, a
- * tetrahedron for four, a trigonal bipyramid for five, an octahedron for six. So the
- * relaxation below is not approximating a table of ideal angles, it is deriving them.
+ * inverse-square force is the Thomson problem, and its answers for small k are exactly the
+ * shapes VSEPR predicts: antipodal for two, a triangle for three, a tetrahedron for four, a
+ * trigonal bipyramid for five, an octahedron for six. So the relaxation below is not
+ * approximating a table of ideal angles, it is deriving them.
  *
- * What it deliberately does not model is lone pairs. Real water is bent because two
- * unbonded pairs on the oxygen take up room; here only bonded neighbours repel, so
- * water comes out straight. That is the one place where these pictures are knowingly
- * wrong, and the article says so.
+ * Lone pairs join in as bodies like any other, distinguished only by a weight above 1 and a
+ * flag saying they are not atoms. Nothing here knows what a lone pair is, and that is the
+ * point: water bends because a heavier point on the same sphere shoves harder, not because
+ * anything checks whether the molecule is water.
  */
 export interface Vec3 {
   x: number;
@@ -110,11 +110,30 @@ export interface RelaxBody {
   position: Vec3;
   /** Bond lengths are measured between nuclei, as the sum of two covalent radii. */
   covalent: number;
+  /**
+   * How hard this thing shoves its fellow neighbours, relative to a bonding pair at 1.
+   * Lone pairs come in above 1, which is what bends water.
+   */
+  weight?: number;
+  /**
+   * A lone pair: it takes part in the angle repulsion, because that is its entire purpose,
+   * but it is not an atom. It has no van der Waals bulk to keep clear of anything, and it
+   * does not count towards where the middle of the molecule is.
+   */
+  ghost?: boolean;
+  /**
+   * Held still. Forces on it are computed and then thrown away, which keeps the gradient
+   * exact for everything that is still free to move. Used to place the lone pairs of a
+   * terminal atom once the molecule around them has already been settled.
+   */
+  pinned?: boolean;
 }
 
 export interface RelaxLink {
   a: number;
   b: number;
+  /** A multiple bond is shorter. 1 for single, and below 1 for anything stronger. */
+  squeeze?: number;
 }
 
 const BOND_PULL = 2;
@@ -167,7 +186,7 @@ export function relax(bodies: RelaxBody[], links: RelaxLink[], steps = 900): num
     for (let index = 0; index < count; index += 1) force[index] = vec(0, 0, 0);
 
     for (const link of links) {
-      const ideal = bodies[link.a].covalent + bodies[link.b].covalent;
+      const ideal = idealLength(bodies, link);
       apply(force, bodies, link.a, link.b, (gap) => BOND_PULL * (gap - ideal));
     }
 
@@ -182,6 +201,7 @@ export function relax(bodies: RelaxBody[], links: RelaxLink[], steps = 900): num
 
     let largest = 0;
     for (let index = 0; index < count; index += 1) {
+      if (bodies[index].pinned) continue;
       let shift = add(scale(drift[index], DRAG), scale(force[index], STEP));
       const size = length(shift);
       if (size > MAX_STEP) shift = scale(shift, MAX_STEP / size);
@@ -192,7 +212,8 @@ export function relax(bodies: RelaxBody[], links: RelaxLink[], steps = 900): num
     if (largest < SETTLED) break;
   }
 
-  centre(bodies);
+  // Recentring would move the pinned bodies, which is the one thing they are for.
+  if (!bodies.some((body) => body.pinned)) centre(bodies);
   return used;
 }
 
@@ -266,8 +287,7 @@ export function strain(bodies: RelaxBody[], links: RelaxLink[]): number {
 
   let total = 0;
   for (const link of links) {
-    const ideal = bodies[link.a].covalent + bodies[link.b].covalent;
-    const stretch = distance(bodies[link.a].position, bodies[link.b].position) - ideal;
+    const stretch = distance(bodies[link.a].position, bodies[link.b].position) - idealLength(bodies, link);
     total += 0.5 * BOND_PULL * stretch * stretch;
   }
 
@@ -275,7 +295,7 @@ export function strain(bodies: RelaxBody[], links: RelaxLink[]): number {
     const ring = adjacency[middle];
     for (let i = 0; i < ring.length; i += 1) {
       for (let j = i + 1; j < ring.length; j += 1) {
-        total += NEIGHBOUR_PUSH / apart(bodies, middle, ring[i], ring[j]);
+        total += (NEIGHBOUR_PUSH * shove(bodies, ring[i], ring[j])) / apart(bodies, middle, ring[i], ring[j]);
       }
     }
   }
@@ -307,6 +327,17 @@ function apart(bodies: RelaxBody[], centreIndex: number, a: number, b: number): 
 }
 
 /**
+ * How hard a particular pair shoves, as the product of the two weights.
+ *
+ * Multiplying is what gives VSEPR's ordering for free: with lone pairs above 1, a
+ * lone-lone pair comes out strongest, lone-bond next, bond-bond weakest, which is exactly
+ * the hierarchy the textbooks have to state as a separate rule.
+ */
+function shove(bodies: RelaxBody[], a: number, b: number): number {
+  return (bodies[a].weight ?? 1) * (bodies[b].weight ?? 1);
+}
+
+/**
  * The sideways shove between two neighbours of the same atom, as the exact gradient of
  * `NEIGHBOUR_PUSH / apart(...)`.
  *
@@ -334,13 +365,14 @@ function push(
     // Two neighbours in exactly the same direction: shove one off the line arbitrarily
     // but deterministically, and let the next iteration take over.
     const nudge = unit(vec(hatA.y - hatA.z, hatA.z - hatA.x, hatA.x - hatA.y));
-    force[wedge.a] = add(force[wedge.a], scale(nudge, NEIGHBOUR_PUSH));
-    force[wedge.b] = sub(force[wedge.b], scale(nudge, NEIGHBOUR_PUSH));
+    const shock = NEIGHBOUR_PUSH * shove(bodies, wedge.a, wedge.b);
+    force[wedge.a] = add(force[wedge.a], scale(nudge, shock));
+    force[wedge.b] = sub(force[wedge.b], scale(nudge, shock));
     return;
   }
 
-  // Energy NEIGHBOUR_PUSH/gap, so the pull on each unit vector is this, outward.
-  const slope = scale(between, NEIGHBOUR_PUSH / (gap * gap * gap));
+  // Energy NEIGHBOUR_PUSH*shove/gap, so the pull on each unit vector is this, outward.
+  const slope = scale(between, (NEIGHBOUR_PUSH * shove(bodies, wedge.a, wedge.b)) / (gap * gap * gap));
   const onA = scale(across(slope, hatA), 1 / reachA);
   const onB = scale(across(scale(slope, -1), hatB), 1 / reachB);
 
@@ -355,12 +387,21 @@ function across(force: Vec3, spoke: Vec3): Vec3 {
   return sub(force, scale(spoke, dot(force, spoke)));
 }
 
-/** Slide the whole thing so the camera has something to orbit around. */
+export function idealLength(bodies: RelaxBody[], link: RelaxLink): number {
+  return (bodies[link.a].covalent + bodies[link.b].covalent) * (link.squeeze ?? 1);
+}
+
+/**
+ * Slide the whole thing so the camera has something to orbit around. Measured over the
+ * atoms only: lone pairs are not evenly spread, so counting them would drag the middle of
+ * a molecule like water off to one side.
+ */
 export function centre(bodies: RelaxBody[]): void {
-  if (bodies.length === 0) return;
+  const real = bodies.filter((body) => !body.ghost);
+  if (real.length === 0) return;
   let sum = vec(0, 0, 0);
-  for (const body of bodies) sum = add(sum, body.position);
-  const middle = scale(sum, 1 / bodies.length);
+  for (const body of real) sum = add(sum, body.position);
+  const middle = scale(sum, 1 / real.length);
   for (const body of bodies) body.position = sub(body.position, middle);
 }
 
@@ -419,7 +460,9 @@ function loosePairs(bodies: RelaxBody[], adjacency: number[][]): Array<[number, 
   const piece = fragments(count, adjacency);
   const pairs: Array<[number, number]> = [];
   for (let a = 0; a < count; a += 1) {
+    if (bodies[a].ghost) continue;
     for (let b = a + 1; b < count; b += 1) {
+      if (bodies[b].ghost) continue;
       if (piece[a] !== piece[b]) continue;
       if (close.has(pairKey(a, b))) continue;
       pairs.push([a, b]);
