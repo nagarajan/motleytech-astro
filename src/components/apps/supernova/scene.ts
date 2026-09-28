@@ -32,7 +32,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { SAMPLES, type ColourMode, type Strip, fillStrip, makeStrip } from './colour';
 import type { Frame, RunResult } from './types';
-import { createSky, type Sky } from './sky';
+import { createSky, type Sky } from '../sky';
 
 export type Viewpoint = 'face' | 'angle' | 'edge' | 'behind';
 

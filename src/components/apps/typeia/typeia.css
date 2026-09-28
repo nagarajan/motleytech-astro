@@ -1,0 +1,540 @@
+.ia {
+  margin: 1.8rem 0;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-solid);
+  font-family: var(--font-body);
+  color: var(--text);
+}
+
+/* ---------- controls ---------- */
+
+.ia-bar,
+.ia-chapters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.ia-bar {
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ia-chapters {
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ia-spacer {
+  flex: 1 1 0.5rem;
+}
+
+.ia-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.ia-field--wide {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.ia-select {
+  font: inherit;
+  font-size: 0.84rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text);
+}
+
+.ia-slider {
+  flex: 1 1 5rem;
+  min-width: 4.5rem;
+  max-width: 10rem;
+  accent-color: var(--accent);
+}
+
+.ia-readout {
+  min-width: 4.2rem;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.ia-btn {
+  font: inherit;
+  font-size: 0.86rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 120ms, color 120ms;
+}
+
+.ia-btn:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.ia-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ia-btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.ia-chip {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--chip-bg);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.ia-chip:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.ia-chip--on {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--surface-raised);
+}
+
+.ia-dirty {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--accent-2);
+}
+
+/* ---------- the time scrubber ---------- */
+
+.ia-scrub {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0 0.2rem;
+}
+
+.ia-time {
+  flex: 1 1 auto;
+  accent-color: var(--accent-2);
+}
+
+.ia-clock {
+  flex: 0 0 auto;
+  min-width: 11rem;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* ---------- layout ---------- */
+
+.ia-panes {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+@media (max-width: 900px) {
+  .ia-panes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.ia-stage {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #05070f;
+  overflow: hidden;
+}
+
+.ia-canvas {
+  display: block;
+  width: 100%;
+  height: 36rem;
+  touch-action: none;
+  cursor: grab;
+}
+
+.ia-canvas:active {
+  cursor: grabbing;
+}
+
+.ia-canvas:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+@media (max-width: 900px) {
+  .ia-canvas {
+    height: 22rem;
+  }
+}
+
+.ia-splash {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 1.5rem;
+  text-align: center;
+  pointer-events: none;
+  background: radial-gradient(ellipse at centre, rgba(5, 7, 15, 0.55), rgba(5, 7, 15, 0.9));
+}
+
+.ia-splash p {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 0.95rem;
+  color: #dde4f2;
+}
+
+.ia-splash strong {
+  color: #ffd79a;
+}
+
+.ia-splash-small {
+  font-size: 0.78rem !important;
+  color: #93a0bb !important;
+}
+
+.ia-legend-line {
+  margin: 0;
+  padding: 0.4rem 0.55rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-solid);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-faint);
+}
+
+.ia-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.ia-block {
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.ia-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  border: 0;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.ia-head span {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ---------- readouts ---------- */
+
+.ia-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.3rem 0.6rem;
+  margin: 0;
+}
+
+.ia-stats div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 7px;
+  background: var(--surface-solid);
+}
+
+.ia-stats dt {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+}
+
+.ia-stats dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.ia-stat--good {
+  color: var(--accent-2);
+}
+
+.ia-slowmo {
+  margin: 0.6rem 0 0;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.ia-slowmo strong {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.ia-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.55rem;
+}
+
+.ia-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-faint);
+}
+
+.ia-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.ia-swatch {
+  display: inline-block;
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.ia-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.8rem;
+  margin-top: 0.3rem;
+}
+
+.ia-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.ia-check input {
+  accent-color: var(--accent);
+}
+
+.ia-fine {
+  margin: 0.55rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--text-faint);
+}
+
+.ia-layers {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ia-layers li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.16rem 0.3rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.ia-layers li:nth-child(odd) {
+  background: var(--surface-solid);
+}
+
+.ia-layers span:last-child {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+/* ---------- notices ---------- */
+
+.ia-notice {
+  margin: 0.8rem 0 0;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-2);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.ia-warn {
+  margin: 0.6rem 0 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #a8452f;
+  border-radius: 8px;
+  background: rgba(168, 69, 47, 0.1);
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+/* ---------- things this demo has that the collapse one does not ---------- */
+
+/*
+ * The scenario switch. Two mutually exclusive ways for a white dwarf to explode, and which
+ * one nature actually uses is an open question, so they get equal billing rather than one
+ * being a setting hidden behind the other.
+ */
+.ia-switch {
+  display: inline-flex;
+  padding: 0.16rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--chip-bg);
+}
+
+.ia-switch button {
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0.28rem 0.7rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.ia-switch button:hover {
+  color: var(--text);
+}
+
+.ia-switch button[aria-pressed='true'] {
+  background: var(--surface-raised);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+}
+
+/* The scrubber here is linear in seconds, so it can carry real tick marks. */
+.ia-ticks {
+  position: relative;
+  height: 0.9rem;
+  margin: 0.1rem 0 0.3rem;
+}
+
+.ia-tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  white-space: nowrap;
+  color: var(--text-faint);
+}
+
+.ia-tick::before {
+  content: '';
+  position: absolute;
+  top: -0.32rem;
+  left: 50%;
+  width: 1px;
+  height: 0.22rem;
+  background: var(--border-strong);
+}
+
+/* The running tally of what the explosion has made so far. */
+.ia-yields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ia-yields li {
+  display: grid;
+  grid-template-columns: 5.4rem minmax(0, 1fr) 3.4rem;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.ia-yield-bar {
+  height: 0.5rem;
+  border-radius: 3px;
+  background: var(--surface-solid);
+  overflow: hidden;
+}
+
+.ia-yield-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 90ms linear;
+}
+
+.ia-yields span:last-child {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}

@@ -1,0 +1,145 @@
+---
+title: "The star that leaves nothing behind"
+pubDate: 2026-09-28
+category: "Blog"
+tags: ["Astrophysics", "3D", "Javascript", "Physics", "Animation", "Nuclear"]
+author: "Nagarajan"
+description: "A Type Ia supernova, animated in cross-section from the real numbers: a white dwarf solved from the Chandrasekhar equation of state, a burning front that travels at the measured flame speed, and ash chosen by the density at the instant the front arrives. Two competing mechanisms, side by side, and a 2025 observation that finally caught one of them in the act."
+trailer: "A white dwarf does not collapse, nothing falls inward, and it has no layers to begin with. The onion you see in the spectrum of a Type Ia supernova did not exist two seconds earlier — it is manufactured on the way out, and which layer you get is decided by nothing but how dense the gas was at the moment the flame arrived."
+heroImage: "/images/demos/type-ia.webp"
+heroAlt: "A white dwarf in cross-section, cut in half, mid-explosion: a white-hot nickel core, concentric shells of calcium, silicon and oxygen manufactured by the passing burning front, and unburnt carbon at the rim, against a field of stars and distant galaxies"
+disqusIdentifier: "type-ia"
+---
+
+import TypeIaApp from '../../components/apps/TypeIaApp.tsx';
+
+There are two completely different things called a supernova, and they have almost nothing in common except the word.
+
+One is a massive star running out of fuel, which I [wrote about last time](/blog/supernova/). The other is this: a white dwarf — a dead, cold, Earth-sized cinder that stopped doing anything millions of years ago — going off like a bomb. The first leaves a neutron star or a black hole behind. The second leaves *nothing at all*. Every gram of the star ends up as debris moving at twenty thousand kilometres a second, and there is no remnant of any kind.
+
+<TypeIaApp client:visible />
+
+Drag the slider, switch between the two mechanisms, and watch the layers appear. That last part is the bit I want to talk about, because it is where my mental model was wrong.
+
+## What I had wrong
+
+I went into this thinking a Type Ia was a layered star that detonates layer by layer, with each layer's burning driving the shock harder into the next. I asked for that to be checked against the literature before building anything, and it came back with three corrections. The third one is the interesting one.
+
+### There is no collapse
+
+I had assumed something collapses first, the way it does in a core-collapse supernova. Nothing does. A Type Ia is a *thermonuclear* runaway, not a gravitational one, and the reason it runs away is a peculiarity of degenerate matter that is worth sitting with for a moment.
+
+In an ordinary star, nuclear burning is self-regulating. Burn a bit too fast, the gas heats up, hot gas expands, expanding gas cools, burning slows down. That negative feedback is why the Sun has been sitting at the same temperature for four and a half billion years rather than exploding.
+
+A white dwarf is held up by *degenerate* electron pressure, and degenerate pressure does not depend on temperature. It depends only on density. So when carbon starts burning in the centre of a white dwarf, the gas gets hotter — and does not expand. It cannot. The thermostat is not just broken, it was never installed. The temperature climbs, the burning rate climbs with it (roughly as the twelfth power of temperature), and within a second the whole star is gone.
+
+The irony is that a white dwarf which *did* collapse would not produce a supernova at all. Push one over the limit in a way that lets electron capture win the race against carbon ignition and you get an accretion-induced collapse: it implodes quietly into a neutron star and there is barely a flash.
+
+### Nothing falls inward
+
+Following from that: at no point does any part of this star move inward. I had pictured outer layers falling in on a collapsing core. In reality the star is expanding from the first moment the burning starts, and the expansion is the single most important thing that happens.
+
+You can watch this in the panel. During the deflagration phase the radius climbs from 2,000 km to about 6,000 and the central density falls by a factor of thirty. That swelling is not a side effect. It is the mechanism, for reasons that become clear once you know what decides the ash.
+
+### A white dwarf has no layers
+
+This is the one that reorganised how I think about the whole event.
+
+A white dwarf is carbon and oxygen, mixed, all the way through. There is no onion. It never had one and never will. At most it wears a thin skin of helium it has pulled off a companion star.
+
+But the spectrum of a Type Ia is famously layered — iron in the middle, then silicon and sulphur, then calcium, then unburnt carbon and oxygen at the outside. That layering is real. It is also **manufactured during the explosion**, in about two seconds, and the only thing that decides which layer you get is *the density of the gas at the instant the burning front arrives*:
+
+| density when the front arrives | what it makes |
+|---|---|
+| above 10⁹ g/cm³ | neutron-rich stable iron and nickel — invisible afterwards |
+| 10⁷ to 10⁹ | **nickel-56**, the radioactive isotope that lights the supernova |
+| 10⁶ to 10⁷ | silicon, sulphur, argon, calcium |
+| 10⁵ to 10⁶ | oxygen, neon, magnesium |
+| below 10⁵ | nothing — the carbon comes through untouched |
+
+Above 10⁹ the gas is dense enough that electrons get captured onto the nuclei while they burn, so the ash comes out neutron-rich. Between 10⁷ and 10⁹ the burning reaches equilibrium without the captures and makes nickel-56. Below 10⁷ there is no longer enough time at high temperature to get all the way to equilibrium, so the burning stops part way, and what it stops at is the intermediate-mass elements.
+
+Now the reason the swelling matters is obvious. Run a detonation straight into an undisturbed white dwarf and almost all of it is above 10⁷, so almost all of it becomes iron — and the real spectra plainly show silicon. The star *has* to be allowed to expand first, or the layers never form. Something has to light it gently before anything lights it properly.
+
+In the panel you can see this directly: switch the colour mode to **Density** and scrub to just before the detonation. What you are looking at is the template the layers are about to be stamped from.
+
+### The part I had right
+
+The cascade I had described — each layer's burning strengthening the wave, the strengthened wave compressing the next layer, the compression igniting it — is exactly right. It has a name. It is a **detonation**, and it is one of the two ways a flame can travel.
+
+A *deflagration* is an ordinary flame. Heat leaks forward by conduction and lights the next layer. It is subsonic — about a hundred kilometres a second in the centre of a white dwarf, where sound travels at nine thousand.
+
+A *detonation* is a shock wave. It does not wait for heat to diffuse; it compresses the fuel ahead of it hard enough to ignite it, and the energy that releases is what drives the shock into the layer after that. Each layer pays for the ignition of the next. That is a self-sustaining wave and its speed follows from nothing but the energy its own burning releases — about ten thousand kilometres a second for carbon going to nickel, which is supersonic, which is why the whole star goes in a quarter of a second once it starts.
+
+So the intuition was sound. It just needed a deflagration to happen first.
+
+## Two ways to do it
+
+Nobody knows which of these nature actually uses. It may well be both. The panel has both, and they look completely different.
+
+**Delayed detonation** starts with a white dwarf that has grown to within a hair of the Chandrasekhar limit by pulling matter off a companion. It simmers for a thousand years, ignites slightly off centre, and burns as a buoyant, churning, subsonic flame for about a second — swelling as it goes. Then, at around 10⁷ g/cm³, the flame turns into a detonation and the rest of the star goes immediately.
+
+The embarrassing part is the "then". Nobody can derive the transition from first principles. What is known is that it has to happen: a white dwarf that only ever deflagrates releases too little energy, leaves unburnt carbon sitting in its centre where no observation has ever found any, and makes almost no silicon. Put a transition in at roughly the right density and all three problems disappear at once. It is a fudge that works, which is an uncomfortable thing to build a standard candle on.
+
+**Double detonation** avoids the problem entirely. Take a lighter white dwarf — one solar mass, nowhere near the limit, which could never ignite on its own — and give it a thin skin of stolen helium. Helium detonates at far lower densities than carbon does. So the skin goes first, at a single point, and the detonation runs around the outside of the star. Every patch of shell that burns drives a shock downward into the core, and because the shell is a sphere all those shocks are heading for the same place. Where they converge, the carbon finally ignites.
+
+Two detonations, neither of which needed a mystery transition. And because the shocks are launched in sequence as the surface burning wraps round, they converge *off to one side* of the centre rather than in it — which is why this mechanism leaves a lopsided remnant. Watch it from the **Edge on** viewpoint with the layer mode set to show the finished onion, and the offset is unmistakable.
+
+### Somebody caught it
+
+For thirty years double detonation was a theorist's idea. In 2025 it stopped being one.
+
+Using the MUSE instrument on the Very Large Telescope, a team imaged the remnant SNR 0509-67.5 in the Large Magellanic Cloud and found **two separate shells of calcium**, one nested inside the other, with only a single shell of sulphur. That is the fingerprint of two detonations and nothing else makes it: the helium shell burning on the surface produces calcium out there, and the core detonation produces another calcium shell much further in. A single detonation gives you one of each.
+
+The panel reproduces this, and it was not put in by hand. Run the double detonation, set the colour mode to composition, and look at the calcium: there is a band from the core burn and a separate thin one right at the surface where the helium went. It falls out of the density table, because helium burning climbs the chart of the elements four nucleons at a time and at surface densities it runs out of road in the neighbourhood of calcium and titanium rather than going on to iron.
+
+You can also see the other discriminator in the readouts. The delayed detonation makes about 0.25 M☉ of stable, neutron-rich iron; the double detonation makes essentially none — 0.008 M☉. A sub-Chandrasekhar star never reaches the density where electrons get captured, so it cannot make the stuff. That difference is observable in remnants, and it is one of the better handles we have on which mechanism is doing the work.
+
+## Why anyone cares
+
+These are the objects the accelerating expansion of the universe was discovered with, and the reason they can be used that way is that they are all nearly the same brightness.
+
+The brightness comes from the nickel-56. Nickel-56 is radioactive — it decays to cobalt-56 and then to iron-56 with a half-life of about six days — and that decay is the *entire* light of the supernova for the following months. There is no other power source; the explosion itself is over in two seconds and its heat is used up doing work against gravity. Everything you actually see is radioactivity.
+
+And the amount of nickel-56 made is nearly always the same, because the mass of the star is nearly always the same, because the Chandrasekhar limit is a constant of nature. About 0.6 solar masses of it, every time. That is the standard candle.
+
+Which makes the fudge above matter rather more than it otherwise would. If some Type Ia supernovae are near-Chandrasekhar delayed detonations and others are sub-Chandrasekhar double detonations, they are not the same object and there is no reason for them to be the same brightness — and the calibration that measured dark energy was done before anyone knew that. This is an active problem, and the 2025 observation is part of why.
+
+## What is real in here and what is not
+
+This one is an animation, and unlike the core-collapse demo it does not solve the equations of hydrodynamics. It is worth being precise about where the line falls.
+
+**Computed from scratch.** The white dwarf itself. Both stars are solved from the Chandrasekhar equation of state for a cold degenerate electron gas — the full relativistic expression, not a polytrope, because near the limit the core is thoroughly relativistic and the outer half is not — integrated outward with Runge–Kutta and bisected on central density to hit a target mass. The electrostatic correction from the lattice of carbon and oxygen nuclei is in there, and it is not optional: it changes the pressure by under two percent and the radius of a one-solar-mass white dwarf by three hundred kilometres. The result matches the measured mass–radius relation without any tuning.
+
+**Real numbers, scripted choreography.** The laminar flame speed is the standard fit against density. The detonation speed is the Chapman–Jouguet condition, computed from the energy the burning actually releases. The ash tables are the density thresholds above. The energy released is read straight off the nuclear binding energy curve. The velocity the ejecta ends up with follows from the exponential density profile that Type Ia ejecta settle into, which fixes the fastest material at about eight times the scale velocity — and that comes out as twenty-one thousand kilometres a second, which is what the spectra show on day one.
+
+What is *not* computed is the arrangement of all that in time. The fronts are marched forward through a star that is expanding underneath them, cell by cell, and every cell is burnt at the density it really has at the moment the front gets there — but the expansion itself is driven by an energy argument rather than by a momentum equation. It is a fit to a real and important effect rather than a derivation of it.
+
+**Scenery.** The turbulence slider. The model is smooth in angle; a real deflagration is violently Rayleigh–Taylor unstable and its flame surface ends up looking like a cauliflower. The slider adds noise of about the right amplitude and scale on top and changes no number anywhere. It is turned down automatically when the detonation takes over, because a detonation genuinely is the smoother of the two fronts — it moves too fast for buoyancy to do anything. Set it to zero to see the bare model.
+
+The test of whether the arrangement is honest is whether the outcome lands where the published calculations do:
+
+| | this model | published |
+|---|---|---|
+| **Delayed detonation** | 1.36 M☉ | N100, Seitenzahl et al. |
+| transition at | 0.99 s | ~0.9–1.0 s |
+| ⁵⁶Ni produced | 0.600 M☉ | 0.604 M☉ |
+| stable iron group | 0.247 M☉ | 0.199 M☉ |
+| kinetic energy | 1.05 × 10⁵¹ erg | 1.45 × 10⁵¹ erg |
+| **Double detonation** | 1.03 M☉ | sub-Chandrasekhar models |
+| core ignites at | 1.14 s | ~1–1.5 s |
+| ⁵⁶Ni produced | 0.491 M☉ | ~0.5 M☉ |
+| stable iron group | 0.008 M☉ | ~0 |
+| kinetic energy | 0.95 × 10⁵¹ erg | ~1.1 × 10⁵¹ erg |
+
+The kinetic energy is the weak spot — about a quarter low in both cases, because rather more of the outer star survives unburnt here than in the real models. Everything else is within a few percent.
+
+## A note on the picture
+
+The core-collapse demo had to use a logarithmic radial axis, because it spans eight orders of magnitude and a linear axis fine enough to show the neutron star would need a hundred million samples to reach the surface. The price was that the star stopped looking like a star and started looking like a dartboard. That bothered me.
+
+A Type Ia spans a factor of thirty, all of it after the burning is finished, so this one is drawn on a linear axis and looks like a sphere. The layers are at their true relative thicknesses. The only compression is that the star's overall size on screen goes as the cube root of its real radius, which is what keeps a thirtyfold expansion in frame; the ring around the edge carries the real number.
+
+---
+
+Two seconds, one and a half times ten to the fifty-one ergs, six-tenths of a solar mass of nickel, and nothing left over. A star that spent ten billion years as the cooling ember of something else, and then, because a companion fed it a few hundredths of a solar mass too many, stopped existing entirely.
