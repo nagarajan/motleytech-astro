@@ -14,6 +14,7 @@ interface Props {
   heroImage?: string;
   heroAlt?: string;
   readMinutes?: number;
+  draft?: boolean;
 }
 
 const {
@@ -27,10 +28,11 @@ const {
   heroImage,
   heroAlt = title,
   readMinutes,
+  draft = false,
 } = Astro.props;
 ---
 
-<BaseLayout title={`${title} | MotleyTech`} description={description}>
+<BaseLayout title={`${title} | MotleyTech`} description={description} noindex={draft}>
   <article class="post-content">
     <p class="kicker">{category}</p>
     <h1>{title}</h1>

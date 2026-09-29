@@ -27,6 +27,7 @@ const { Content } = await render(post);
   heroImage={post.data.heroImage}
   heroAlt={post.data.heroAlt}
   readMinutes={getReadMinutes(post)}
+  draft={post.data.draft === true}
 >
   <Content />
 </BlogPostLayout>

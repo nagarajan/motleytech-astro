@@ -5,11 +5,13 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  noindex?: boolean;
 }
 
 const {
   title,
   description = 'MotleyTech - variegated, technical and interesting',
+  noindex = false,
 } = Astro.props;
 
 const gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? 'G-V8WZYM91B4';
@@ -40,6 +42,7 @@ const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="icon" href="/favicon.ico" />
     <link rel="alternate" type="application/rss+xml" title="MotleyTech" href="/rss.xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
