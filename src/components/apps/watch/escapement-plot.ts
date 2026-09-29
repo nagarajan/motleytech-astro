@@ -171,7 +171,9 @@ function panel(f: (typeof frames)[number], note: string, mid: Spot, scale: numbe
   const px = (p: Spot) => `${(W / 2 + (p.x - mid.x) * scale).toFixed(1)},${(H / 2 - (p.y - mid.y) * scale).toFixed(1)}`;
   const poly = (pts: Spot[], fill: string, stroke: string) =>
     `<polygon points="${pts.map(px).join(' ')}" fill="${fill}" stroke="${stroke}" stroke-width="1"/>`;
-  return `<g>
+  const id = `clip${Math.random().toString(36).slice(2)}`;
+  return `<g clip-path="url(#${id})">
+    <clipPath id="${id}"><rect width="${W}" height="${H}"/></clipPath>
     <rect width="${W}" height="${H}" fill="#fbfbfd" stroke="#ccd"/>
     <text x="14" y="26" font-family="monospace" font-size="15" fill="#334">${f.label} ${((f.fork * 180) / Math.PI).toFixed(0)}°  ${note}</text>
     <circle cx="${(W / 2 + (ESC.x - mid.x) * scale).toFixed(1)}" cy="${(H / 2 + mid.y * scale).toFixed(1)}" r="${R.escape * scale}" fill="none" stroke="#c66" stroke-dasharray="4 4"/>
@@ -204,7 +206,7 @@ const engaged = (f: (typeof frames)[number]): Spot => {
 const rows = frames.map(
   (f, i) =>
     `<g transform="translate(0,${i * H})">${panel(f, 'whole', { x: ESC.x - 0.4, y: 0 }, 105)}</g>` +
-    `<g transform="translate(${W},${i * H})">${panel(f, 'at the stone', engaged(f), 520)}</g>`,
+    `<g transform="translate(${W},${i * H})">${panel(f, 'at the stone', engaged(f), 300)}</g>`,
 );
 
 console.log(
