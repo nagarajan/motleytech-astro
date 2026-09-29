@@ -22,10 +22,12 @@ import {
   SLIDING_IN,
   SPOT,
   STEM,
+  TEETH,
   THICK,
   Z,
   type Spot,
 } from './layout';
+import { AUTO, KEYLESS, TRAIN } from './movement';
 
 /** A ring (or disc, when `inner` is 0) standing on the z axis at `at`. */
 type Solid = {
@@ -66,12 +68,21 @@ function add(
   });
 }
 
-/** Tooth tips stand proud of the pitch radius by about a module; parts.ts uses 3%. */
-const tips = (radius: number) => radius * 1.03;
+/**
+ * The tip circle, which is what actually sweeps — not the pitch circle.
+ *
+ * A tooth's addendum is measured in *modules*, and the module is set by the tooth count,
+ * so the tip stands proud by 10% on a 24-tooth wheel and 20% on a 9-leaf pinion. Writing
+ * this as a flat percentage of the radius, which is what it was at first, quietly excuses
+ * every small pinion in the watch from the check: it made the winding pinion look 0.07 mm
+ * shorter than it is, which was exactly enough to hide it inside the ratchet wheel.
+ */
+const tip = (radius: number, teeth: number, pinion = false) =>
+  radius + (pinion ? 1.2 : 1.25) * ((2 * radius) / teeth);
 
 // ------------------------------------------------------------------ the barrel
 
-add('barrel', 'toothed wall', SPOT.barrel, tips(R.barrel), Z.barrelTeeth, THICK.barrelWall, {
+add('barrel', 'toothed wall', SPOT.barrel, tip(R.barrel, TRAIN.barrel), Z.barrelTeeth, THICK.barrelWall, {
   inner: R.barrel * 0.845,
 });
 add('barrel', 'floor', SPOT.barrel, R.barrel * 0.85, Z.barrelTeeth - THICK.barrelWall / 2 + 0.1, 0.2, {
@@ -86,21 +97,23 @@ add('barrel', 'arbor', SPOT.barrel, 0.5, (Z.plate + Z.ratchet) / 2, Z.ratchet - 
 add('stem', 'rod', { x: STEM.start, y: 0 }, STEM.radius, Z.stem, 2 * STEM.radius, {
   to: { x: STEM.end, y: 0 },
 });
-add('windingPinion', 'pinion', SPOT.windingPinion, tips(R.windingPinion), Z.stem, 2 * tips(R.windingPinion));
+const windingTip = tip(R.windingPinion, KEYLESS.windingPinion);
+const slidingTip = tip(R.slidingPinion, TEETH.slidingPinion, true);
+add('windingPinion', 'pinion', SPOT.windingPinion, windingTip, Z.stem, 2 * windingTip);
 for (const [name, x] of [
   ['in', SLIDING_IN],
   ['out', SLIDING_IN + CROWN_PULL],
 ] as const) {
-  add('slidingPinion', name, { x, y: 0 }, tips(R.slidingPinion), Z.stem, 2 * tips(R.slidingPinion));
+  add('slidingPinion', name, { x, y: 0 }, slidingTip, Z.stem, 2 * slidingTip);
 }
-add('crownWheel', 'wheel', SPOT.crownWheel, tips(R.crownWheel), Z.crownWheel, 0.3);
-add('setting', 'wheel', SPOT.setting, tips(R.settingWheel), Z.setting, 0.34);
-add('setting', 'pinion', SPOT.setting, tips(MOTION.settingPinion), Z.settingPinion, 0.34);
+add('crownWheel', 'wheel', SPOT.crownWheel, tip(R.crownWheel, KEYLESS.crownWheel), Z.crownWheel, THICK.crownWheel);
+add('setting', 'wheel', SPOT.setting, tip(R.settingWheel, TEETH.settingWheel), Z.setting, 0.34);
+add('setting', 'pinion', SPOT.setting, tip(MOTION.settingPinion, TEETH.settingPinion), Z.settingPinion, 0.34);
 add('setting', 'arbor', SPOT.setting, 0.3, (Z.setting + Z.settingPinion) / 2, Z.setting - Z.settingPinion);
 
 // ------------------------------------------------------------- winding and plates
 
-add('ratchet', 'wheel', SPOT.barrel, tips(R.ratchet), Z.ratchet, 0.3);
+add('ratchet', 'wheel', SPOT.barrel, tip(R.ratchet, KEYLESS.ratchet), Z.ratchet, 0.3);
 add('click', 'body', SPOT.click, 1.45, Z.click, 0.3);
 
 // The barrel bridge is the hull of two circles — approximated here by the two circles
@@ -132,11 +145,11 @@ add('balance', 'hairspring', SPOT.balance, 2.3, Z.hairspring, THICK.hairspring);
 
 // ----------------------------------------------------------- the automatic work
 
-add('reversing', 'pinion', SPOT.reversing, tips(R.reversingPinion), Z.reversingPinion, THICK.pinion);
-add('reversing', 'wheel', SPOT.reversing, tips(R.reversing), Z.reversingWheel, THICK.wheel);
-add('reduction', 'pinion', SPOT.reduction, tips(R.reductionPinion), Z.reductionPinion, THICK.pinion);
-add('reduction', 'wheel', SPOT.reduction, tips(R.reduction), Z.reductionWheel, THICK.wheel);
-add('rotor', 'pinion', SPOT.centre, tips(R.rotorPinion), Z.rotorPinion, THICK.pinion);
+add('reversing', 'pinion', SPOT.reversing, tip(R.reversingPinion, AUTO.reversingPinion, true), Z.reversingPinion, THICK.pinion); // prettier-ignore
+add('reversing', 'wheel', SPOT.reversing, tip(R.reversing, AUTO.reversing), Z.reversingWheel, THICK.wheel);
+add('reduction', 'pinion', SPOT.reduction, tip(R.reductionPinion, AUTO.reductionPinion, true), Z.reductionPinion, THICK.pinion); // prettier-ignore
+add('reduction', 'wheel', SPOT.reduction, tip(R.reduction, AUTO.reduction), Z.reductionWheel, THICK.wheel);
+add('rotor', 'pinion', SPOT.centre, tip(R.rotorPinion, AUTO.rotorPinion, true), Z.rotorPinion, THICK.pinion);
 add('rotor', 'arm', SPOT.centre, R.rotor, Z.rotor, THICK.rotor);
 add('rotor', 'weight', SPOT.centre, R.rotor, Z.rotor - THICK.rotor / 2 + THICK.rotorWeight / 2, THICK.rotorWeight, {
   inner: R.rotor * 0.76,

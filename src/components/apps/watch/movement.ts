@@ -201,11 +201,18 @@ const KNOCK_ANGLE = TAU - ENGAGE_ANGLE;
 // ---------------------------------------------------------------- the keyless works
 
 /**
- * Winding: crown → winding pinion (14) → crown wheel → ratchet wheel (36). The crown wheel
+ * Winding: crown → winding pinion (11) → crown wheel → ratchet wheel (36). The crown wheel
  * is an idler, so its own tooth count cancels and only reverses the direction; it is there
  * to put the ratchet wheel's rotation the right way round for the click to hold it.
+ *
+ * Eleven is not a free choice. The winding pinion meets the crown wheel as a *crown gear*,
+ * standing on edge against the flat of it, and a crown pair only meshes if the two teeth
+ * are the same size measured along their own pitch circles. The crown wheel's are fixed by
+ * its mesh with the ratchet, so the winding pinion's count follows from its radius, and
+ * its radius is the height from the stem up to the crown wheel. It was 14 for a long time,
+ * which is a different tooth size, and the two simply passed through each other.
  */
-export const KEYLESS = { windingPinion: 14, crownWheel: 24, ratchet: 36, setting: 0.2 } as const;
+export const KEYLESS = { windingPinion: 11, crownWheel: 24, ratchet: 36, setting: 0.2 } as const;
 
 const WIND_RATIO = KEYLESS.windingPinion / KEYLESS.ratchet;
 
@@ -763,13 +770,26 @@ export class Movement {
     return HAIRSPRING_K * (1 + INDEX_RANGE * this.index);
   }
 
+  /**
+   * Put the mainspring at a given state of wind.
+   *
+   * It moves the *slipped* total rather than the arbor's own count, because the arbor's
+   * count is also what the ratchet wheel's drawn angle comes from — winding the spring by
+   * hand should turn the ratchet, and putting the watch into a state for a demonstration
+   * should not.
+   */
+  setWind(turns: number): void {
+    const want = Math.max(0, Math.min(FULL_WIND, turns));
+    this.slipped = this.arborTurns - this.escape / TAU / TRAIN_RATIO - want;
+    if (want > 0) this.kick();
+  }
+
   letDown(): void {
-    this.slipped = this.arborTurns - this.escape / TAU / TRAIN_RATIO;
+    this.setWind(0);
   }
 
   fullWind(): void {
-    this.slipped = this.arborTurns - this.escape / TAU / TRAIN_RATIO - FULL_WIND;
-    this.kick();
+    this.setWind(FULL_WIND);
   }
 
   // ---------------------------------------------------------------- the integrator

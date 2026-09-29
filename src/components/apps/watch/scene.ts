@@ -25,6 +25,7 @@ import {
   SLIDING_IN,
   SPOT,
   STEM,
+  TEETH,
   THICK,
   Z,
   type Spot,
@@ -124,7 +125,7 @@ const VIEWPOINTS: Record<Viewpoint, { at: [number, number, number]; target: [num
   // From outside the case and from the side the setting wheel is on, because the pinions
   // that do the switching live on the stem itself and the crown wheel sits over them. High
   // enough to look down on the barrel the whole works now rides over.
-  keyless: { at: [20.0, -11.0, 16.0], target: [9.0, -0.8, 2.4] },
+  keyless: { at: [20.0, -11.5, 16.5], target: [9.0, -1.0, 2.8] },
   edge: { at: [5, -42, 8], target: [0, -1, 0.6] },
 };
 
@@ -926,7 +927,7 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
     slidingPart,
     slidingSpin,
     wheelGeometry({
-      teeth: 12,
+      teeth: TEETH.slidingPinion,
       radius: R.slidingPinion,
       thickness: 0.7,
       bore: STEM.radius,
@@ -942,7 +943,7 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
   piece(
     crownWheelPart,
     crownWheelSpin,
-    wheelGeometry({ teeth: KEYLESS.crownWheel, radius: R.crownWheel, thickness: 0.3, bore: 0.44 }),
+    wheelGeometry({ teeth: KEYLESS.crownWheel, radius: R.crownWheel, thickness: THICK.crownWheel, bore: 0.44 }),
     'gilt',
   );
 
@@ -952,7 +953,10 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
     piece(
       settingPart,
       settingSpin,
-      at(wheelGeometry({ teeth: 22, radius: R.settingWheel, thickness: 0.34, bore: 0.32 }), Z.setting),
+      at(
+        wheelGeometry({ teeth: TEETH.settingWheel, radius: R.settingWheel, thickness: 0.34, bore: 0.32 }),
+        Z.setting,
+      ),
       'steel',
     );
     piece(
@@ -960,7 +964,7 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
       settingSpin,
       at(
         wheelGeometry({
-          teeth: 14,
+          teeth: TEETH.settingPinion,
           radius: MOTION.settingPinion,
           thickness: 0.34,
           bore: 0.32,

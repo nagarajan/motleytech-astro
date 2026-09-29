@@ -11,7 +11,7 @@
  *
  * Two happy accidents in the result are worth pointing at: the fourth wheel lands at very
  * nearly exactly six o'clock, which is where a subsidiary seconds dial wants to be, and
- * the crown wheel lands on the stem's axis, which it has to, because a bevel pair only
+ * the crown wheel lands on the stem's axis, which it has to, because a crown pair only
  * works if the two axes actually meet.
  *
  * Millimetres throughout. The movement is 27 mm across, which is a normal size for a
@@ -38,15 +38,18 @@ export const R = {
   balance: 3.3,
   ratchet: 2.4,
   crownWheel: 1.6,
-  // Both of these are small, and they have to be: they are discs standing on edge, so a
-  // millimetre of radius costs two millimetres of the movement's height, and the height
-  // between the top of the barrel and the underside of the crown wheel is all they get.
-  windingPinion: 0.6,
+  /**
+   * The winding pinion's radius *is* the height from the stem to the crown wheel's
+   * underside, because the two meet as a crown gear: the pinion stands on edge and rolls
+   * its rim along the flat of the wheel. So this number is a height as much as a width,
+   * and it is what sets how far the whole keyless works has to climb over the barrel.
+   */
+  windingPinion: 0.733,
   // Deliberately shorter than the winding pinion. It sits directly under the crown wheel
   // and must not reach it — that is the winding pinion's job, and the whole point of the
   // clutch is that only one of the two is ever engaged.
-  slidingPinion: 0.55,
-  settingWheel: 1.5,
+  slidingPinion: 0.495,
+  settingWheel: 1.8,
   roller: 0.78,
 
   // The automatic work. Each pair shares a module, as any pair that means to mesh must:
@@ -104,7 +107,18 @@ const WINDING_PINION: Spot = { x: CROWN_WHEEL.x - R.crownWheel, y: 0 };
  * reason they are called keyless.
  */
 export const SLIDING_IN = WINDING_PINION.x + 0.68;
-export const SLIDING_OUT = SLIDING_IN + 1.5;
+export const SLIDING_OUT = SLIDING_IN + 1.4;
+
+/**
+ * Tooth counts for the setting side, which carries no ratio the watch cares about — the
+ * hands move at whatever rate KEYLESS.setting says — so these exist only to be drawn.
+ *
+ * They are still not arbitrary. The setting wheel's teeth reach in towards the stem to
+ * within one addendum of the sliding pinion's pitch circle, and an addendum is a module,
+ * so a coarse pair here puts the setting wheel's teeth straight through the stem. Forty
+ * fine teeth leave it alone where twenty-two did not.
+ */
+export const TEETH = { slidingPinion: 11, settingWheel: 40, settingPinion: 14 } as const;
 
 /**
  * The setting wheel sits where it is tangent to the sliding pinion when the crown is out
@@ -118,7 +132,7 @@ export const SLIDING_OUT = SLIDING_IN + 1.5;
  * rim with a tenth of a millimetre to spare.
  */
 const SETTING: Spot = (() => {
-  const x = SLIDING_OUT + 0.55;
+  const x = SLIDING_OUT + 0.45;
   const gap = R.settingWheel + R.slidingPinion;
   return { x, y: -Math.sqrt(gap * gap - (x - SLIDING_OUT) ** 2) };
 })();
@@ -249,16 +263,23 @@ export const Z = {
   // barrel. Making the ratchet or the crown wheel bigger only makes it worse, because the
   // winding pinion moves inboard faster than the crown wheel moves out. So the stem goes
   // up and over, clearing the lid by four tenths, and everything it drives goes up with it.
-  stem: 2.25,
-  setting: 2.25,
+  stem: 2.55,
+  setting: 2.55,
   bridge: 1.77,
-  // The crown wheel sits one winding-pinion radius above the stem, which is what makes the
-  // two mesh. The ratchet is a whisker higher so that the winding pinion's tooth tips,
-  // which just clear the crown wheel's underside, pass beneath it instead of into it. The
-  // two still share a quarter of a millimetre of face, which is all a mesh needs.
-  ratchet: 3.05,
-  crownWheel: 3.0,
-  click: 3.05,
+  /**
+   * The crown wheel's *underside* is one winding-pinion radius above the stem — 3.283 —
+   * because that is where the pinion's pitch cylinder touches the wheel's pitch plane.
+   * Half its thickness above that is its middle.
+   *
+   * The ratchet then has to sit higher again, clear of the winding pinion's tooth tips,
+   * which stand an addendum proud of that pitch plane and so reach up *into* the crown
+   * wheel's teeth. That is the mesh. It is also why the crown wheel is thick: the pinion
+   * is in the bottom of its teeth and the ratchet is in the top, and there has to be
+   * enough tooth for both.
+   */
+  crownWheel: 3.583,
+  ratchet: 3.66,
+  click: 3.66,
   balanceWheel: 2.75,
   // Clear of the top of the balance arms at 3.00 and the underside of the cock at 3.27.
   // The hairspring is 0.22 tall, so anything that overlaps it by even a few hundredths
@@ -270,18 +291,24 @@ export const Z = {
   // at the level of the pinion that turns it and carries its own pinion at the next level
   // down, so the whole module climbs half a millimetre a stage and ends up above the
   // balance cock — where the rotor has to be anyway, since it sweeps over everything.
-  reversingPinion: 3.0,
-  reversingWheel: 3.52,
-  reductionPinion: 3.52,
-  reductionWheel: 4.06,
-  rotorPinion: 4.06,
-  /** Underside at 4.60, well over the top of the balance cock at 3.57. */
-  rotor: 4.85,
+  reversingPinion: 3.66,
+  reversingWheel: 4.18,
+  reductionPinion: 4.18,
+  reductionWheel: 4.72,
+  rotorPinion: 4.72,
+  /** Underside at 5.21, well over the top of the balance cock at 3.57. */
+  rotor: 5.46,
 } as const;
 
 export const THICK = {
   wheel: 0.22,
   pinion: 0.62,
+  /**
+   * The crown wheel is thicker than a train wheel because its teeth do two jobs at two
+   * heights: the winding pinion comes up into the bottom of them and the ratchet wheel
+   * meshes the top. Thin it and one of the two runs out of tooth to hold on to.
+   */
+  crownWheel: 0.6,
   plate: 0.6,
   bridge: 0.3,
   dial: 0.35,
@@ -298,7 +325,7 @@ export const THICK = {
 } as const;
 
 /** The stem runs out to three o'clock. The crown is the only part outside the case. */
-export const STEM = { start: 5.6, end: 15.6, radius: 0.34, crownAt: 14.4, crownRadius: 1.55 } as const;
+export const STEM = { start: 5.6, end: 15.6, radius: 0.2, crownAt: 14.4, crownRadius: 1.55 } as const;
 
 /** How far the crown and stem shift when you pull the crown out. */
 export const CROWN_PULL = SLIDING_OUT - SLIDING_IN;
@@ -420,7 +447,7 @@ export const PARTS: PartInfo[] = [
     id: 'windingPinion',
     label: 'Winding pinion',
     group: 'keyless',
-    note: 'Runs loose on the stem and drives the crown wheel through a bevel. It is coupled to the sliding pinion by facing ratchet teeth, which is why winding backwards just clicks.',
+    note: 'Runs loose on the stem and drives the crown wheel as a crown gear, standing on edge and rolling its rim along the flat of it. It is coupled to the sliding pinion by facing ratchet teeth, which is why winding backwards just clicks.',
   },
   {
     id: 'slidingPinion',

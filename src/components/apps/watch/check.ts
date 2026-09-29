@@ -12,6 +12,7 @@ import {
   BEATS_PER_HOUR,
   DEG,
   FULL_WIND,
+  KEYLESS,
   Movement,
   TRAIN_RATIO,
   escapeTorque,
@@ -28,7 +29,7 @@ function pad(text: string | number, width: number): string {
 function wound(turns: number): Movement {
   const watch = new Movement();
   watch.letDown();
-  watch.turnCrown(turns / (14 / 36));
+  watch.turnCrown(turns / (KEYLESS.windingPinion / KEYLESS.ratchet));
   return watch;
 }
 

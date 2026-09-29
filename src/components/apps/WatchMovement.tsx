@@ -83,6 +83,13 @@ export default function WatchMovement(): ReactElement {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
   const watchRef = useRef<Movement>(new Movement());
+  // Deliberately not wound right up. A full mainspring is the one state where the crown
+  // does nothing at all — the click is holding the ratchet against a spring with nothing
+  // left to give, so the crown will not turn and neither will anything behind it, which is
+  // correct and looks exactly like a broken toy. Starting it part wound means the first
+  // thing anyone tries visibly drives the ratchet wheel, and leaves the rotor something to
+  // do as well.
+  useEffect(() => watchRef.current.setWind(3), []);
 
   const [speed, setSpeed] = useState(1);
   // Lifting separates the layers along the axis; spreading opens the plan out sideways.
