@@ -103,7 +103,7 @@ export default function MoleculeBuilder(): ReactElement {
 
   const [molecule, setMolecule] = useState<Molecule>(EMPTY);
   const [symbol, setSymbol] = useState('C');
-  const [picker, setPicker] = useState<'groups' | 'table'>('groups');
+  const [picker, setPicker] = useState<'groups' | 'table'>('table');
   const [selected, setSelected] = useState<number | null>(null);
   const [linking, setLinking] = useState(false);
   const [shell, setShell] = useState(SHELL_DEFAULT);
