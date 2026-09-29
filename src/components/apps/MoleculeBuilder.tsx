@@ -2,13 +2,16 @@ import { type ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import {
   coordinationOf,
   element,
+  known,
   shellOf,
   stateOf,
   statesOf,
   ELEMENTS,
   GROUP_NAMES,
   GROUP_ORDER,
+  type Element,
 } from './molecules/elements';
+import { PERIODIC } from './molecules/periodic';
 import { BOND_COLOURS, createViewer, PAIR_COLOUR, type Viewer } from './molecules/scene';
 import {
   addAtom,
@@ -55,6 +58,18 @@ function roman(value: number): string {
   return (value < 0 ? '−' : '') + (NUMERALS[size] ?? String(size));
 }
 
+/**
+ * The hover text on an element button: its oxidation states for a metal, since that is the
+ * choice that matters there, and its usual bond count for everything else.
+ */
+function describe(entry: Element): string {
+  if (entry.block === 'transition') {
+    const states = entry.states.map((state) => `${entry.symbol}(${roman(state.charge)})`).join(', ');
+    return `${entry.name} — ${states}`;
+  }
+  return `${entry.name} — usually makes ${entry.valence} bond${entry.valence === 1 ? '' : 's'}`;
+}
+
 interface Saved {
   name: string;
   molecule: SavedMolecule;
@@ -88,6 +103,7 @@ export default function MoleculeBuilder(): ReactElement {
 
   const [molecule, setMolecule] = useState<Molecule>(EMPTY);
   const [symbol, setSymbol] = useState('C');
+  const [picker, setPicker] = useState<'groups' | 'table'>('groups');
   const [selected, setSelected] = useState<number | null>(null);
   const [linking, setLinking] = useState(false);
   const [shell, setShell] = useState(SHELL_DEFAULT);
@@ -433,77 +449,6 @@ export default function MoleculeBuilder(): ReactElement {
         <div className="mb-side">
           <section className="mb-block">
             <h3 className="mb-head">
-              Add an atom
-              <span>{anchor === null ? 'unbonded' : `bonded to ${element(chosen!.symbol).symbol}${chosen!.id}`}</span>
-            </h3>
-            {GROUP_ORDER.map((group) => (
-              <div key={group} className="mb-group">
-                <span className="mb-group-name">{GROUP_NAMES[group]}</span>
-                <div className="mb-elements">
-                  {ELEMENTS.filter((entry) => entry.group === group).map((entry) => (
-                    <button
-                      key={entry.symbol}
-                      type="button"
-                      className={entry.symbol === symbol ? 'mb-el mb-el--on' : 'mb-el'}
-                      title={
-                        entry.block === 'transition'
-                          ? `${entry.name} — ${entry.states
-                              .map((state) => `${entry.symbol}(${roman(state.charge)})`)
-                              .join(', ')}`
-                          : `${entry.name} — usually makes ${entry.valence} bond${entry.valence === 1 ? '' : 's'}`
-                      }
-                      aria-label={entry.name}
-                      onClick={() => {
-                        setSymbol(entry.symbol);
-                        place(entry.symbol);
-                      }}
-                    >
-                      <span className="mb-dot" style={{ background: entry.colour }} />
-                      {entry.symbol}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-            <div className="mb-tools">
-              <label className="mb-field">
-                Bonds
-                <select
-                  className="mb-select"
-                  value={bondChoice}
-                  aria-label="Bond type for new bonds"
-                  onChange={(event) => setBondChoice(event.target.value as 'auto' | BondKind)}
-                >
-                  <option value="auto">decide for me</option>
-                  <option value="covalent">always covalent</option>
-                  <option value="ionic">always ionic</option>
-                </select>
-              </label>
-              <label className="mb-field">
-                Order
-                <select
-                  className="mb-select"
-                  value={orderChoice}
-                  aria-label="Bond order for new bonds"
-                  onChange={(event) => setOrderChoice(Number(event.target.value) as BondOrder)}
-                >
-                  {BOND_ORDERS.map((order) => (
-                    <option key={order} value={order}>
-                      {ORDER_NAMES[order]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              {nextKind && (
-                <span className="mb-readout">
-                  next: {ORDER_NAMES[orderChoice]} {nextKind}
-                </span>
-              )}
-            </div>
-          </section>
-
-          <section className="mb-block">
-            <h3 className="mb-head">
               {molecule.atoms.length === 0 ? (
                 'Nothing yet'
               ) : (
@@ -730,6 +675,141 @@ export default function MoleculeBuilder(): ReactElement {
             )}
           </section>
         </div>
+
+        {/* Under the view rather than beside it, because the full table is eighteen columns
+            wide and a side panel is not. */}
+        <section className="mb-block mb-picker">
+          <h3 className="mb-head">
+            Add an atom
+            <span className="mb-head-tail">
+              <span>{anchor === null ? 'unbonded' : `bonded to ${element(chosen!.symbol).symbol}${chosen!.id}`}</span>
+              <span className="mb-switch">
+                <button
+                  type="button"
+                  className={picker === 'groups' ? 'mb-tab mb-tab--on' : 'mb-tab'}
+                  aria-pressed={picker === 'groups'}
+                  onClick={() => setPicker('groups')}
+                >
+                  Common
+                </button>
+                <button
+                  type="button"
+                  className={picker === 'table' ? 'mb-tab mb-tab--on' : 'mb-tab'}
+                  aria-pressed={picker === 'table'}
+                  onClick={() => setPicker('table')}
+                >
+                  Periodic table
+                </button>
+              </span>
+            </span>
+          </h3>
+
+          {picker === 'groups' ? (
+            GROUP_ORDER.map((group) => (
+              <div key={group} className="mb-group">
+                <span className="mb-group-name">{GROUP_NAMES[group]}</span>
+                <div className="mb-elements">
+                  {ELEMENTS.filter((entry) => entry.group === group).map((entry) => (
+                    <button
+                      key={entry.symbol}
+                      type="button"
+                      className={entry.symbol === symbol ? 'mb-el mb-el--on' : 'mb-el'}
+                      title={describe(entry)}
+                      aria-label={entry.name}
+                      onClick={() => {
+                        setSymbol(entry.symbol);
+                        place(entry.symbol);
+                      }}
+                    >
+                      <span className="mb-dot" style={{ background: entry.colour }} />
+                      {entry.symbol}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            <>
+              <div className="mb-table-wrap">
+                <div className="mb-table">
+                  {PERIODIC.map((cell) => {
+                    // Everything is drawn; only the ones the model has numbers for can be
+                    // clicked. A gap in a periodic table would be a lie about chemistry, so
+                    // the missing ones are greyed rather than left out.
+                    const entry = known(cell.symbol) ? element(cell.symbol) : null;
+                    const classes = ['mb-cell'];
+                    if (!entry) classes.push('mb-cell--off');
+                    else if (cell.symbol === symbol) classes.push('mb-cell--on');
+                    return (
+                      <button
+                        key={cell.symbol}
+                        type="button"
+                        className={classes.join(' ')}
+                        style={{
+                          gridRow: cell.row,
+                          gridColumn: cell.column,
+                          // The Jmol colour, faint, so the table still reads as the models do.
+                          background: entry ? `${entry.colour}26` : undefined,
+                        }}
+                        disabled={!entry}
+                        title={entry ? describe(entry) : `${cell.name} — not in this builder's table`}
+                        aria-label={entry ? cell.name : `${cell.name}, unavailable`}
+                        onClick={() => {
+                          setSymbol(cell.symbol);
+                          place(cell.symbol);
+                        }}
+                      >
+                        <span className="mb-cell-z">{cell.number}</span>
+                        <span className="mb-cell-sym">{cell.symbol}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <p className="mb-table-note">
+                {ELEMENTS.length} of the 118 have radii and oxidation states in the table this
+                builder works from. The rest are greyed out — real elements, no numbers to draw
+                them with.
+              </p>
+            </>
+          )}
+
+          <div className="mb-tools">
+            <label className="mb-field">
+              Bonds
+              <select
+                className="mb-select"
+                value={bondChoice}
+                aria-label="Bond type for new bonds"
+                onChange={(event) => setBondChoice(event.target.value as 'auto' | BondKind)}
+              >
+                <option value="auto">decide for me</option>
+                <option value="covalent">always covalent</option>
+                <option value="ionic">always ionic</option>
+              </select>
+            </label>
+            <label className="mb-field">
+              Order
+              <select
+                className="mb-select"
+                value={orderChoice}
+                aria-label="Bond order for new bonds"
+                onChange={(event) => setOrderChoice(Number(event.target.value) as BondOrder)}
+              >
+                {BOND_ORDERS.map((order) => (
+                  <option key={order} value={order}>
+                    {ORDER_NAMES[order]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {nextKind && (
+              <span className="mb-readout">
+                next: {ORDER_NAMES[orderChoice]} {nextKind}
+              </span>
+            )}
+          </div>
+        </section>
       </div>
 
       <section className="mb-saves" aria-labelledby="mb-saves-head">

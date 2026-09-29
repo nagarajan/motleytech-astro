@@ -22,7 +22,8 @@ import {
   IMPULSE_AT,
   JEWEL,
   MOTION,
-  PALLET_JEWEL,
+  PALLET_STONES,
+  STONE,
   PINION,
   R,
   SLIDING_IN,
@@ -810,13 +811,14 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
     piece(
       palletPart,
       forkSpin,
-      extrude(palletForkGeometry(PALLET_JEWEL), THICK.pallet, 4),
+      extrude(palletForkGeometry(), THICK.pallet, 4),
       'steel',
     );
-    for (const side of [1, -1]) {
-      const stone = piece(palletPart, forkSpin, new THREE.BoxGeometry(0.66, 0.3, THICK.pallet * 1.2), 'ruby');
-      stone.position.set(PALLET_JEWEL.x, side * PALLET_JEWEL.y, 0);
-      stone.rotation.z = side * 0.62;
+    for (const { at, tilt } of PALLET_STONES) {
+      const box = new THREE.BoxGeometry(STONE.length, STONE.thick, THICK.pallet * 1.2);
+      const stone = piece(palletPart, forkSpin, box, 'ruby');
+      stone.position.set(at.x, at.y, 0);
+      stone.rotation.z = tilt;
     }
     piece(palletPart, forkSpin, at(disc(0.22, 0.95, 12), 0.2), 'steel');
   }

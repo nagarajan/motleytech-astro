@@ -13,7 +13,7 @@
  */
 import * as THREE from 'three';
 
-import { FORK, type Spot } from './layout';
+import { FORK, PALLET_STONES, PALLET_TO_ESCAPE, STONE, type Spot } from './layout';
 
 const TAU = Math.PI * 2;
 
@@ -229,43 +229,84 @@ export function escapeWheelGeometry(teeth: number, radius: number, thickness: nu
  * The balance is detached from it for nine tenths of every swing, which is what "detached
  * lever" means and why the escapement is worth its complication.
  *
- * `jewel` is where the pallet stones sit, and it is not a free choice: the two of them have
- * to land on the escape wheel's tip circle, a couple of teeth apart, or the escapement is
- * not an escapement.
+ * The arms are not drawn freehand: each one ends in a pad built around the stone it
+ * carries, so the metal wraps the jewel on three sides and leaves only the working face
+ * looking at the escape wheel. That is what a pallet arm is, and drawing it any other way
+ * leaves the stone apparently floating off the end of the arm.
  */
-export function palletForkGeometry(jewel: Spot): THREE.Shape {
+export function palletForkGeometry(): THREE.Shape {
   const { horn, boss, armWide, slotHalf, hornFlare } = FORK;
 
-  // One closed loop: out the upper arm, back, across to the fork, round the slot, back,
-  // out the lower arm, and round the back of the boss to close.
-  const points: Array<[number, number]> = [
-    [-boss * 0.5, boss * 0.86],
-    [jewel.x * 0.76, jewel.y * 1.31],
-    [jewel.x * 1.08, jewel.y * 1.14],
-    [jewel.x * 1.16, jewel.y * 0.93],
-    [jewel.x * 0.88, jewel.y * 0.87],
-    [-boss * 0.95, boss * 0.52],
-    [boss * 0.6, boss * 0.38],
-    [horn * 0.52, armWide],
-    [horn * 0.64, hornFlare],
-    [horn, hornFlare],
-    [horn, slotHalf],
-    [horn * 0.87, slotHalf],
-    [horn * 0.87, -slotHalf],
-    [horn, -slotHalf],
-    [horn, -hornFlare],
-    [horn * 0.64, -hornFlare],
-    [horn * 0.52, -armWide],
-    [boss * 0.6, -boss * 0.38],
-    [-boss * 0.95, -boss * 0.52],
-    [jewel.x * 0.88, -jewel.y * 0.87],
-    [jewel.x * 1.16, -jewel.y * 0.93],
-    [jewel.x * 1.08, -jewel.y * 1.14],
-    [jewel.x * 0.76, -jewel.y * 1.31],
-    [-boss * 0.5, -boss * 0.86],
+  /** The pad of metal around one stone: flush with the working face, proud of the rest. */
+  const pad = (stone: { at: Spot; tilt: number }): Spot[] => {
+    const [c, s] = [Math.cos(stone.tilt), Math.sin(stone.tilt)];
+    const local = (x: number, y: number): Spot => ({
+      x: stone.at.x + c * x - s * y,
+      y: stone.at.y + s * x + c * y,
+    });
+    // Which way the escape wheel lies, in the stone's own axes: that face stays flush.
+    const toWheel = -(PALLET_TO_ESCAPE + stone.at.x) * s - stone.at.y * c;
+    const [half, thick, rim] = [STONE.length / 2, STONE.thick / 2, 0.07];
+    const [face, back] = toWheel > 0 ? [thick, -thick - rim] : [thick + rim, -thick];
+    return [
+      local(-half - rim, back),
+      local(half + rim, back),
+      local(half + rim, face),
+      local(-half - rim, face),
+    ];
+  };
+
+  /**
+   * Walk an arm: from one side of the boss, out and round the pad, and back to the other.
+   *
+   * The pad's corners come out of `pad` in rectangle order, which bears no relation to the
+   * order the outline needs to visit them in, and threading them in blind folds the arm
+   * over itself. So they are sorted by angle about the stone, measured from the direction
+   * that points back at the boss, which walks them from one side of the arm round the far
+   * end to the other side whichever way the stone happens to be turned.
+   */
+  const arm = (stone: { at: Spot; tilt: number }, from: Spot, to: Spot): Spot[] => {
+    const len = Math.hypot(stone.at.x, stone.at.y);
+    const back = { x: -stone.at.x / len, y: -stone.at.y / len };
+    const side = { x: -back.y, y: back.x };
+    const angle = (p: Spot) => {
+      const [dx, dy] = [p.x - stone.at.x, p.y - stone.at.y];
+      const a = Math.atan2(dx * side.x + dy * side.y, dx * back.x + dy * back.y);
+      return a < 0 ? a + TAU : a;
+    };
+    const round = [...pad(stone)].sort((p, q) => angle(p) - angle(q));
+    const fromSide = (from.x - stone.at.x) * side.x + (from.y - stone.at.y) * side.y;
+    return [from, ...(fromSide > 0 ? round : round.reverse()), to];
+  };
+
+  // One closed loop: out the upper arm and round its stone, back to the boss, across to
+  // the fork, round the notch, back, out the lower arm, and round the back of the boss.
+  const points: Spot[] = [
+    ...arm(
+      PALLET_STONES[0],
+      { x: -boss * 0.5, y: boss * 0.86 },
+      { x: -boss * 0.95, y: boss * 0.52 },
+    ),
+    { x: boss * 0.6, y: boss * 0.38 },
+    { x: horn * 0.52, y: armWide },
+    { x: horn * 0.64, y: hornFlare },
+    { x: horn, y: hornFlare },
+    { x: horn, y: slotHalf },
+    { x: horn * 0.87, y: slotHalf },
+    { x: horn * 0.87, y: -slotHalf },
+    { x: horn, y: -slotHalf },
+    { x: horn, y: -hornFlare },
+    { x: horn * 0.64, y: -hornFlare },
+    { x: horn * 0.52, y: -armWide },
+    { x: boss * 0.6, y: -boss * 0.38 },
+    ...arm(
+      PALLET_STONES[1],
+      { x: -boss * 0.95, y: -boss * 0.52 },
+      { x: -boss * 0.5, y: -boss * 0.86 },
+    ),
   ];
 
-  const shape = new THREE.Shape(points.map(([x, y]) => new THREE.Vector2(x, y)));
+  const shape = new THREE.Shape(points.map(({ x, y }) => new THREE.Vector2(x, y)));
   // Round the back of the boss, between the two arms.
   shape.absarc(0, 0, boss, -Math.PI * 0.6, Math.PI * 0.6, true);
   shape.closePath();

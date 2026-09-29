@@ -17,7 +17,7 @@
  * Millimetres throughout. The movement is 27 mm across, which is a normal size for a
  * hand-wound wristwatch.
  */
-import { KEYLESS, MOTION_WORK, TRAIN } from './movement';
+import { FORK_SWING, KEYLESS, MOTION_WORK, TRAIN } from './movement';
 
 export interface Spot {
   x: number;
@@ -88,7 +88,8 @@ const THIRD = step(CENTRE, R.centre + PINION.third, -133.36 * D);
 const FOURTH = step(THIRD, R.third + PINION.fourth, -34.64 * D);
 const ESCAPE = step(FOURTH, R.fourth + PINION.escape, -168.0 * D);
 /** Escape wheel, pallet staff and balance staff are collinear, as a lever escapement is. */
-const PALLET = step(ESCAPE, 3.0, 180 * D);
+export const PALLET_TO_ESCAPE = 3.0;
+const PALLET = step(ESCAPE, PALLET_TO_ESCAPE, 180 * D);
 const BALANCE = step(PALLET, 2.6, 180 * D);
 
 /**
@@ -106,14 +107,54 @@ export const FORK = {
 } as const;
 
 /**
- * Where the pallet stones sit. This is not a styling decision: each one has to land on the
- * escape wheel's tip circle, and the two of them have to be far enough apart to straddle
- * two and a half teeth. Solve for that and the shape of the lever follows.
+ * The pallet stones.
+ *
+ * What has to be exact is not where the middle of the jewel sits, but where its locking
+ * corner arrives: on the escape wheel's tip circle, the pair of them two and a half tooth
+ * spaces apart, at the moment the lever is hard over against its banking. So the stones
+ * are placed by working backwards from that — put the corner where it has to be at the
+ * banking, turn the lever back to the middle, and draw the jewel there.
+ *
+ * Doing it the other way round, which is what this did at first, puts the jewel's *centre*
+ * on the tip circle at the middle of the lever's travel. The lever then swings each stone
+ * 0.28 mm in and out radially either side of that, and the teeth are only 0.63 mm deep, so
+ * one stone buries itself nearly to the root of the wheel while the other grazes the tips.
+ * It animates, and nothing is ever touching what it appears to touch.
  */
-export const PALLET_JEWEL: Spot = {
-  x: -(3.0 - R.escape * Math.cos(30 * D)),
-  y: R.escape * Math.sin(30 * D),
-};
+export const STONE = {
+  /** Half the angle between the stones, seen from the escape wheel: 2.5 of 15 teeth. */
+  span: 30 * D,
+  /** How far inside the tip circle the tooth is held when locked. */
+  lock: 0.05,
+  /** Along the tip circle, and across it. */
+  length: 0.46,
+  thick: 0.22,
+} as const;
+
+const HALF_FORK = FORK_SWING / 2;
+
+/**
+ * Each stone in the lever's own drawing frame, where the arms run out along −X.
+ *
+ * The scene turns the lever by π, so the stone drawn at +y is the one that works at −y,
+ * and it is the opposite banking that engages it.
+ */
+export const PALLET_STONES: { at: Spot; tilt: number }[] = [1, -1].map((s) => {
+  const sigma = -s;
+  const engage = -sigma * HALF_FORK;
+  /** Radially outward from the escape wheel at the locking point. */
+  const out = { x: -Math.cos(STONE.span), y: sigma * Math.sin(STONE.span) };
+  const seat = R.escape - STONE.lock + STONE.thick / 2;
+  const banked = { x: PALLET_TO_ESCAPE + out.x * seat, y: out.y * seat };
+  // Turn the lever back to the middle of its travel, then out of the scene's π.
+  const back = -engage - Math.PI;
+  const [c, sn] = [Math.cos(back), Math.sin(back)];
+  return {
+    at: { x: c * banked.x - sn * banked.y, y: sn * banked.x + c * banked.y },
+    // The stone lies along the tip circle, so its long axis is across the radius.
+    tilt: Math.atan2(out.x, -out.y) + back,
+  };
+});
 
 /**
  * How far out on the roller the impulse jewel stands, and not a free choice either: it has

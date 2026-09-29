@@ -285,6 +285,112 @@
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
 }
 
+/* ---------- the periodic table ---------- */
+
+/* Full width, under both panes: eighteen columns do not fit in a side panel. */
+.mb-picker {
+  grid-column: 1 / -1;
+}
+
+.mb-head-tail {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mb-switch {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.mb-tab {
+  padding: 0.18rem 0.6rem;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  /* The heading sets small caps on its spans, and that inherits into these. */
+  text-transform: none;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.mb-tab--on {
+  background: var(--chip-bg);
+  color: var(--accent-2);
+}
+
+/* Below the floor the symbols stop being readable, so the panel scrolls sideways instead. */
+.mb-table-wrap {
+  overflow-x: auto;
+}
+
+.mb-table {
+  display: grid;
+  grid-template-columns: repeat(18, minmax(0, 1fr));
+  gap: 2px;
+  min-width: 31rem;
+}
+
+/* Row 8 holds nothing and collapses to nothing, which is what separates the lanthanide and
+ * actinide strips from the table proper. */
+
+.mb-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: var(--font-mono);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mb-cell:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.mb-cell--on {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* An element with no radius in the table cannot be drawn, so it is shown and not offered. */
+.mb-cell--off {
+  background: var(--surface-solid);
+  border-style: dashed;
+  color: var(--text-faint);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.mb-cell-z {
+  font-size: 0.5rem;
+  color: var(--text-faint);
+}
+
+.mb-cell-sym {
+  margin-top: 0.12rem;
+  font-size: 0.74rem;
+}
+
+.mb-table-note {
+  margin: 0.55rem 0 0;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
 /* Sits inside the heading, so it has to beat the heading's own small-caps span rule — and
  * the per-element spans inside it have to beat it as well, or two-letter symbols come out
  * as CLNA instead of ClNa. */

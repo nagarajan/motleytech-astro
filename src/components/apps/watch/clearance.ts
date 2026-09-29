@@ -21,7 +21,6 @@ import {
   IMPULSE_AT,
   JEWEL,
   MOTION,
-  PALLET_JEWEL,
   PINION,
   R,
   SLIDING_IN,
@@ -33,6 +32,7 @@ import {
   type Spot,
 } from './layout';
 import { AUTO, FORK_SWING, KEYLESS, TRAIN } from './movement';
+import { palletForkGeometry } from './parts';
 
 /** A ring (or disc, when `inner` is 0) standing on the z axis at `at`. */
 type Solid = {
@@ -296,23 +296,7 @@ for (let i = 0; i < solids.length; i++) {
  * and are kept apart in height alone. The notch and the impulse jewel are the exception and
  * are supposed to meet; everything else here has to miss.
  */
-const forkOutline = (() => {
-  const { horn, boss, armWide, slotHalf, hornFlare } = FORK;
-  const j = PALLET_JEWEL;
-  const points: Spot[] = [
-    { x: -boss * 0.5, y: boss * 0.86 },
-    { x: j.x * 0.76, y: j.y * 1.31 },
-    { x: j.x * 1.16, y: j.y * 0.93 },
-    { x: -boss * 0.95, y: boss * 0.52 },
-    { x: boss * 0.6, y: boss * 0.38 },
-    { x: horn * 0.52, y: armWide },
-    { x: horn * 0.64, y: hornFlare },
-    { x: horn, y: hornFlare },
-    { x: horn, y: slotHalf },
-    { x: horn * 0.87, y: slotHalf },
-  ];
-  return [...points, ...points.map((p) => ({ x: p.x, y: -p.y })).reverse()];
-})();
+const forkOutline: Spot[] = palletForkGeometry().getPoints(1);
 
 /** Nearest point of the lever's outline to a spot, with the lever turned by `angle`. */
 function forkReach(angle: number, to: Spot): number {
