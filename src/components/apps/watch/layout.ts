@@ -50,7 +50,12 @@ export const R = {
   // clutch is that only one of the two is ever engaged.
   slidingPinion: 0.495,
   settingWheel: 1.8,
-  roller: 0.78,
+  /**
+   * The roller table, which has to be big enough to carry the impulse jewel at whatever
+   * radius the lever's notch demands — see IMPULSE_AT — with a little metal left round it.
+   */
+  roller: 0.88,
+  impulseJewel: 0.13,
 
   // The automatic work. Each pair shares a module, as any pair that means to mesh must:
   // 1/9 for the rotor pinion into the reduction wheel, 0.13 for the reduction pinion into
@@ -85,6 +90,37 @@ const ESCAPE = step(FOURTH, R.fourth + PINION.escape, -168.0 * D);
 /** Escape wheel, pallet staff and balance staff are collinear, as a lever escapement is. */
 const PALLET = step(ESCAPE, 3.0, 180 * D);
 const BALANCE = step(PALLET, 2.6, 180 * D);
+
+/**
+ * The lever, in the frame of its own pivot: the notch out along +X where the balance is,
+ * the pallet stones back along −X where the escape wheel is.
+ */
+export const FORK = {
+  /** Reach from the pivot to the mouth of the notch. */
+  horn: 2.05,
+  boss: 0.56,
+  /** Half the width of the notch. It has to swallow the impulse jewel, not wedge on it. */
+  slotHalf: R.impulseJewel + 0.04,
+  hornFlare: 0.56,
+  armWide: 0.26,
+} as const;
+
+/**
+ * Where the pallet stones sit. This is not a styling decision: each one has to land on the
+ * escape wheel's tip circle, and the two of them have to be far enough apart to straddle
+ * two and a half teeth. Solve for that and the shape of the lever follows.
+ */
+export const PALLET_JEWEL: Spot = {
+  x: -(3.0 - R.escape * Math.cos(30 * D)),
+  y: R.escape * Math.sin(30 * D),
+};
+
+/**
+ * How far out on the roller the impulse jewel stands, and not a free choice either: it has
+ * to come to rest halfway down the lever's notch, so it is whatever is left of the lever's
+ * reach across the 2.6 mm between the two pivots.
+ */
+export const IMPULSE_AT = 2.6 - FORK.horn * 0.935;
 
 /**
  * The crown wheel has to sit where the stem's axis crosses its own, and at exactly the
@@ -244,7 +280,13 @@ export const Z = {
 
   escapeWheel: 0.28,
   pallet: 0.28,
-  roller: 0.28,
+  /**
+   * The roller rides clear over the top of the lever, and has to: the lever's horns reach
+   * in to well inside the roller's rim, so the two share plan space and can only be kept
+   * apart in height. What crosses between them is the impulse jewel alone, standing down
+   * off the roller's underside into the notch.
+   */
+  roller: 0.63,
   centreWheel: 0.5,
   thirdPinion: 0.5,
   fourthWheel: 0.85,
@@ -316,12 +358,24 @@ export const THICK = {
   barrelWall: 1.2,
   escape: 0.16,
   pallet: 0.2,
+  roller: 0.4,
   balanceRim: 0.5,
   hairspring: 0.22,
   mainspring: 1.0,
   /** The rotor is thin in the arm and thick in the weight; this is the arm. */
   rotor: 0.5,
   rotorWeight: 1.5,
+} as const;
+
+/**
+ * Top and bottom of the impulse jewel: set into the roller above, and standing down far
+ * enough to pass clean through the lever's plane below. It is the only thing in the watch
+ * that deliberately spans two levels, and the only reason the escapement can be assembled
+ * at all — see Z.roller.
+ */
+export const JEWEL = {
+  top: Z.roller + THICK.roller / 2,
+  foot: Z.pallet - THICK.pallet / 2 - 0.04,
 } as const;
 
 /** The stem runs out to three o'clock. The crown is the only part outside the case. */

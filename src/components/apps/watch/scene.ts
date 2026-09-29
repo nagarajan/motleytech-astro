@@ -19,7 +19,10 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import {
   CASE_RADIUS,
   CROWN_PULL,
+  IMPULSE_AT,
+  JEWEL,
   MOTION,
+  PALLET_JEWEL,
   PINION,
   R,
   SLIDING_IN,
@@ -799,18 +802,6 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
 
   // ---------------------------------------------------------------- the escapement
 
-  /**
-   * Where the pallet jewels sit. This is not a styling decision: each one has to land on
-   * the escape wheel's tip circle, and the two of them have to be far enough apart to
-   * straddle two and a half teeth. Solve for that and the shape of the lever follows.
-   */
-  const PALLET_JEWEL = (() => {
-    const span = 30 * (Math.PI / 180);
-    const x = 3.0 - R.escape * Math.cos(span);
-    const y = R.escape * Math.sin(span);
-    return new THREE.Vector2(-x, y);
-  })();
-
   const palletPart = part('pallet', Z.pallet, SPOT.pallet);
   const forkSpin = new THREE.Group();
   forkSpin.position.set(SPOT.pallet.x, SPOT.pallet.y, Z.pallet);
@@ -819,7 +810,7 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
     piece(
       palletPart,
       forkSpin,
-      extrude(palletForkGeometry(PALLET_JEWEL, 2.05, 0.56), THICK.pallet, 4),
+      extrude(palletForkGeometry(PALLET_JEWEL), THICK.pallet, 4),
       'steel',
     );
     for (const side of [1, -1]) {
@@ -856,12 +847,23 @@ export function createViewer(canvas: HTMLCanvasElement, background: string): Vie
     }
     piece(balancePart, balanceSpin, at(disc(0.19, Z.cock - Z.roller, 12), (Z.cock + Z.roller) / 2), 'steel');
 
-    // The roller table, at the bottom of the staff down where the fork is. Its one jewel
-    // is the entire conversation between the escapement and the balance.
-    piece(balancePart, balanceSpin, at(disc(R.roller, 0.4, 30), Z.roller), 'steel');
-    const impulse = piece(balancePart, balanceSpin, new THREE.CylinderGeometry(0.18, 0.18, 0.52, 12), 'ruby');
+    // The roller table, down at the bottom of the staff. Its one jewel is the entire
+    // conversation between the escapement and the balance.
+    //
+    // The disc itself passes over the lever with a little air under it, because it has to:
+    // the lever's horns close to within 0.55 mm of the staff, well inside the roller's rim,
+    // so in plan the two are hopelessly on top of each other. Only the jewel crosses
+    // between the levels, standing down off the roller far enough to reach through the
+    // lever's plane, and it is the jewel alone that the notch ever touches.
+    piece(balancePart, balanceSpin, at(disc(R.roller, THICK.roller, 30), Z.roller), 'steel');
+    const impulse = piece(
+      balancePart,
+      balanceSpin,
+      new THREE.CylinderGeometry(R.impulseJewel, R.impulseJewel, JEWEL.top - JEWEL.foot, 12),
+      'ruby',
+    );
     impulse.rotation.x = Math.PI / 2;
-    impulse.position.set(R.roller * 0.77, 0, Z.roller);
+    impulse.position.set(IMPULSE_AT, 0, (JEWEL.top + JEWEL.foot) / 2);
   }
 
   const hairPart = part('hairspring', Z.hairspring, SPOT.balance);

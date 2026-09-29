@@ -13,6 +13,8 @@
  */
 import * as THREE from 'three';
 
+import { FORK, type Spot } from './layout';
+
 const TAU = Math.PI * 2;
 
 // ---------------------------------------------------------------- tooth profiles
@@ -231,10 +233,8 @@ export function escapeWheelGeometry(teeth: number, radius: number, thickness: nu
  * to land on the escape wheel's tip circle, a couple of teeth apart, or the escapement is
  * not an escapement.
  */
-export function palletForkGeometry(jewel: THREE.Vector2, horn: number, boss: number): THREE.Shape {
-  const armWide = 0.26;
-  const slotHalf = 0.13;
-  const hornFlare = 0.56;
+export function palletForkGeometry(jewel: Spot): THREE.Shape {
+  const { horn, boss, armWide, slotHalf, hornFlare } = FORK;
 
   // One closed loop: out the upper arm, back, across to the fork, round the slot, back,
   // out the lower arm, and round the back of the boss to close.

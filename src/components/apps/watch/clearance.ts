@@ -17,7 +17,12 @@
 import {
   CASE_RADIUS,
   CROWN_PULL,
+  FORK,
+  IMPULSE_AT,
+  JEWEL,
   MOTION,
+  PALLET_JEWEL,
+  PINION,
   R,
   SLIDING_IN,
   SPOT,
@@ -27,7 +32,7 @@ import {
   Z,
   type Spot,
 } from './layout';
-import { AUTO, KEYLESS, TRAIN } from './movement';
+import { AUTO, FORK_SWING, KEYLESS, TRAIN } from './movement';
 
 /** A ring (or disc, when `inner` is 0) standing on the z axis at `at`. */
 type Solid = {
@@ -138,10 +143,18 @@ add('bridge', 'over the crown wheel', SPOT.crownWheel, 2.2, Z.bridge, THICK.brid
 });
 add('cock', 'over the balance', SPOT.balance, 3.3, Z.cock, THICK.bridge);
 
-// --------------------------------------------------------------- the balance
+// ------------------------------------------------------ the balance and escapement
 
-add('balance', 'wheel', SPOT.balance, 3.3, Z.balanceWheel, THICK.balanceRim);
+add('balance', 'wheel', SPOT.balance, R.balance, Z.balanceWheel, THICK.balanceRim);
 add('balance', 'hairspring', SPOT.balance, 2.3, Z.hairspring, THICK.hairspring);
+add('balance', 'staff', SPOT.balance, 0.19, (Z.cock + Z.roller) / 2, Z.cock - Z.roller);
+add('balance', 'roller', SPOT.balance, R.roller, Z.roller, THICK.roller);
+// The impulse jewel reaches down out of the roller through the lever's plane. Modelled
+// where it sweeps, as a ring, because the balance turns and it goes round with it.
+add('balance', 'impulse jewel', SPOT.balance, IMPULSE_AT + R.impulseJewel, (JEWEL.top + JEWEL.foot) / 2, JEWEL.top - JEWEL.foot, { inner: IMPULSE_AT - R.impulseJewel }); // prettier-ignore
+add('escape', 'wheel', SPOT.escape, tip(R.escape, TRAIN.escape), Z.escapeWheel, THICK.escape);
+add('escape', 'pinion', SPOT.escape, tip(PINION.escape, TRAIN.escapePinion, true), Z.escapePinion, THICK.pinion);
+add('pallet', 'arbor', SPOT.pallet, 0.22, Z.pallet + 0.2, 0.95);
 
 // ----------------------------------------------------------- the automatic work
 
@@ -269,6 +282,103 @@ for (let i = 0; i < solids.length; i++) {
     }
   }
 }
+
+// ------------------------------------------------------------------ the lever
+
+/**
+ * The lever gets its own test, because it breaks both of the assumptions above: it is not
+ * round, and where it is depends on where it is in its travel. So its outline is swung
+ * through the twenty degrees it actually moves and measured, at every step, against the
+ * round things it reaches in among.
+ *
+ * It reaches a long way in. The horns close to within 0.55 mm of the balance staff, which
+ * is well inside the roller's rim — so the lever and the roller share plan space by design
+ * and are kept apart in height alone. The notch and the impulse jewel are the exception and
+ * are supposed to meet; everything else here has to miss.
+ */
+const forkOutline = (() => {
+  const { horn, boss, armWide, slotHalf, hornFlare } = FORK;
+  const j = PALLET_JEWEL;
+  const points: Spot[] = [
+    { x: -boss * 0.5, y: boss * 0.86 },
+    { x: j.x * 0.76, y: j.y * 1.31 },
+    { x: j.x * 1.16, y: j.y * 0.93 },
+    { x: -boss * 0.95, y: boss * 0.52 },
+    { x: boss * 0.6, y: boss * 0.38 },
+    { x: horn * 0.52, y: armWide },
+    { x: horn * 0.64, y: hornFlare },
+    { x: horn, y: hornFlare },
+    { x: horn, y: slotHalf },
+    { x: horn * 0.87, y: slotHalf },
+  ];
+  return [...points, ...points.map((p) => ({ x: p.x, y: -p.y })).reverse()];
+})();
+
+/** Nearest point of the lever's outline to a spot, with the lever turned by `angle`. */
+function forkReach(angle: number, to: Spot): number {
+  const [c, s] = [Math.cos(angle), Math.sin(angle)];
+  let best = Infinity;
+  for (let i = 0; i < forkOutline.length; i++) {
+    const a = forkOutline[i];
+    const b = forkOutline[(i + 1) % forkOutline.length];
+    for (let t = 0; t <= 24; t++) {
+      const x = a.x + ((b.x - a.x) * t) / 24;
+      const y = a.y + ((b.y - a.y) * t) / 24;
+      best = Math.min(
+        best,
+        Math.hypot(SPOT.pallet.x + c * x - s * y - to.x, SPOT.pallet.y + s * x + c * y - to.y),
+      );
+    }
+  }
+  return best;
+}
+
+/**
+ * The lever's rest angle is π — it is drawn pointing along +X and the balance is at −X —
+ * and it swings half of FORK_SWING either side of that.
+ */
+const NEAR: { what: string; at: Spot; r: number; lo: number; hi: number }[] = [
+  { what: 'balance staff', at: SPOT.balance, r: 0.19, lo: Z.roller, hi: Z.cock },
+  { what: 'balance roller', at: SPOT.balance, r: R.roller, lo: Z.roller - THICK.roller / 2, hi: Z.roller + THICK.roller / 2 }, // prettier-ignore
+  { what: 'balance wheel', at: SPOT.balance, r: R.balance, lo: Z.balanceWheel - THICK.balanceRim / 2, hi: Z.balanceWheel + THICK.balanceRim / 2 }, // prettier-ignore
+  { what: 'escape pinion', at: SPOT.escape, r: tip(PINION.escape, TRAIN.escapePinion, true), lo: Z.escapePinion - THICK.pinion / 2, hi: Z.escapePinion + THICK.pinion / 2 }, // prettier-ignore
+];
+
+const forkLo = Z.pallet - THICK.pallet / 2;
+const forkHi = Z.pallet + THICK.pallet / 2;
+
+console.log('\n--- the lever, through its swing ---');
+for (const near of NEAR) {
+  let worst = Infinity;
+  for (let i = 0; i <= 40; i++) {
+    const angle = Math.PI + FORK_SWING * (i / 40 - 0.5);
+    worst = Math.min(worst, forkReach(angle, near.at) - near.r);
+  }
+  const height = Math.max(forkLo, near.lo) - Math.min(forkHi, near.hi);
+  const gap = Math.max(worst, height);
+  const verdict = gap < SLACK ? 'CLASH ' : gap < 0.12 ? 'tight ' : '  ok  ';
+  console.log(
+    `${verdict} lever / ${near.what.padEnd(20)} ${gap.toFixed(3)} mm  ` +
+      `(plan ${worst.toFixed(2)}, height ${height.toFixed(2)})`,
+  );
+  if (gap < SLACK) clashes++;
+}
+
+// The one pair that is supposed to meet: the jewel has to fit the notch and reach it.
+const slotSlack = FORK.slotHalf - R.impulseJewel;
+const jewelIn = JEWEL.foot <= forkLo && JEWEL.top >= forkHi;
+const jewelAt = 2.6 - IMPULSE_AT;
+console.log(
+  `\nthe notch: ${(FORK.slotHalf * 2).toFixed(2)} mm wide for a ${(R.impulseJewel * 2).toFixed(2)} mm jewel` +
+    `  (${slotSlack.toFixed(3)} mm a side)`,
+);
+console.log(
+  `the jewel: ${jewelAt.toFixed(3)} from the pallet pivot, notch runs ` +
+    `${(FORK.horn * 0.87).toFixed(3)}..${FORK.horn.toFixed(3)}` +
+    `${jewelAt > FORK.horn * 0.87 && jewelAt < FORK.horn ? '  in the notch' : '  OUT OF THE NOTCH'}`,
+);
+console.log(`           spans ${JEWEL.foot.toFixed(2)}..${JEWEL.top.toFixed(2)}, lever ${forkLo.toFixed(2)}..${forkHi.toFixed(2)}${jewelIn ? '  reaches through' : '  DOES NOT REACH THE LEVER'}`); // prettier-ignore
+if (slotSlack <= 0 || !jewelIn) clashes++;
 
 console.log(`\n${clashes} clash${clashes === 1 ? '' : 'es'}, ${tight} tight`);
 
