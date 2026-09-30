@@ -25,7 +25,7 @@ We will start from the first principles and derive the travel time. To make it p
 
 Lets imagine that we want to travel from point *A* to point *B* on the surface of the earth and we plan to do so via a straight line path through the bulk of the earth. Let the length of this path be *d* and let the minimum distance of this path from the center of the earth be *p*. Here is a diagram which makes this easier to imagine...
 
-<span class="img-width-400">
+<span class="img-width-400 img-plate">
   <img src="/images/GravityTrain.png" alt="Diagram of a chord through the Earth showing the distances d, p, x and h and the angle theta" />
 </span>
 
@@ -227,7 +227,7 @@ plt.ylabel("Acceleration due to gravity (m / s^2)")
 plt.plot(xvals, yvals)
 ```
 
-<span class="img-width-400">
+<span class="img-width-400 img-plate">
   <img src="/images/gravitytrail_matplot1.png" alt="Plot of acceleration due to gravity against distance from the centre of the Earth, a straight line through the origin" />
 </span>
 
@@ -296,7 +296,7 @@ print "Difference between max and min travel times : %s" % maxDiff
 
 Output: `Difference between max and min travel times : 2.69295696853e-12`
 
-<span class="img-width-400">
+<span class="img-width-400 img-plate">
   <img src="/images/gravitytrail_matplot2.png" alt="Plot of travel time against tunnel length for uniform density, a flat line at about 42 minutes" />
 </span>
 
@@ -372,7 +372,7 @@ plt.ylabel("Acceleration due to gravity (m / s^2)")
 plt.plot(xvals, yvals)
 ```
 
-<span class="img-width-400">
+<span class="img-width-400 img-plate">
   <img src="/images/gravitytrail_matplot3.png" alt="Plot of the PREM acceleration due to gravity against distance from the centre of the Earth" />
 </span>
 
@@ -424,7 +424,7 @@ plt.ylabel("Travel time (minutes)")
 plt.plot(xvals, yvals)
 ```
 
-<span class="img-width-400">
+<span class="img-width-400 img-plate">
   <img src="/images/gravitytrail_matplot4.png" alt="Plot of travel time against tunnel length for the real Earth, falling from 42 minutes to about 37 minutes for the longest tunnels" />
 </span>
 

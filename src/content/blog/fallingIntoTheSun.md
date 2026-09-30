@@ -244,4 +244,6 @@ plt.ylabel("Distance between earth / sun (km)")
 plt.plot(xvals, yvals)
 ```
 
-![Plot of earth's path](/images/earthpathplot.png)
+<span class="img-width-400 img-plate">
+  <img src="/images/earthpathplot.png" alt="Plot of the Earth's distance from the Sun against time as it falls inward" />
+</span>

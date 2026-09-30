@@ -30,6 +30,7 @@
   --header-bg: rgba(7, 11, 22, 0.78);
   --code-bg: rgba(6, 12, 24, 0.78);
   --chip-bg: rgba(75, 227, 255, 0.1);
+  --media-plate: #eef2f9;
 }
 
 [data-theme='synthwave'] {
@@ -58,6 +59,7 @@
   --header-bg: rgba(14, 6, 26, 0.8);
   --code-bg: rgba(16, 7, 28, 0.82);
   --chip-bg: rgba(255, 95, 162, 0.12);
+  --media-plate: #f6eef9;
 }
 
 [data-theme='matrix'] {
@@ -86,6 +88,7 @@
   --header-bg: rgba(4, 18, 12, 0.8);
   --code-bg: rgba(4, 20, 13, 0.8);
   --chip-bg: rgba(77, 255, 168, 0.1);
+  --media-plate: #eaf6ef;
 }
 
 [data-theme='ember'] {
@@ -114,6 +117,7 @@
   --header-bg: rgba(18, 10, 6, 0.8);
   --code-bg: rgba(20, 12, 7, 0.82);
   --chip-bg: rgba(255, 138, 61, 0.12);
+  --media-plate: #f9f1ea;
 }
 
 [data-theme='aurora'] {
@@ -142,6 +146,7 @@
   --header-bg: rgba(238, 243, 251, 0.82);
   --code-bg: rgba(22, 36, 58, 0.06);
   --chip-bg: rgba(10, 126, 164, 0.1);
+  --media-plate: #ffffff;
 }
 
 [data-theme='quartz'] {
@@ -170,4 +175,5 @@
   --header-bg: rgba(247, 244, 250, 0.84);
   --code-bg: rgba(36, 28, 51, 0.06);
   --chip-bg: rgba(122, 60, 255, 0.1);
+  --media-plate: #ffffff;
 }

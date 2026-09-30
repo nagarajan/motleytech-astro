@@ -1208,6 +1208,13 @@ hr {
   width: 92%;
 }
 
+/* The migrated diagrams and matplotlib plots are transparent PNGs drawn in dark
+   ink for a white page, so they need a light plate under them in every theme. */
+.img-plate img {
+  background: var(--media-plate);
+  padding: 0.75rem;
+}
+
 /* `<quote>` is not a real element, so the about page block needs explicit styling. */
 #aboutme {
   margin-top: 2rem;
