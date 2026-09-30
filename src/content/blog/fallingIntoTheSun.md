@@ -20,7 +20,7 @@ The problem is thus:
 Now, I love physics and maths, and I believed that it would be a simple matter to knock this one off. Hah... was I mistaken.
 
 <span class="img-center-92">
-![Alternate text](/images/corot_ill.jpg)
+  <img src="/images/corot_ill.jpg" alt="Artist's illustration of the CoRoT space telescope observing a star" />
 </span>
 
 ------
@@ -109,7 +109,9 @@ $$\pi \frac{d}{2} = \sqrt{\frac{2GM_s}{d}} T$$
 Rearranging the variables around, we finally get
 
 <div class="noteworthy-equation">
-  $$T = \pi \frac{d^{3/2}}{\sqrt{8GM_s}}$$
+
+$$T = \pi \frac{d^{3/2}}{\sqrt{8GM_s}}$$
+
 </div>
 
 As often happens in interesting problems, we have journeyed from a simple equation (newton's law) to terrible looking intermediate results, divisions by zero, and challenging integrals... which all finally canceled out to give a simple answer.

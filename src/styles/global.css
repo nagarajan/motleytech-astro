@@ -1255,6 +1255,15 @@ hr {
   border-radius: var(--radius-sm);
 }
 
+/* The equation arrives wrapped in a paragraph; the box supplies its own padding. */
+.noteworthy-equation > :first-child {
+  margin-top: 0;
+}
+
+.noteworthy-equation > :last-child {
+  margin-bottom: 0;
+}
+
 .playground,
 .svgcode,
 .bezierContainer,

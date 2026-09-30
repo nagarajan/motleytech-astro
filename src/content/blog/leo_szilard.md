@@ -28,7 +28,7 @@ Sensing that a war was imminent and inevitable in Europe, Szilard emigrated to t
 When Szilard approached Einstein for signing the letter, Einstein (who was living in Princeton at the time) had barely heard about the fission of Uranium in Germany, but he had no idea about the possibility of an atomic bomb. When Szilard explained the situation, Einstein exclaimed: 'Daran habe ich gar nicht gedacht' - "I had not thought of that at all". Einstein shared Szilard's concerns about Germany building the bomb before the allies and agreed to sign the letter. Einstein later said that his only contribution to the atomic bomb was to act as *Leo Szilard's mailbox*.
 
 <span class="img-width-600">
-![Alternate text](/images/Szilard-Einstein%20letter.png)
+<img src="/images/Szilard-Einstein%20letter.png" alt="Page from the Szilard-Einstein letter to President Roosevelt" />
 </span>
 
 This letter, written by Szilard and signed by Einstein, was delivered to FDR and was directly responsible for the creation of the Manhattan Project and the atomic bomb. This is the famous *Einstein letter* that we have all heard about. In the above picture, its referred to as the "Roosevelt letter". It should really be called the "Szilard-Einstein letter".
@@ -36,7 +36,7 @@ This letter, written by Szilard and signed by Einstein, was delivered to FDR and
 Szilard, along with Enrico Fermi, also owned the patent on the nuclear reactor. As a proof of concept experiment, and one of the first tasks undertaken under the Manhattan project, they collaborated to create the first self sustained nuclear chain reaction ( world's first nuclear reactor ) in Chicago in 1942.
 
 <span class="img-width-600">
-![Alternate text](/images/szilard-fermi-chicago.jpg)
+<img src="/images/szilard-fermi-chicago.jpg" alt="Group photograph of the Chicago Pile-1 team, including Szilard and Fermi" />
 </span>
 
 Above: The team that built the first nuclear reactor. Szilard is the right most on the first step (white lab coat). Enrico Fermi is the left most on the ground (the balding guy who looks like the antagonist from True Lies).
@@ -54,7 +54,7 @@ Having some notion of the terrifying power of the atomic bomb, Szilard never wan
 Szilard wrote another letter to FDR explaining that the bomb should not be used against Japanese cities, but FDR died a few days before receiving the message. Szilard then tried to contact President Truman but his message never reached Truman (or was ignored).
 
 <span class="img-width-400">
-![Alternate text](/images/mushroom-cloud.jpg)
+<img src="/images/mushroom-cloud.jpg" alt="Mushroom cloud from an atomic bomb detonation" />
 </span>
 
 After the bombs were dropped on Japan, Szilard was forced to leave nuclear physics as he was vocally against the use of nuclear weapons against Japan, which made it impossible to get the clearance required to work on nuclear physics ( imagine that, after being the Chief Scientist of the Manhattan Project ). Szilard then started working in molecular biology (the man is amazing - he was at the cutting edge in research in physics and biology), where he worked with Theodore Puck and Philip Marcus, giving them essential advice in the cloning of the first human cell.
@@ -86,7 +86,7 @@ It is not a coincidence that there have been no major wars between nations havin
 Leo Szilard is very much responsible for eradicating large scale conflicts and World Wars, inventing nuclear power plants, and on top of all that, he also invented a radiotherapy regimen to cure some cancers. Few famous people have had such a huge impact on the world and it saddens me that he is so obscure.
 
 <span class="img-width-600">
-![Alternate text](/images/szilard-portrait2.jpg)
+<img src="/images/szilard-portrait2.jpg" alt="Portrait of Leo Szilard holding a book titled A plan for peace" />
 </span>
 
 Szilard, in this picture, is carrying a book titled "A plan for peace".

@@ -30,7 +30,7 @@ We will start from the first principles and derive the travel time. To make it p
 Lets imagine that we want to travel from point *A* to point *B* on the surface of the earth and we plan to do so via a straight line path through the bulk of the earth. Let the length of this path be *d* and let the minimum distance of this path from the center of the earth be *p*. Here is a diagram which makes this easier to imagine...
 
 <span class="img-width-400">
-  ![Alternate text](/images/GravityTrain.png)
+  <img src="/images/GravityTrain.png" alt="Diagram of a chord through the Earth showing the distances d, p, x and h and the angle theta" />
 </span>
 
 To describe the remaining quantities in the diagram,
@@ -109,7 +109,9 @@ $$ \implies T = \frac{\pi}{2} \sqrt{\frac{R}{g}}$$
 This is the time it takes the gravity train to reach the midpoint of its journey (which could be the center of the earth). The other half of the path is symmetrical and takes an identical time. The total travel time is twice of this...
 
 <div class="noteworthy-equation">
-$$\implies \text{Total time} = 2*T = \pi \sqrt {\frac{R}{G}}$$
+
+$$\implies \text{Total time} = 2*T = \pi \sqrt {\frac{R}{g}}$$
+
 </div>
 
 What a beautiful and terse result. It is indeed a joy to see such an equation awaiting you at the end of all the complicated looking equations that we had to traverse. Also, the surprisingly unavoidable $\pi$ shows up yet again.
@@ -189,7 +191,7 @@ The above graph is, as expected, a straight line, though there was hardly any do
 Next, we will calculate and plot the travel time for 127 different tunnel lengths, uniformly distributed in their length, starting from 100 km and going up to 12700 km (almost equal to the diameter).
 
 <span class="img-width-400">
-  ![Alternate text](/images/gravitytrail_matplot1.png)
+  <img src="/images/gravitytrail_matplot1.png" alt="Plot of acceleration due to gravity against distance from the centre of the Earth, a straight line through the origin" />
 </span>
 
 
@@ -259,7 +261,7 @@ print "Difference between max and min travel times : %s" % maxDiff
 Output: `Difference between max and min travel times : 2.69295696853e-12`
 
 <span class="img-width-400">
-  ![Alternate text](/images/gravitytrail_matplot2.png)
+  <img src="/images/gravitytrail_matplot2.png" alt="Plot of travel time against tunnel length for uniform density, a flat line at about 42 minutes" />
 </span>
 
 All right! This confirms our analytical solution. The travel time across chords of different length are indeed almost exactly the same. The differences in the max and min travel times is of the order of $10^{−11}$, which is probably the best accuracy that we can get with double precision arithmetic on a computer.
@@ -335,7 +337,7 @@ plt.plot(xvals, yvals)
 ```
 
 <span class="img-width-400">
-  ![Alternate text](/images/gravitytrail_matplot3.png)
+  <img src="/images/gravitytrail_matplot3.png" alt="Plot of the PREM acceleration due to gravity against distance from the centre of the Earth" />
 </span>
 
 The PREM data only gives the acceleration at discrete intervals. We will write an interpolation method which will do a linear interpolation of the acceleration based on the PREM table.
@@ -387,7 +389,7 @@ plt.plot(xvals, yvals)
 ```
 
 <span class="img-width-400">
-  ![Alternate text](/images/gravitytrail_matplot4.png)
+  <img src="/images/gravitytrail_matplot4.png" alt="Plot of travel time against tunnel length for the real Earth, falling from 42 minutes to about 37 minutes for the longest tunnels" />
 </span>
 
 ## Whoa.... this is damn cool!
