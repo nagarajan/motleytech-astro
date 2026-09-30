@@ -832,7 +832,8 @@ a:hover {
   background: linear-gradient(150deg, var(--surface-solid), var(--bg));
 }
 
-.post-hero img {
+.post-hero > img:not(.trailer-media-blur) {
+  position: relative;
   width: 100%;
   height: 100%;
   object-fit: contain;
