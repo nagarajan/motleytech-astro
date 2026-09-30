@@ -11,11 +11,7 @@ heroAlt: "Illustration of a gravity powered train travelling through the Earth"
 legacySlug: "gravityTrain"
 disqusIdentifier: "gravity_train"
 ---
-Here is a really cool transportation idea - using gravity powered vacuum tubes to travel through the earth across long distances - and all of that in 42 minutes. You can see the relevant part of a discovery channel show on this topic in the following youtube snippet.
-
-<div class="youtube youtube-16x9-640">
-  <iframe src="https://www.youtube.com/embed/EapvQ3ALYJY" allowfullscreen seamless frameBorder="0"></iframe>
-</div>
+Here is a really cool transportation idea - using gravity powered vacuum tubes to travel through the earth across long distances - and all of that in 42 minutes.
 
 Of course, there are many problems : continental drift, rotation of the earth's inner layers w.r.t. the surface and the incredible pressure and temperature closer to the center of the earth that make this project completely infeasible.
 
@@ -46,7 +42,9 @@ We will first find the time that the train takes to travel half of its path, and
 
 We know from Newton's law of gravitation that the force on the train, is given by
 
-$$F = \frac{G M_h m_t}{h^2} = m_t a_h$$
+$$
+F = \frac{G M_h m_t}{h^2} = m_t a_h
+$$
 
 where,
 
@@ -56,70 +54,113 @@ where,
 * $G$ : Gravitational constant ($6.67384\times10^{−11} kg^{−1} m^3s^{−2}$)
 * $a_h$ : acceleration of the train at distance h from center of the earth.
 
-$$ m_t a_h = \frac{GM_h m_t}{h^2}$$
+$$
+m_t a_h = \frac{GM_h m_t}{h^2}
+$$
 
-$$ \implies a_h = \frac{GM_h}{h^2} $$
+$$
+\implies a_h = \frac{GM_h}{h^2}
+$$
 
-$$ a_h = \frac{G}{h^2} \times \frac{4}{3}\pi h^3 \times d_e$$
+$$
+a_h = \frac{G}{h^2} \times \frac{4}{3}\pi h^3 \times d_e
+$$
 
-$$ a_h = \frac{4}{3} \pi G h d_e = \frac{4}{3} \pi Gh \frac{M_e}{\frac{4}{3}\pi R^3}$$
+$$
+a_h = \frac{4}{3} \pi G h d_e = \frac{4}{3} \pi Gh \frac{M_e}{\frac{4}{3}\pi R^3}
+$$
 
-$$ a_h = h \frac{GM_e}{R^3} = \frac {h}{R} \times \frac {GM_e}{R^2}$$
+$$
+a_h = h \frac{GM_e}{R^3} = \frac {h}{R} \times \frac {GM_e}{R^2}
+$$
 
 but $\frac {GM_e}{R^2} = g = 9.8 ms^{-2}$, the acceleration due to gravity at the earth's surface. So, we can rewrite $a_h$ as
 
-$$\implies a_h = \frac {h}{R} g$$
+$$
+\implies a_h = \frac {h}{R} g
+$$
 
 This result implies that the acceleration due to gravity decreases linearly to 0 as we get closer to the center of the earth.
 
 Now, $a_h$ is the acceleration of the train towards the center of the earth. The quantity which is much more relevant than $a_h$ is $a_{h\theta}$, which is the acceleration of the train in the direction of travel.
 
-$$a_{h\theta} = a_h \times Cos\theta = a_h \times \frac{\frac{d}{2} - x}{h}$$
+$$
+a_{h\theta} = a_h \times Cos\theta = a_h \times \frac{\frac{d}{2} - x}{h}
+$$
 
-$$a_{h\theta} = \frac {h}{R} g \times \frac{\frac{d}{2} - x}{h} = \frac{g}{2R} (d -  2x)$$
+$$
+a_{h\theta} = \frac {h}{R} g \times \frac{\frac{d}{2} - x}{h} = \frac{g}{2R} (d -  2x)
+$$
 
 We can use integral calculus to solve this (differential) equation to find the travel time.
 
-$$a_{h\theta} = \frac{dv}{dt} = \frac{dv}{dx} \times \frac{dx}{dt} = \frac{dv}{dx} \times v = v \frac {dv}{dx}$$
+$$
+a_{h\theta} = \frac{dv}{dt} = \frac{dv}{dx} \times \frac{dx}{dt} = \frac{dv}{dx} \times v = v \frac {dv}{dx}
+$$
 
-$$v\frac{dv}{dx} = \frac{g}{2R}(d - 2x) $$
+$$
+v\frac{dv}{dx} = \frac{g}{2R}(d - 2x)
+$$
 
 Here, $v$ is the velocity of the train in the direction of the vacuum tube. Separating the variables and integrating, we get
 
-$$ \frac{v^2}{2} = \frac{g}{2R} (dx - x^2) + C$$
+$$
+\frac{v^2}{2} = \frac{g}{2R} (dx - x^2) + C
+$$
 
 where $C$ is the constant of integration. We use the constraint that $v=0$ at $x=0$, which gives $C = 0$.
 
-$$ \implies v = \sqrt{\frac{g}{R}x(d - x)}$$
+$$
+\implies v = \sqrt{\frac{g}{R}x(d - x)}
+$$
 
-$$ \frac{dx}{dt} = \sqrt{\frac{g}{R}x(d - x)}$$
+$$
+\frac{dx}{dt} = \sqrt{\frac{g}{R}x(d - x)}
+$$
 
 We separate the variables again and integrate (with the appropriate limits this time), to get
 
-$$ \int^{d/2}_0 \frac{dx}{\sqrt{x(d-x)}} = \int_0^T \sqrt{\frac{g}{R}} dt$$
+$$
+\int^{d/2}_0 \frac{dx}{\sqrt{x(d-x)}} = \int_0^T \sqrt{\frac{g}{R}} dt
+$$
 
-$$ \left. 2 * tan^{-1} \left( \sqrt{\frac{x}{d-x}} \right) \right\vert_{0}^{d/2}= \sqrt{\frac{g}{R}} T$$
+$$
+\left. 2 * tan^{-1} \left( \sqrt{\frac{x}{d-x}} \right) \right\vert_{0}^{d/2}= \sqrt{\frac{g}{R}} T
+$$
 
-$$ 2 * (tan^{-1}1 - tan^{-1}0)= \sqrt{\frac{g}{R}} T$$
+$$
+2 * (tan^{-1}1 - tan^{-1}0)= \sqrt{\frac{g}{R}} T
+$$
 
-$$ 2* \frac{\pi}{4} = \sqrt{\frac{g}{R}} T$$
+$$
+2* \frac{\pi}{4} = \sqrt{\frac{g}{R}} T
+$$
 
-$$ \implies T = \frac{\pi}{2} \sqrt{\frac{R}{g}}$$
+$$
+\implies T = \frac{\pi}{2} \sqrt{\frac{R}{g}}
+$$
 
 This is the time it takes the gravity train to reach the midpoint of its journey (which could be the center of the earth). The other half of the path is symmetrical and takes an identical time. The total travel time is twice of this...
 
 <div class="noteworthy-equation">
 
-$$\implies \text{Total time} = 2*T = \pi \sqrt {\frac{R}{g}}$$
+$$
+\implies \text{Total time} = 2*T = \pi \sqrt {\frac{R}{g}}
+$$
 
 </div>
 
 What a beautiful and terse result. It is indeed a joy to see such an equation awaiting you at the end of all the complicated looking equations that we had to traverse. Also, the surprisingly unavoidable $\pi$ shows up yet again.
 
 Putting in the values
-$$ \text{Total time} = 3.14159 * \sqrt{\frac{6371000}{9.8}} \text{ secs}$$
 
-$$ \text{Total time} = 2533 \text{ secs} = 42.21 \text{ mins}$$
+$$
+\text{Total time} = 3.14159 * \sqrt{\frac{6371000}{9.8}} \text{ secs}
+$$
+
+$$
+\text{Total time} = 2533 \text{ secs} = 42.21 \text{ mins}
+$$
 
 Lets do a quick calculation to corroborate our analytical result. Why? Because we can double check our result (two different approaches to solve the same problem don't usually make the same mistake) and it is fun to write such programs.
 
@@ -186,14 +227,9 @@ plt.ylabel("Acceleration due to gravity (m / s^2)")
 plt.plot(xvals, yvals)
 ```
 
-The above graph is, as expected, a straight line, though there was hardly any doubt about that outcome.
-
-Next, we will calculate and plot the travel time for 127 different tunnel lengths, uniformly distributed in their length, starting from 100 km and going up to 12700 km (almost equal to the diameter).
-
 <span class="img-width-400">
   <img src="/images/gravitytrail_matplot1.png" alt="Plot of acceleration due to gravity against distance from the centre of the Earth, a straight line through the origin" />
 </span>
-
 
 The above graph is, as expected, a straight line, though there was hardly any doubt about that outcome.
 
