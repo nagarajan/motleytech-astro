@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fold &amp; Snip — Paper Folding Fun | MotleyTech</title>
+<meta name="description" content="Fold a square of paper along any line, snip it with a straight cut, and unfold it one fold at a time to see the shape you made.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #fff6ea;
+    --ink: #3b2f4a;
+    --muted: #8a7f99;
+    --panel: #ffffff;
+    --blue: #4f9dff;
+    --red: #ff5a5f;
+    --green: #2fbf71;
+    --orange: #ff9f43;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    background: var(--bg); color: var(--ink);
+    font-family: "Chalkboard SE", "Comic Sans MS", "Trebuchet MS", system-ui, sans-serif;
+  }
+  header {
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+    padding: 10px 20px 4px;
+  }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: .5px; }
+  header h1 span { color: var(--orange); }
+  header p { margin: 0; color: var(--muted); font-size: 15px; }
+  header .back { margin-left: auto; font-size: 15px; color: var(--blue); text-decoration: none; }
+  header .back:hover { text-decoration: underline; }
+
+  .app {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 16px;
+    padding: 8px 16px 16px;
+    height: calc(100vh - 56px);
+  }
+  .stage {
+    position: relative;
+    border-radius: 26px;
+    background-color: #dff3ea;
+    background-image:
+      linear-gradient(rgba(30, 90, 70, .07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30, 90, 70, .07) 1px, transparent 1px);
+    background-size: 32px 32px;
+    box-shadow: inset 0 0 0 3px #bfe6d4;
+    overflow: hidden;
+    min-height: 320px;
+  }
+  #cv { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+  #hint {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,.92); padding: 8px 16px; border-radius: 999px;
+    font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    max-width: calc(100% - 24px); width: max-content; text-align: center; pointer-events: none;
+  }
+  @media (max-width: 600px) { #hint { font-size: 12px; padding: 5px 10px; } }
+  #toast {
+    position: absolute; bottom: 18px; left: 50%; transform: translate(-50%, 20px);
+    background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 14px;
+    font-size: 16px; opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none;
+    max-width: calc(100% - 24px); text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  .panel { overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 8px; }
+  .card {
+    background: var(--panel); border-radius: var(--radius); padding: 14px;
+    box-shadow: 0 2px 10px rgba(60, 40, 80, .08);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .hidden { display: none !important; }
+  .label { font-size: 14px; color: var(--muted); }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row.between { justify-content: space-between; }
+  .row > .grow { flex: 1; }
+  .big { font-size: 30px; font-weight: bold; color: var(--blue); }
+
+  button {
+    font: inherit; color: var(--ink);
+    border: none; border-radius: 14px; padding: 9px 12px;
+    background: #f1ecf7; cursor: pointer;
+    transition: transform .08s, background .15s, opacity .15s;
+  }
+  button:hover:not(:disabled) { background: #e6def2; }
+  button:active:not(:disabled) { transform: scale(.96); }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tab { font-size: 20px; padding: 12px; background: #fff; box-shadow: 0 2px 10px rgba(60,40,80,.08); }
+  .tab.active { background: var(--ink); color: #fff; }
+  .tab.active:hover { background: var(--ink); }
+
+  .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+  .seg button.on { background: var(--blue); color: #fff; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chips button { padding: 6px 10px; font-size: 14px; }
+  .chips button.on { background: var(--orange); color: #fff; }
+  .presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .presets button { font-size: 22px; padding: 6px; }
+  .icon { font-size: 22px; padding: 4px 10px; }
+  input[type=range] { width: 100%; accent-color: var(--blue); }
+  input[type=number] {
+    font: inherit; width: 90px; padding: 6px 8px; border-radius: 10px;
+    border: 2px solid #e6def2; color: var(--ink);
+  }
+  #pivotX, #pivotY { width: 72px; }
+  .go { font-size: 20px; padding: 14px; color: #fff; background: var(--blue); }
+  .go:hover:not(:disabled) { background: #3a8bf0; }
+  .go.red { background: var(--red); }
+  .go.red:hover:not(:disabled) { background: #f04449; }
+  .go.green { background: var(--green); font-size: 17px; flex: 1; }
+  .go.green:hover:not(:disabled) { background: #26a862; }
+  .row > button { flex: 1; }
+  .check { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+  .check input { width: 20px; height: 20px; accent-color: var(--blue); }
+  details summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+  details[open] summary { margin-bottom: 8px; }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  .swatch { width: 34px; height: 34px; border-radius: 50%; padding: 0; border: 3px solid #fff; box-shadow: 0 0 0 2px #e6def2; }
+  .swatch.on { box-shadow: 0 0 0 3px var(--ink); }
+  #peek { width: 200px; height: 200px; align-self: center; background: #f6fbf8; border-radius: 14px; }
+  .stats { font-size: 14px; color: var(--muted); text-align: center; }
+  #log { margin: 0; padding-left: 22px; font-size: 14px; max-height: 180px; overflow-y: auto; }
+  #log li { margin: 2px 0; }
+  #log:empty::before { content: "Nothing yet — make your first fold!"; color: var(--muted); margin-left: -22px; }
+  .tip { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.4; }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; height: auto; }
+    .stage { height: 62vh; }
+    .panel { overflow: visible; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Fold <span>&amp;</span> Snip ✂️</h1>
+  <p>Fold the paper, snip it with scissors, then unfold to see your shape!</p>
+  <a class="back" href="/blog/fold-and-snip">← About this app on MotleyTech</a>
+</header>
+
+<main class="app">
+  <section class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div id="hint"></div>
+    <div id="toast"></div>
+  </section>
+
+  <aside class="panel">
+    <div class="tabs">
+      <button class="tab active" data-tool="fold">📄 Fold</button>
+      <button class="tab" data-tool="cut">✂️ Cut</button>
+    </div>
+
+    <section id="foldPanel" class="card">
+      <div class="row between">
+        <span class="label">Fold line angle</span>
+        <span class="big" id="angleOut">0°</span>
+      </div>
+      <div class="seg" id="modeSeg">
+        <button data-mode="snap" class="on" title="Angles jump in steps">🧲 Snap</button>
+        <button data-mode="free" title="Any angle you like">🎚️ Free</button>
+      </div>
+      <div class="chips" id="stepChips">
+        <button data-step="90">90°</button>
+        <button data-step="45">45°</button>
+        <button data-step="30">30°</button>
+        <button data-step="22.5">22.5°</button>
+        <button data-step="15">15°</button>
+      </div>
+      <div class="row">
+        <button class="icon" id="rotL" title="Turn the line (counter-clockwise)">⟲</button>
+        <input type="range" id="angleSlider" class="grow" min="0" max="179.9" step="0.1" value="0">
+        <button class="icon" id="rotR" title="Turn the line (clockwise)">⟳</button>
+      </div>
+      <div class="row">
+        <span class="label">Type an angle:</span>
+        <input type="number" id="angleNum" min="0" max="180" step="any" value="0"><span>°</span>
+      </div>
+      <div class="presets">
+        <button data-preset="0" title="0° — flat">―</button>
+        <button data-preset="45" title="45° — diagonal">╱</button>
+        <button data-preset="90" title="90° — standing up">│</button>
+        <button data-preset="135" title="135° — other diagonal">╲</button>
+      </div>
+      <div class="label">The line goes through this point <span title="The paper is 16 grid squares wide. The bottom-left corner is (0, 0) and the center is (8, 8).">ⓘ</span></div>
+      <div class="row">
+        <span>X</span><input type="number" id="pivotX" step="any" value="8">
+        <span>Y</span><input type="number" id="pivotY" step="any" value="8">
+        <button id="pivotCenter" title="Put the point back in the middle">🎯 Center</button>
+      </div>
+      <p class="tip">Drag the <b style="color:var(--blue)">⊕</b> dot on the paper to move the point.</p>
+      <div class="label">Where does the flap go?</div>
+      <div class="seg" id="dirSeg">
+        <button data-front="1" class="on">⬆️ Over the top</button>
+        <button data-front="0">⬇️ Tuck behind</button>
+      </div>
+      <button id="flipSide">🔄 Switch which side folds</button>
+      <button id="foldBtn" class="go">Fold it! 📄</button>
+    </section>
+
+    <section id="cutPanel" class="card hidden">
+      <p class="tip">Drag across the paper to draw a straight scissor line. The <b style="color:var(--red)">red</b> part falls off. Tap the paper to choose which side.</p>
+      <label class="check"><input type="checkbox" id="gridSnap"> Snap line ends to the grid dots</label>
+      <button id="cutSideBtn">🔄 Switch which piece falls off</button>
+      <button id="clearCut">🧽 Erase scissor line</button>
+      <button id="cutBtn" class="go red">Snip! ✂️</button>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <button id="unfoldOne" class="go green">↩️ Unfold one</button>
+        <button id="unfoldAll" class="go green">🎉 Unfold all</button>
+      </div>
+      <div class="row">
+        <button id="undoBtn">↶ Undo</button>
+        <button id="resetBtn">🗑️ New paper</button>
+      </div>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <section class="card">
+      <div class="label">Paper color</div>
+      <div class="swatches" id="swatches"></div>
+      <label class="check"><input type="checkbox" id="peekChk"> 👀 Sneak peek at the unfolded paper</label>
+      <canvas id="peek" class="hidden"></canvas>
+    </section>
+
+    <section class="card">
+      <div class="label">What I did</div>
+      <ol id="log"></ol>
+    </section>
+  </aside>
+</main>
+
+<script>
+(() => {
+'use strict';
+
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => [...document.querySelectorAll(s)];
+
+const cv = $('#cv'), ctx = cv.getContext('2d');
+const peekCv = $('#peek'), pctx = peekCv.getContext('2d');
+
+const MAX_FOLDS = 10;
+const BACK_COLOR = '#fffaf0';
+const OUTLINE = '#4a3b5c';
+const COLORS = ['#ff8fab', '#7ec8ff', '#ffd166', '#8ee59b', '#c3a6ff', '#ff9f68'];
+const FONT = '"Chalkboard SE", "Comic Sans MS", sans-serif';
+
+// ---------------------------------------------------------------------------
+// Geometry. Paper space: the square is [-1,1]², y points up, center at origin.
+// An affine map T = [a,b,c,d,e,f] sends (x,y) -> (a x + c y + e, b x + d y + f).
+// A line is { n: unit normal, k } meaning n·p = k.
+// ---------------------------------------------------------------------------
+const IDENTITY = [1, 0, 0, 1, 0, 0];
+
+const apply = (T, p) => [T[0] * p[0] + T[2] * p[1] + T[4], T[1] * p[0] + T[3] * p[1] + T[5]];
+
+function compose(A, B) { // A ∘ B
+  return [
+    A[0] * B[0] + A[2] * B[1], A[1] * B[0] + A[3] * B[1],
+    A[0] * B[2] + A[2] * B[3], A[1] * B[2] + A[3] * B[3],
+    A[0] * B[4] + A[2] * B[5] + A[4], A[1] * B[4] + A[3] * B[5] + A[5],
+  ];
+}
+
+function reflection(L) {
+  const [nx, ny] = L.n, k = L.k;
+  return [1 - 2 * nx * nx, -2 * nx * ny, -2 * nx * ny, 1 - 2 * ny * ny, 2 * k * nx, 2 * k * ny];
+}
+
+const reflectPoint = (L, p) => { const d = lineVal(L, p); return [p[0] - 2 * d * L.n[0], p[1] - 2 * d * L.n[1]]; };
+
+// Express line L (given in folded/current coordinates) in a piece's original coordinates.
+function pullback(L, T) {
+  const [nx, ny] = L.n;
+  return { n: [nx * T[0] + ny * T[1], nx * T[2] + ny * T[3]], k: L.k - (nx * T[4] + ny * T[5]) };
+}
+
+const lineVal = (L, p) => L.n[0] * p[0] + L.n[1] * p[1] - L.k;
+
+function area(poly) {
+  let a = 0;
+  for (let i = 0; i < poly.length; i++) {
+    const p = poly[i], q = poly[(i + 1) % poly.length];
+    a += p[0] * q[1] - q[0] * p[1];
+  }
+  return a / 2;
+}
+
+function centroidOf(polys) {
+  let sx = 0, sy = 0, sw = 0;
+  for (const poly of polys) {
+    const A = area(poly);
+    if (Math.abs(A) < 1e-12) continue;
+    let cx = 0, cy = 0;
+    for (let i = 0; i < poly.length; i++) {
+      const p = poly[i], q = poly[(i + 1) % poly.length];
+      const cr = p[0] * q[1] - q[0] * p[1];
+      cx += (p[0] + q[0]) * cr; cy += (p[1] + q[1]) * cr;
+    }
+    cx /= 6 * A; cy /= 6 * A;
+    const w = Math.abs(A);
+    sx += cx * w; sy += cy * w; sw += w;
+  }
+  return sw > 0 ? [sx / sw, sy / sw] : null;
+}
+
+// Keep the part of a convex polygon where sign * L(p) >= 0. Returns null if nothing meaningful is left.
+function clip(poly, L, sign) {
+  const E = 1e-9;
+  const d = poly.map((p) => { const v = sign * lineVal(L, p); return Math.abs(v) < E ? 0 : v; });
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const j = (i + 1) % poly.length;
+    const P = poly[i], Q = poly[j], dp = d[i], dq = d[j];
+    if (dp >= 0) out.push(P);
+    if ((dp > 0 && dq < 0) || (dp < 0 && dq > 0)) {
+      const t = dp / (dp - dq);
+      out.push([P[0] + (Q[0] - P[0]) * t, P[1] + (Q[1] - P[1]) * t]);
+    }
+  }
+  const res = [];
+  for (const p of out) {
+    const last = res[res.length - 1];
+    if (!last || Math.hypot(p[0] - last[0], p[1] - last[1]) > 1e-9) res.push(p);
+  }
+  if (res.length > 1) {
+    const f = res[0], l = res[res.length - 1];
+    if (Math.hypot(f[0] - l[0], f[1] - l[1]) <= 1e-9) res.pop();
+  }
+  if (res.length < 3 || Math.abs(area(res)) < 1e-7) return null;
+  return res;
+}
+
+const ccw = (poly) => (area(poly) < 0 ? poly.slice().reverse() : poly);
+
+// ---------------------------------------------------------------------------
+// Paper model. Each facet is a convex piece of the ORIGINAL square (poly),
+// the isometry T placing it in the folded paper, a stacking height z, and the
+// ids of the folds that flipped it (moves). Facets with equal z form one layer.
+// ---------------------------------------------------------------------------
+function newState() {
+  return {
+    facets: [{ poly: [[-1, -1], [1, -1], [1, 1], [-1, 1]], T: IDENTITY.slice(), z: 0, moves: [] }],
+    folds: [],
+    nextId: 1,
+    cuts: 0,
+    log: [],
+  };
+}
+
+const curPts = (f) => f.poly.map((p) => apply(f.T, p));
+const parity = (f) => f.moves.length % 2;
+
+function splitFacets(facets, L, sign) {
+  const pos = [], neg = [];
+  for (const f of facets) {
+    const Lo = pullback(L, f.T);
+    const a = clip(f.poly, Lo, sign);
+    const b = clip(f.poly, Lo, -sign);
+    if (a) pos.push({ ...f, poly: a, moves: f.moves.slice() });
+    if (b) neg.push({ ...f, poly: b, moves: f.moves.slice() });
+  }
+  return { pos, neg };
+}
+
+function computeFold(facets, L, side) {
+  const { pos, neg } = splitFacets(facets, L, side);
+  return { move: pos, stay: neg };
+}
+
+function computeCut(facets, L, side) {
+  const { pos, neg } = splitFacets(facets, L, side);
+  return { gone: pos, keep: neg };
+}
+
+function maxDist(facets) {
+  let m = 0;
+  for (const f of facets) for (const p of curPts(f)) m = Math.max(m, Math.hypot(p[0], p[1]));
+  return m;
+}
+
+function groupLayers(facets, descending = false) {
+  const m = new Map();
+  for (const f of facets) {
+    if (!m.has(f.z)) m.set(f.z, []);
+    m.get(f.z).push(f);
+  }
+  const keys = [...m.keys()].sort((a, b) => a - b);
+  if (descending) keys.reverse();
+  return keys.map((k) => m.get(k));
+}
+
+const layerCount = (facets) => new Set(facets.map((f) => f.z)).size;
+
+// ---------------------------------------------------------------------------
+// App state
+// ---------------------------------------------------------------------------
+let state = newState();
+let undoStack = [];
+let version = 0;
+let anim = null;
+let dirty = true;
+let confetti = [];
+
+const ui = {
+  tool: 'fold',
+  angle: 0,
+  side: 1,
+  front: true,
+  pivot: [0, 0],   // point the fold line passes through, in paper coordinates
+  snap: true,
+  step: 45,
+  cut: null,       // { a, b } in folded coordinates
+  cutSide: 1,
+  gridSnap: false,
+  color: COLORS[0],
+  peek: false,
+};
+
+function foldLine() {
+  const th = ui.angle * Math.PI / 180;
+  const n = [-Math.sin(th), Math.cos(th)];
+  return { n, k: n[0] * ui.pivot[0] + n[1] * ui.pivot[1] };
+}
+
+// The UI shows points in grid squares: the paper spans 0..16 with its center at (8, 8).
+const GRID = 8;
+const toGrid = (v) => Math.round((v + 1) * GRID * 100) / 100;
+const fromGrid = (g) => g / GRID - 1;
+const isCentered = (p) => Math.hypot(p[0], p[1]) < 1e-9;
+
+function cutLine() {
+  const { a, b } = ui.cut;
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+  const u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
+  const n = [-u[1], u[0]];
+  return { n, k: n[0] * a[0] + n[1] * a[1] };
+}
+
+let foldPv = null, foldPvKey = '';
+function getFoldPreview() {
+  const key = `${version}|${ui.angle}|${ui.side}|${ui.pivot}`;
+  if (key !== foldPvKey) { foldPv = computeFold(state.facets, foldLine(), ui.side); foldPvKey = key; }
+  return foldPv;
+}
+
+let cutPv = null, cutPvKey = '';
+function getCutPreview() {
+  if (!ui.cut) return null;
+  const key = `${version}|${ui.cut.a}|${ui.cut.b}|${ui.cutSide}`;
+  if (key !== cutPvKey) { cutPv = computeCut(state.facets, cutLine(), ui.cutSide); cutPvKey = key; }
+  return cutPv;
+}
+
+const sumArea = (facets) => facets.reduce((s, f) => s + Math.abs(area(f.poly)), 0);
+
+function chooseDefaultCutSide() {
+  const L = cutLine();
+  const a = sumArea(computeCut(state.facets, L, 1).gone);
+  const b = sumArea(computeCut(state.facets, L, -1).gone);
+  if (a > 1e-6 && (b <= 1e-6 || a <= b)) ui.cutSide = 1;
+  else ui.cutSide = -1;
+}
+
+function pushUndo() {
+  undoStack.push(JSON.stringify(state));
+  if (undoStack.length > 200) undoStack.shift();
+}
+
+function stateChanged() {
+  version++;
+  updateViewTarget();
+  refresh();
+}
+
+function refresh() {
+  dirty = true;
+  updateUI();
+}
+
+// ---------------------------------------------------------------------------
+// Actions
+// ---------------------------------------------------------------------------
+const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+
+function fmtAngle(a) {
+  const r = Math.round(a * 10) / 10;
+  return (Number.isInteger(r) ? r : r.toFixed(1)) + '°';
+}
+
+function doFold() {
+  if (anim) return;
+  if (state.folds.length >= MAX_FOLDS) {
+    toast(`The paper is too thick to fold more than ${MAX_FOLDS} times! Try unfolding.`);
+    return;
+  }
+  const L = foldLine();
+  const { stay, move } = computeFold(state.facets, L, ui.side);
+  if (!move.length) { toast('There is no paper on that side to fold. Tap the other side!'); return; }
+  pushUndo();
+  const R = reflection(L);
+  const after = maxDist(move.map((f) => ({ ...f, T: compose(R, f.T) })));
+  viewTarget = Math.max(viewTarget, after * 1.12);
+  const front = ui.front, angle = ui.angle, pivot = ui.pivot;
+  anim = {
+    type: 'fold', t0: performance.now(), dur: 950, L, still: stay, moving: move, front,
+    onDone() {
+      const zs = state.facets.map((f) => f.z);
+      const C = front ? 2 * Math.max(...zs) + 1 : 2 * Math.min(...zs) - 1;
+      const id = state.nextId++;
+      const moved = move.map((f) => ({ ...f, T: compose(R, f.T), z: C - f.z, moves: [...f.moves, id] }));
+      state.facets = [...stay, ...moved];
+      state.folds.push({ id, n: L.n, k: L.k, C, front });
+      const where = front ? 'over the top' : 'tucked behind';
+      const through = isCentered(pivot) ? '' : ` through (${toGrid(pivot[0])}, ${toGrid(pivot[1])})`;
+      state.log.push(`Fold ${state.folds.length}: ${fmtAngle(angle)} line${through}, ${where}`);
+      if (!stay.length) toast('You flipped the whole paper over!');
+      stateChanged();
+    },
+  };
+  refresh();
+}
+
+function doUnfold(chain = false) {
+  if (anim || !state.folds.length) return;
+  pushUndo();
+  const fold = state.folds[state.folds.length - 1];
+  const moving = [], still = [];
+  for (const f of state.facets) (f.moves[f.moves.length - 1] === fold.id ? moving : still).push(f);
+  const L = { n: fold.n, k: fold.k };
+  const R = reflection(L);
+  anim = {
+    type: 'unfold', t0: performance.now() + (chain ? 120 : 0), dur: chain ? 650 : 950,
+    L, still, moving, front: fold.front,
+    onDone() {
+      const number = state.folds.length;
+      state.facets = state.facets.map((f) => {
+        if (f.moves[f.moves.length - 1] !== fold.id) return f;
+        const moves = f.moves.slice(0, -1);
+        return { ...f, T: moves.length ? compose(R, f.T) : IDENTITY.slice(), z: fold.C - f.z, moves };
+      });
+      state.folds.pop();
+      state.log.push(`Unfolded fold ${number}`);
+      stateChanged();
+      if (!state.folds.length) {
+        if (state.cuts > 0) { celebrate(); toast('Ta-da! 🎉 Look at the shape you made!'); }
+        else toast('All unfolded — it is a square again!');
+      } else if (chain) {
+        doUnfold(true);
+      }
+    },
+  };
+  refresh();
+}
+
+function doCut() {
+  if (anim || !ui.cut) return;
+  const pv = getCutPreview();
+  if (!pv.gone.length) { toast('The scissor line does not cut anything off on that side.'); return; }
+  if (!pv.keep.length) { toast('That would cut away all the paper! Tap the other side.'); return; }
+  pushUndo();
+  const gone = pv.gone.map((f) => ({ pts: curPts(f), z: f.z, parity: parity(f) }));
+  const dir = ui.cutSide;
+  const n = cutLine().n;
+  state.facets = pv.keep;
+  state.cuts++;
+  state.log.push('Snip ✂️');
+  ui.cut = null;
+  anim = {
+    type: 'cut', t0: performance.now(), dur: 900, gone,
+    center: centroidOf(gone.map((g) => g.pts)) || [0, 0],
+    push: [n[0] * dir, n[1] * dir],
+    onDone() { refresh(); },
+  };
+  stateChanged();
+}
+
+function doUndo() {
+  if (anim || !undoStack.length) return;
+  state = JSON.parse(undoStack.pop());
+  ui.cut = null;
+  stateChanged();
+}
+
+function doReset() {
+  if (anim) return;
+  pushUndo();
+  state = newState();
+  ui.cut = null;
+  stateChanged();
+  toast('Fresh new paper! ✨');
+}
+
+function setAngle(deg) {
+  let a = ((deg % 180) + 180) % 180;
+  if (ui.snap) {
+    a = Math.round(a / ui.step) * ui.step;
+    if (a >= 180 - 1e-9) a -= 180;
+  }
+  // Keep the same physical side folding when the angle wraps around 0°/180°.
+  const diff = a - ui.angle;
+  if (diff > 90 || diff < -90) ui.side = -ui.side;
+  ui.angle = a;
+  refresh();
+}
+
+function setPivot(p) {
+  let [x, y] = p;
+  const maxR = Math.max(1.3, viewTarget - 0.3);
+  const r = Math.hypot(x, y);
+  if (r > maxR) { x *= maxR / r; y *= maxR / r; }
+  if (ui.snap) { x = Math.round(x * GRID) / GRID; y = Math.round(y * GRID) / GRID; }
+  ui.pivot = [x, y];
+  refresh();
+}
+
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+let W = 0, H = 0, dpr = 1, sc = 1, cx = 0, cy = 0;
+let viewR = 1.65, viewTarget = 1.65;
+
+const S = (p) => [cx + p[0] * sc, cy - p[1] * sc];
+const toPaper = (sx, sy) => [(sx - cx) / sc, (cy - sy) / sc];
+
+function updateViewTarget() {
+  viewTarget = Math.max(1.65, maxDist(state.facets) * 1.12);
+}
+
+function resize() {
+  const r = cv.getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  W = r.width; H = r.height;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  dirty = true;
+}
+
+function hexToRgb(h) {
+  const n = parseInt(h.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function paperColor(par, shade = 0) {
+  const base = par ? BACK_COLOR : ui.color;
+  if (shade <= 0) return base;
+  const [r, g, b] = hexToRgb(base);
+  const t = [42, 26, 58];
+  const m = (x, y) => Math.round(x + (y - x) * shade);
+  return `rgb(${m(r, t[0])},${m(g, t[1])},${m(b, t[2])})`;
+}
+
+function addPoly(c, pts) {
+  c.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]);
+  c.closePath();
+}
+
+// Draw one flat layer: a thick outline underneath, fills on top (which hide the
+// outline between neighbouring pieces), then faint crease lines.
+function drawLayer(c, items, withShadow) {
+  c.save();
+  c.lineJoin = 'round';
+  if (withShadow) {
+    c.shadowColor = 'rgba(40,20,60,0.18)'; c.shadowBlur = 6; c.shadowOffsetY = 2;
+  }
+  c.fillStyle = OUTLINE; c.strokeStyle = OUTLINE; c.lineWidth = 4;
+  c.beginPath();
+  for (const it of items) addPoly(c, it.pts);
+  c.fill(); c.stroke();
+  c.restore();
+
+  c.save();
+  c.lineJoin = 'round'; c.lineWidth = 1;
+  for (const it of items) {
+    c.beginPath(); addPoly(c, it.pts);
+    c.fillStyle = it.color; c.strokeStyle = it.color;
+    c.fill(); c.stroke();
+  }
+  c.strokeStyle = 'rgba(74,59,92,0.22)';
+  c.beginPath();
+  for (const it of items) addPoly(c, it.pts);
+  c.stroke();
+  c.restore();
+}
+
+function drawStack(layers, ptsFn, colorFn) {
+  const total = layers.reduce((s, l) => s + l.length, 0);
+  const shadow = total < 500;
+  for (const layer of layers) {
+    drawLayer(ctx, layer.map((f) => ({ pts: ptsFn(f).map(S), color: colorFn(f) })), shadow);
+  }
+}
+
+function drawGhost() {
+  ctx.save();
+  ctx.setLineDash([6, 8]);
+  ctx.strokeStyle = 'rgba(30,90,70,0.25)'; ctx.lineWidth = 2;
+  ctx.beginPath(); addPoly(ctx, [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(S)); ctx.stroke();
+  ctx.restore();
+}
+
+function partial(p, L, c) {
+  const d = lineVal(L, p);
+  return [p[0] - d * (1 - c) * L.n[0], p[1] - d * (1 - c) * L.n[1]];
+}
+
+function drawAnim(now) {
+  const t = Math.min(1, Math.max(0, (now - anim.t0) / anim.dur));
+  const e = ease(t);
+  if (anim.type === 'fold' || anim.type === 'unfold') {
+    const c = Math.cos(Math.PI * e);
+    const flipped = e >= 0.5;
+    const shade = 0.22 * Math.sin(Math.PI * e);
+    const L = anim.L;
+    const drawStill = () => drawStack(groupLayers(anim.still), curPts, (f) => paperColor(parity(f)));
+    const drawMoving = () => drawStack(
+      groupLayers(anim.moving, flipped),
+      (f) => curPts(f).map((p) => partial(p, L, c)),
+      (f) => paperColor((parity(f) + (flipped ? 1 : 0)) % 2, shade),
+    );
+    if (anim.front) { drawStill(); drawMoving(); } else { drawMoving(); drawStill(); }
+  } else if (anim.type === 'cut') {
+    drawStack(groupLayers(state.facets), curPts, (f) => paperColor(parity(f)));
+    const [ox, oy] = anim.center;
+    const ang = 0.5 * e * (anim.push[0] >= 0 ? -1 : 1);
+    const ca = Math.cos(ang), sa = Math.sin(ang);
+    const dx = anim.push[0] * 0.35 * e, dy = anim.push[1] * 0.35 * e - 2.2 * e * e;
+    const xf = (p) => {
+      const x = p[0] - ox, y = p[1] - oy;
+      return [ox + x * ca - y * sa + dx, oy + x * sa + y * ca + dy];
+    };
+    ctx.save();
+    ctx.globalAlpha = 1 - e;
+    const layers = groupLayers(anim.gone);
+    for (const layer of layers) {
+      drawLayer(ctx, layer.map((g) => ({ pts: g.pts.map(xf).map(S), color: paperColor(g.parity) })), false);
+    }
+    ctx.restore();
+  }
+}
+
+function unionPath(c, facets) {
+  c.beginPath();
+  for (const f of facets) addPoly(c, ccw(curPts(f)).map(S));
+}
+
+function pill(text, x, y, bg = '#fff', fg = OUTLINE) {
+  ctx.save();
+  ctx.font = `bold 15px ${FONT}`;
+  const w = ctx.measureText(text).width + 16;
+  ctx.fillStyle = bg;
+  ctx.beginPath();
+  ctx.roundRect(x - w / 2, y - 13, w, 26, 13);
+  ctx.fill();
+  ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y + 1);
+  ctx.restore();
+}
+
+function drawArrow(a, b, ctrl, color, dashed) {
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 8;
+  ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.quadraticCurveTo(ctrl[0], ctrl[1], b[0], b[1]); ctx.stroke();
+  ctx.strokeStyle = color; ctx.lineWidth = 4;
+  if (dashed) ctx.setLineDash([9, 8]);
+  ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.quadraticCurveTo(ctrl[0], ctrl[1], b[0], b[1]); ctx.stroke();
+  ctx.setLineDash([]);
+  const ang = Math.atan2(b[1] - ctrl[1], b[0] - ctrl[0]);
+  const h = 17;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(b[0] + 3 * Math.cos(ang), b[1] + 3 * Math.sin(ang));
+  ctx.lineTo(b[0] - h * Math.cos(ang - 0.5), b[1] - h * Math.sin(ang - 0.5));
+  ctx.lineTo(b[0] - h * Math.cos(ang + 0.5), b[1] - h * Math.sin(ang + 0.5));
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+const handleRadius = () => viewR - 0.09;
+
+function foldHandles() {
+  const L = foldLine();
+  const rh = handleRadius();
+  const u = [L.n[1], -L.n[0]];
+  const t = Math.sqrt(Math.max(0, rh * rh - L.k * L.k));
+  const base = [L.k * L.n[0], L.k * L.n[1]];
+  return [[base[0] - t * u[0], base[1] - t * u[1]], [base[0] + t * u[0], base[1] + t * u[1]]];
+}
+
+function drawHandle(p, color, glyph) {
+  const [x, y] = S(p);
+  ctx.save();
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = color; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(x, y, 15, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  if (glyph) {
+    ctx.fillStyle = color; ctx.font = `bold 16px ${FONT}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(glyph, x, y + 1);
+  }
+  ctx.restore();
+}
+
+function drawFoldOverlay() {
+  const L = foldLine();
+  const pv = getFoldPreview();
+  const blue = '#4f9dff';
+
+  if (pv.move.length) {
+    ctx.save();
+    unionPath(ctx, pv.move);
+    ctx.fillStyle = 'rgba(79,157,255,0.30)';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  if (drag && drag.kind === 'pivot' && ui.snap) drawGridDots();
+
+  // Protractor at the pivot: reference line along 0° and an arc up to the fold angle.
+  const o = S(ui.pivot);
+  const pr = Math.min(0.32 * sc, 70);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,159,67,0.9)'; ctx.lineWidth = 2; ctx.setLineDash([4, 5]);
+  ctx.beginPath(); ctx.moveTo(o[0], o[1]); ctx.lineTo(o[0] + pr * 1.25, o[1]); ctx.stroke();
+  ctx.setLineDash([]); ctx.lineWidth = 3;
+  const th = ui.angle * Math.PI / 180;
+  ctx.beginPath(); ctx.arc(o[0], o[1], pr, 0, -th, true); ctx.stroke();
+  ctx.restore();
+
+  // Fold line and handles.
+  const [A, B] = foldHandles();
+  const sa = S(A), sb = S(B);
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 7;
+  ctx.beginPath(); ctx.moveTo(sa[0], sa[1]); ctx.lineTo(sb[0], sb[1]); ctx.stroke();
+  ctx.strokeStyle = blue; ctx.lineWidth = 3.5; ctx.setLineDash([12, 9]);
+  ctx.beginPath(); ctx.moveTo(sa[0], sa[1]); ctx.lineTo(sb[0], sb[1]); ctx.stroke();
+  ctx.restore();
+
+  // Arrow showing where the flap goes.
+  if (pv.move.length) {
+    const c = centroidOf(pv.move.map(curPts));
+    if (c) {
+      const r = reflectPoint(L, c);
+      const d = Math.abs(lineVal(L, c));
+      const foot = [(c[0] + r[0]) / 2, (c[1] + r[1]) / 2];
+      const u = [L.n[1], -L.n[0]];
+      const ctrl = [foot[0] + u[0] * d * 0.9, foot[1] + u[1] * d * 0.9];
+      const shrink = (p, q, f) => [p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f];
+      const a = shrink(c, ctrl, 0.12), b = shrink(r, ctrl, 0.12);
+      drawArrow(S(a), S(b), S(ctrl), ui.front ? '#2c6fd6' : '#8a4fd6', !ui.front);
+      if (!ui.front) { const s = S(b); pill('goes behind', s[0], s[1] + 26, '#8a4fd6', '#fff'); }
+    }
+  }
+
+  drawHandle(A, blue, '⟲');
+  drawHandle(B, blue, '⟳');
+  drawPivot(o, blue);
+  if (!isCentered(ui.pivot)) {
+    const c = S([0, 0]);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(74,59,92,0.45)'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(c[0] - 6, c[1]); ctx.lineTo(c[0] + 6, c[1]);
+    ctx.moveTo(c[0], c[1] - 6); ctx.lineTo(c[0], c[1] + 6);
+    ctx.stroke();
+    ctx.restore();
+  }
+  const lb = S(B);
+  const dirOut = [lb[0] - o[0], lb[1] - o[1]];
+  const dl = Math.hypot(dirOut[0], dirOut[1]) || 1;
+  let lx = lb[0] - dirOut[0] / dl * 46, ly = lb[1] - dirOut[1] / dl * 46;
+  pill(fmtAngle(ui.angle), lx, ly, blue, '#fff');
+  if (drag && drag.kind === 'pivot') {
+    pill(`(${toGrid(ui.pivot[0])}, ${toGrid(ui.pivot[1])})`, o[0], o[1] + 30, OUTLINE, '#fff');
+  }
+}
+
+function drawPivot(o, color) {
+  ctx.save();
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = color; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(o[0], o[1], 11, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(o[0] - 11, o[1]); ctx.lineTo(o[0] + 11, o[1]);
+  ctx.moveTo(o[0], o[1] - 11); ctx.lineTo(o[0], o[1] + 11);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawGridDots() {
+  ctx.save();
+  ctx.fillStyle = 'rgba(30,90,70,0.35)';
+  const lim = Math.ceil(viewR * 8);
+  for (let i = -lim; i <= lim; i++) {
+    for (let j = -lim; j <= lim; j++) {
+      const p = [i / 8, j / 8];
+      if (Math.hypot(p[0], p[1]) > viewR) continue;
+      const [x, y] = S(p);
+      ctx.beginPath(); ctx.arc(x, y, (i % 4 === 0 && j % 4 === 0) ? 2.6 : 1.6, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+function drawCutOverlay() {
+  if (ui.gridSnap) drawGridDots();
+  if (!ui.cut) return;
+  const L = cutLine();
+  const pv = getCutPreview();
+  const red = '#ff5a5f';
+
+  if (pv.gone.length) {
+    ctx.save();
+    unionPath(ctx, pv.gone);
+    ctx.fillStyle = 'rgba(255,90,95,0.42)';
+    ctx.fill();
+    ctx.clip();
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 3;
+    const R = viewR * sc * 2;
+    ctx.beginPath();
+    for (let x = -R; x < R; x += 14) { ctx.moveTo(cx + x, cy - R); ctx.lineTo(cx + x + R, cy + R); }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  const u = [L.n[1], -L.n[0]];
+  const base = [L.k * L.n[0], L.k * L.n[1]];
+  const far = viewR * 3;
+  const e1 = S([base[0] - far * u[0], base[1] - far * u[1]]);
+  const e2 = S([base[0] + far * u[0], base[1] + far * u[1]]);
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 7;
+  ctx.beginPath(); ctx.moveTo(e1[0], e1[1]); ctx.lineTo(e2[0], e2[1]); ctx.stroke();
+  ctx.strokeStyle = red; ctx.lineWidth = 3.5; ctx.setLineDash([12, 9]);
+  ctx.beginPath(); ctx.moveTo(e1[0], e1[1]); ctx.lineTo(e2[0], e2[1]); ctx.stroke();
+  ctx.restore();
+
+  // Scissors where the line enters the view.
+  const rh = handleRadius();
+  const t = Math.sqrt(Math.max(0, rh * rh - L.k * L.k));
+  const sp = S([base[0] - t * u[0], base[1] - t * u[1]]);
+  ctx.save();
+  ctx.font = `34px ${FONT}`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.translate(sp[0], sp[1]);
+  ctx.rotate(Math.atan2(-u[1], u[0]) + Math.PI);
+  ctx.fillText('✂️', 0, 0);
+  ctx.restore();
+
+  drawHandle(ui.cut.a, red, '');
+  drawHandle(ui.cut.b, red, '');
+
+  if (pv.gone.length) {
+    const c = centroidOf(pv.gone.map(curPts));
+    if (c) { const s = S(c); pill('falls off', s[0], s[1], red, '#fff'); }
+  }
+}
+
+function drawConfetti() {
+  if (!confetti.length) return;
+  ctx.save();
+  for (const p of confetti) {
+    p.vy += 0.22; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+    ctx.save();
+    ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = p.c;
+    ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2);
+    ctx.restore();
+  }
+  ctx.restore();
+  confetti = confetti.filter((p) => p.y < H + 30);
+}
+
+function celebrate() {
+  for (let i = 0; i < 140; i++) {
+    confetti.push({
+      x: W / 2 + (Math.random() - 0.5) * W * 0.4, y: H * 0.4,
+      vx: (Math.random() - 0.5) * 12, vy: -Math.random() * 10 - 4,
+      r: Math.random() * 8 + 6, c: COLORS[i % COLORS.length],
+      rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3,
+    });
+  }
+}
+
+function drawPeek() {
+  const size = 200;
+  const pd = window.devicePixelRatio || 1;
+  if (peekCv.width !== size * pd) { peekCv.width = size * pd; peekCv.height = size * pd; }
+  pctx.setTransform(pd, 0, 0, pd, 0, 0);
+  pctx.clearRect(0, 0, size, size);
+  const s = size / 2 / 1.15;
+  const map = (p) => [size / 2 + p[0] * s, size / 2 - p[1] * s];
+  pctx.save();
+  pctx.setLineDash([4, 5]); pctx.strokeStyle = 'rgba(30,90,70,0.3)'; pctx.lineWidth = 1.5;
+  pctx.beginPath(); addPoly(pctx, [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(map)); pctx.stroke();
+  pctx.restore();
+  drawLayer(pctx, state.facets.map((f) => ({ pts: f.poly.map(map), color: ui.color })), false);
+}
+
+function render(now) {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  sc = Math.max(10, Math.min(W, H) / 2 - 20) / viewR;
+  cx = W / 2; cy = H / 2;
+
+  drawGhost();
+  if (anim) drawAnim(now);
+  else drawStack(groupLayers(state.facets), curPts, (f) => paperColor(parity(f)));
+  if (!anim) {
+    if (ui.tool === 'fold') drawFoldOverlay();
+    else drawCutOverlay();
+  }
+  drawConfetti();
+  if (ui.peek) drawPeek();
+}
+
+function frame(now) {
+  if (anim && now - anim.t0 >= anim.dur) {
+    const a = anim;
+    anim = null;
+    a.onDone();
+    updateUI();
+  }
+  if (Math.abs(viewTarget - viewR) > 1e-4) { viewR += (viewTarget - viewR) * 0.15; dirty = true; }
+  if (anim || confetti.length) dirty = true;
+  if (dirty) { dirty = false; render(now); }
+  requestAnimationFrame(frame);
+}
+
+// ---------------------------------------------------------------------------
+// UI wiring
+// ---------------------------------------------------------------------------
+let toastTimer = 0;
+function toast(msg) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+function updateUI() {
+  $$('.tab').forEach((b) => b.classList.toggle('active', b.dataset.tool === ui.tool));
+  $('#foldPanel').classList.toggle('hidden', ui.tool !== 'fold');
+  $('#cutPanel').classList.toggle('hidden', ui.tool !== 'cut');
+
+  $('#angleOut').textContent = fmtAngle(ui.angle);
+  $$('#modeSeg button').forEach((b) => b.classList.toggle('on', (b.dataset.mode === 'snap') === ui.snap));
+  $('#stepChips').classList.toggle('hidden', !ui.snap);
+  $$('#stepChips button').forEach((b) => b.classList.toggle('on', +b.dataset.step === ui.step));
+  const slider = $('#angleSlider');
+  slider.step = ui.snap ? ui.step : 0.1;
+  slider.max = ui.snap ? 180 - ui.step : 179.9;
+  slider.value = ui.angle;
+  const num = $('#angleNum');
+  if (document.activeElement !== num) num.value = Math.round(ui.angle * 10) / 10;
+  $$('#dirSeg button').forEach((b) => b.classList.toggle('on', (b.dataset.front === '1') === ui.front));
+  for (const [i, id] of [[0, '#pivotX'], [1, '#pivotY']]) {
+    const el = $(id);
+    el.step = ui.snap ? 1 : 'any';
+    if (document.activeElement !== el) el.value = toGrid(ui.pivot[i]);
+  }
+  $('#pivotCenter').disabled = isCentered(ui.pivot);
+
+  const busy = !!anim;
+  const fpv = getFoldPreview();
+  $('#foldBtn').disabled = busy || !fpv.move.length || state.folds.length >= MAX_FOLDS;
+  $('#flipSide').disabled = busy;
+  const cpv = getCutPreview();
+  $('#cutBtn').disabled = busy || !cpv || !cpv.gone.length || !cpv.keep.length;
+  $('#cutSideBtn').disabled = busy || !ui.cut;
+  $('#clearCut').disabled = busy || !ui.cut;
+  $('#unfoldOne').disabled = busy || !state.folds.length;
+  $('#unfoldAll').disabled = busy || !state.folds.length;
+  $('#undoBtn').disabled = busy || !undoStack.length;
+  $('#resetBtn').disabled = busy;
+
+  let hint;
+  if (busy) hint = anim.type === 'cut' ? 'Snip! ✂️' : anim.type === 'fold' ? 'Folding…' : 'Unfolding…';
+  else if (ui.tool === 'fold') {
+    if (state.folds.length >= MAX_FOLDS) hint = 'The paper is super thick now — try unfolding or cutting!';
+    else if (!fpv.move.length) hint = 'No paper on that side of the line. Tap the other side!';
+    else if (!fpv.stay.length) hint = 'This will flip the whole paper over.';
+    else hint = 'Drag to turn the line · Drag ⊕ to move it · Tap a side to choose what folds';
+  } else if (!ui.cut) hint = 'Drag across the paper to draw your scissor line';
+  else if (!cpv.gone.length) hint = 'Nothing gets cut off on that side — tap the other side or move the line';
+  else if (!cpv.keep.length) hint = 'That would cut away everything! Tap the other side.';
+  else hint = 'The red part falls off · Tap to switch sides · then press Snip!';
+  $('#hint').textContent = hint;
+
+  const layers = layerCount(state.facets);
+  $('#stats').textContent = `Folds: ${state.folds.length} · Layers thick: ${layers} · Snips: ${state.cuts}`;
+
+  const log = $('#log');
+  const items = state.log.map((s) => `<li>${s}</li>`).join('');
+  if (log.innerHTML !== items) { log.innerHTML = items; log.scrollTop = log.scrollHeight; }
+
+  $$('.swatch').forEach((b) => b.classList.toggle('on', b.dataset.color === ui.color));
+  $('#peek').classList.toggle('hidden', !ui.peek);
+}
+
+function localPoint(e) {
+  const r = cv.getBoundingClientRect();
+  return [e.clientX - r.left, e.clientY - r.top];
+}
+
+const near = (a, b, r = 22) => Math.hypot(a[0] - b[0], a[1] - b[1]) < r;
+const snapGrid = (p) => (ui.gridSnap ? [Math.round(p[0] * 8) / 8, Math.round(p[1] * 8) / 8] : p);
+
+let drag = null;
+
+cv.addEventListener('pointerdown', (e) => {
+  if (anim) return;
+  const sp = localPoint(e);
+  const p = toPaper(sp[0], sp[1]);
+  drag = { sx: sp[0], sy: sp[1], moved: false, kind: null };
+  if (ui.tool === 'fold') {
+    const [A, B] = foldHandles();
+    if (near(sp, S(ui.pivot), 18)) { drag.kind = 'pivot'; drag.grab = [p[0] - ui.pivot[0], p[1] - ui.pivot[1]]; }
+    else drag.kind = near(sp, S(A)) || near(sp, S(B)) ? 'rotate' : 'fold-pending';
+  } else if (ui.cut && near(sp, S(ui.cut.a))) drag.kind = 'cutA';
+  else if (ui.cut && near(sp, S(ui.cut.b))) drag.kind = 'cutB';
+  else { drag.kind = 'cut-pending'; drag.p0 = snapGrid(p); }
+  try { cv.setPointerCapture(e.pointerId); } catch { /* synthetic or already-released pointer */ }
+  e.preventDefault();
+});
+
+cv.addEventListener('pointermove', (e) => {
+  const sp = localPoint(e);
+  const p = toPaper(sp[0], sp[1]);
+  if (!drag) { updateCursor(sp); return; }
+  if (anim) return;
+  if (!drag.moved && Math.hypot(sp[0] - drag.sx, sp[1] - drag.sy) > 6) drag.moved = true;
+  if (!drag.moved && drag.kind !== 'rotate') return;
+  switch (drag.kind) {
+    case 'rotate':
+    case 'fold-pending': {
+      const dx = p[0] - ui.pivot[0], dy = p[1] - ui.pivot[1];
+      if (Math.hypot(dx, dy) > 0.12) setAngle(Math.atan2(dy, dx) * 180 / Math.PI);
+      break;
+    }
+    case 'pivot': setPivot([p[0] - drag.grab[0], p[1] - drag.grab[1]]); break;
+    case 'cutA': ui.cut.a = snapGrid(p); refresh(); break;
+    case 'cutB': ui.cut.b = snapGrid(p); refresh(); break;
+    case 'cut-pending':
+      ui.cut = { a: drag.p0, b: snapGrid(p) };
+      drag.kind = 'cutB'; drag.newLine = true;
+      refresh();
+      break;
+  }
+});
+
+function endDrag(e) {
+  if (!drag) return;
+  const sp = localPoint(e);
+  const p = toPaper(sp[0], sp[1]);
+  if (!drag.moved && !anim) {
+    if (ui.tool === 'fold') {
+      const v = lineVal(foldLine(), p);
+      if (Math.abs(v) > 1e-6) { ui.side = v > 0 ? 1 : -1; refresh(); }
+    } else if (ui.cut && drag.kind === 'cut-pending') {
+      const v = lineVal(cutLine(), p);
+      if (Math.abs(v) > 1e-6) { ui.cutSide = v > 0 ? 1 : -1; refresh(); }
+    }
+  } else if (drag.newLine && ui.cut) {
+    const { a, b } = ui.cut;
+    if (Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.03) ui.cut = null;
+    else chooseDefaultCutSide();
+    refresh();
+  }
+  const wasPivot = drag.kind === 'pivot';
+  drag = null;
+  if (wasPivot) refresh();
+}
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', () => { drag = null; refresh(); });
+
+function updateCursor(sp) {
+  let cur = ui.tool === 'fold' ? 'pointer' : 'crosshair';
+  if (ui.tool === 'fold') {
+    const [A, B] = foldHandles();
+    if (near(sp, S(ui.pivot), 18)) cur = 'move';
+    else if (near(sp, S(A)) || near(sp, S(B))) cur = 'grab';
+  } else if (ui.cut && (near(sp, S(ui.cut.a)) || near(sp, S(ui.cut.b)))) cur = 'grab';
+  cv.style.cursor = cur;
+}
+
+$$('.tab').forEach((b) => b.addEventListener('click', () => { ui.tool = b.dataset.tool; refresh(); }));
+$$('#modeSeg button').forEach((b) => b.addEventListener('click', () => {
+  ui.snap = b.dataset.mode === 'snap';
+  setAngle(ui.angle);
+  setPivot(ui.pivot);
+}));
+$$('#stepChips button').forEach((b) => b.addEventListener('click', () => { ui.step = +b.dataset.step; setAngle(ui.angle); }));
+$('#angleSlider').addEventListener('input', (e) => setAngle(+e.target.value));
+$('#angleNum').addEventListener('change', (e) => { const v = parseFloat(e.target.value); if (!Number.isNaN(v)) setAngle(v); });
+$('#rotL').addEventListener('click', () => setAngle(ui.angle + (ui.snap ? ui.step : 1)));
+$('#rotR').addEventListener('click', () => setAngle(ui.angle - (ui.snap ? ui.step : 1)));
+$$('.presets button').forEach((b) => b.addEventListener('click', () => setAngle(+b.dataset.preset)));
+$$('#dirSeg button').forEach((b) => b.addEventListener('click', () => { ui.front = b.dataset.front === '1'; refresh(); }));
+$('#flipSide').addEventListener('click', () => { ui.side = -ui.side; refresh(); });
+for (const [i, id] of [[0, '#pivotX'], [1, '#pivotY']]) {
+  $(id).addEventListener('change', (e) => {
+    const v = parseFloat(e.target.value);
+    if (Number.isNaN(v)) { refresh(); return; }
+    const p = ui.pivot.slice();
+    p[i] = fromGrid(v);
+    setPivot(p);
+  });
+}
+$('#pivotCenter').addEventListener('click', () => setPivot([0, 0]));
+$('#foldBtn').addEventListener('click', doFold);
+
+$('#gridSnap').addEventListener('change', (e) => { ui.gridSnap = e.target.checked; refresh(); });
+$('#cutSideBtn').addEventListener('click', () => { ui.cutSide = -ui.cutSide; refresh(); });
+$('#clearCut').addEventListener('click', () => { ui.cut = null; refresh(); });
+$('#cutBtn').addEventListener('click', doCut);
+
+$('#unfoldOne').addEventListener('click', () => doUnfold(false));
+$('#unfoldAll').addEventListener('click', () => doUnfold(true));
+$('#undoBtn').addEventListener('click', doUndo);
+$('#resetBtn').addEventListener('click', doReset);
+
+const sw = $('#swatches');
+for (const c of COLORS) {
+  const b = document.createElement('button');
+  b.className = 'swatch'; b.dataset.color = c; b.style.background = c; b.title = 'Paper color';
+  b.addEventListener('click', () => { ui.color = c; refresh(); });
+  sw.appendChild(b);
+}
+$('#peekChk').addEventListener('change', (e) => { ui.peek = e.target.checked; refresh(); });
+
+window.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' && e.target.type === 'number') return;
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); doUndo(); return; }
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (ui.tool === 'fold' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+    e.preventDefault();
+    const step = ui.snap ? ui.step : (e.shiftKey ? 10 : 1);
+    setAngle(ui.angle + (e.key === 'ArrowLeft' ? step : -step));
+  } else if (e.key === 'Enter') {
+    if (ui.tool === 'fold') doFold(); else doCut();
+  } else if (e.key.toLowerCase() === 'u') doUnfold(false);
+  else if (e.key.toLowerCase() === 'f') { ui.tool = 'fold'; refresh(); }
+  else if (e.key.toLowerCase() === 'c') { ui.tool = 'cut'; refresh(); }
+});
+
+new ResizeObserver(resize).observe($('#stage'));
+resize();
+updateUI();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

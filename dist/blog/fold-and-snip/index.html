@@ -1,0 +1,231 @@
+<!DOCTYPE html><html lang="en" data-theme="nebula"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v6.0.8"><meta name="description" content="A paper folding playground for kids: fold a square along any line, cut it with straight snips, and unfold it one fold at a time to see what you made."><link rel="icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="MotleyTech" href="/rss.xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><title>Fold and snip | MotleyTech</title><!-- Applied before first paint so the chosen theme never flashes. --><script>(function(){const themeIds = ["nebula","synthwave","matrix","ember","aurora","quartz"];
+const defaultTheme = "nebula";
+
+      (function () {
+        var stored = null;
+        try {
+          stored = window.localStorage.getItem('motleytech-theme');
+        } catch (error) {
+          stored = null;
+        }
+        var theme = themeIds.indexOf(stored) === -1 ? defaultTheme : stored;
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    })();</script><script async src="https://www.googletagmanager.com/gtag/js?id=G-V8WZYM91B4"></script><script>(function(){const gaId = "G-V8WZYM91B4";
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', gaId);
+    })();</script><link rel="stylesheet" href="/_astro/BaseLayout.6lDIQg4T.css"></head> <body> <header class="site-header"> <div class="shell topbar"> <div class="topbar-main"> <a href="/" class="site-title"><span class="gradient-text">MotleyTech</span></a> <nav id="site-nav" class="site-nav" aria-label="Primary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-controls="menu-panel" aria-expanded="false"> <span class="hamburger-icon" aria-hidden="true"> <span></span> <span></span> <span></span> </span> </button> <div id="menu-panel" class="menu-panel"> <div class="theme-row"> <label for="theme-select" class="theme-label">Theme</label> <select id="theme-select" class="theme-select" aria-label="Select theme"> <option value="nebula">Nebula</option><option value="synthwave">Synthwave</option><option value="matrix">Matrix</option><option value="ember">Ember</option><option value="aurora">Aurora (light)</option><option value="quartz">Quartz (light)</option> </select> </div> <nav class="menu-nav" aria-label="Secondary"> <a href="/"> Home </a><a href="/archives"> Archive </a><a href="/about"> About </a> </nav> </div> </div> </header> <main class="shell site-main">  <article class="post-content"> <p class="kicker">Blog</p> <h1>Fold and snip</h1> <p class="post-meta"> <time datetime="2026-11-03T00:00:00.000Z"> November 3, 2026 </time>  <span aria-hidden="true">&middot;</span> <span>6 min read</span>  <span aria-hidden="true">&middot;</span> <a href="/categories/blog">Blog</a> </p> <figure class="post-hero"> <img class="trailer-media-blur" src="/images/demos/fold-and-snip.webp" alt="" aria-hidden="true"> <img src="/images/demos/fold-and-snip.webp" alt="A square folded into a thin twelve-layer wedge, the wedge after three straight snips, and the six-pointed star it unfolds into"> </figure> <div class="post-tags"> <a class="tag" href="/tags/geometry">Geometry</a><a class="tag" href="/tags/symmetry">Symmetry</a><a class="tag" href="/tags/mathematics">Mathematics</a><a class="tag" href="/tags/javascript">Javascript</a><a class="tag" href="/tags/paper%20folding">Paper folding</a> </div>  <p>Every kid who has been handed safety scissors has done this: fold a piece of paper a few times, cut a notch out of the edge, and unfold it to find a snowflake. The surprise is the whole fun, and it is also a small piece of mathematics, because the shape you get is decided entirely by the folds and the cuts.</p>
+<p><strong>Fold and Snip</strong> is that game on a screen, built for my kid. You can fold a square along any line, cut it with a straight snip, and unfold it again one fold at a time, so you can see each cut being copied.</p>
+<p><a class="btn" href="/apps/fold-and-snip/" style="text-decoration: none; display: inline-block;">Open Fold and Snip →</a></p>
+<p>It works with a mouse or a finger, and it is happiest on a laptop or tablet screen.</p>
+<h2 id="how-to-play">How to play</h2>
+<p><strong>Folding.</strong> The dashed blue line is where the fold will happen. Drag around the paper to turn it, or type an angle, or use the buttons for flat, upright and the two diagonals. <strong>Snap</strong> mode jumps the angle in steps of 90°, 45°, 30°, 22.5° or 15°; <strong>Free</strong> mode allows any angle at all. The line goes through the ⊕ dot, which starts in the middle of the paper. Drag it, or type its position, to fold somewhere else. Tap the side of the paper you want to fold over: it turns blue, and an arrow shows where it will land. The flap can go over the top or tuck behind.</p>
+<p><strong>Snipping.</strong> Switch to the scissors and drag a straight line across the paper. The part that will fall off is shaded red; tap the other side if you want to keep that part instead. Press <strong>Snip!</strong> and the scissors go through every layer at once.</p>
+<p><strong>Unfolding.</strong> <strong>Unfold one</strong> opens the most recent fold, and <strong>Unfold all</strong> opens them all in turn. You can also fold again after unfolding some of the way. <strong>Undo</strong> takes back anything.</p>
+<p>A <strong>sneak peek</strong> box shows what the paper would look like fully unfolded right now, for when you just cannot wait.</p>
+<h2 id="try-this-a-six-pointed-star">Try this: a six-pointed star</h2>
+<p>Use Snap mode with 30° steps.</p>
+<ol>
+<li>Fold at <strong>0°</strong>, top half down.</li>
+<li>Fold at <strong>120°</strong>, bringing the bottom-right third across.</li>
+<li>Fold at <strong>60°</strong>, bringing the bottom-left third across. The paper is now a 60° wedge, six layers thick.</li>
+<li>Fold at <strong>90°</strong>, left side over, in half again. That leaves a thin 30° wedge, <strong>twelve</strong> layers thick, with its point at the middle of where the square used to be.</li>
+</ol>
+<p>Now three snips:</p>
+<ol>
+<li>Cut straight across the wide end of the wedge, at right angles to it, just short of where the ragged edges of the layers begin.</li>
+<li>Cut a slanted line from the bottom of the wedge’s straight left edge to about halfway down its right edge. Tap the bottom-right corner so that it is the red part that falls off.</li>
+<li>Snip the very tip off the point.</li>
+</ol>
+<p>Unfold all, and you get the star in the picture at the top, with a little star-shaped window in the middle.</p>
+<h2 id="why-it-works-every-fold-is-a-mirror">Why it works: every fold is a mirror</h2>
+<p>Folding paper along a line is a reflection. The half that moves lands exactly where the mirror image of that half would be. Folding again reflects everything again, layers and all. After the four folds above there are twelve layers in a 30° wedge, and each layer is a copy of a different 30° slice of the original square: six of them as they were, and six mirrored.</p>
+<p><strong>A snip cuts all twelve layers at once</strong>, so when you unfold, the one cut you made turns up twelve times. It turns up six times rotated around the centre and six more times reflected. That is exactly the symmetry of a snowflake: six-fold rotation, plus a mirror line through every arm. You don’t have to make the shape symmetric. The folds take care of that.</p>
+<p>There is one catch. A square doesn’t have six-fold symmetry, so the twelve slices of a square aren’t all the same shape: some of them include a corner and some do not. That is what the first snip across the wide end is for. It throws away everything outside a circle that fits inside the square, so what is left in each layer matches every other layer, and the outline comes out as a regular twelve-sided shape. If you skip it, any shape that keeps the outer part of the wedge gets bits of the square’s corners poking out unevenly.</p>
+<p>Which piece falls off also matters. Here are the same four folds and the same two snip lines (the wide end, then the slanted line), differing only in which side of the slanted line was thrown away:</p>
+<p><img src="/images/fold-and-snip/star-and-window.webp" alt="Left: a six-pointed star. Right: a twelve-sided shape with a six-pointed star-shaped hole in the middle"></p>
+<p>The two shapes fit together exactly: put the star into the window and you get the twelve-sided outline back.</p>
+<h2 id="one-straight-cut">One straight cut</h2>
+<p>There is a remarkable theorem hiding behind this. Erik Demaine, Martin Demaine and Anna Lubiw proved the <strong>fold-and-cut theorem</strong>: any shape with straight sides, a star, a swan, the outline of your initials, can be cut out of a single sheet of paper by folding it flat and making <strong>one</strong> complete straight cut. Harry Houdini described a one-cut five-pointed star in his 1922 book <em>Paper Magic</em>, and there is an old story that Betsy Ross won George Washington over to five-pointed stars on the flag by folding a sheet and producing one with a single snip.</p>
+<p>Fold and Snip is more generous than the theorem, since you can snip as often as you like. But it is a good place to try the one-cut challenge. The star above took three snips. Can you get the plain six-pointed star, with no window, using just one? (A hint: look at which parts of the star the first snip actually removed.)</p>
+<h2 id="under-the-hood">Under the hood</h2>
+<p>The whole app is one HTML file with no libraries. The paper is kept as a list of flat pieces. Each piece knows three things:</p>
+<ul>
+<li>its outline, written down in the coordinates of the original square;</li>
+<li>the chain of reflections that carries it to where it currently lies in the folded stack;</li>
+<li>which layer of the stack it is in.</li>
+</ul>
+<p>A <strong>fold</strong> splits every piece along the fold line, then reflects the pieces on the moving side and stacks them on top in reverse order, the way a turned-over flap really lands. A <strong>snip</strong> clips every piece against the cut line, again in each piece’s own original coordinates. An <strong>unfold</strong> applies the most recent reflection once more to the pieces that moved, because reflecting twice in the same line puts everything back where it was.</p>
+<p>Since pieces are only ever divided by straight lines, they stay convex, and splitting a convex polygon by a line is about ten lines of code. When the paper is fully unfolded, every reflection has been undone, so the remaining pieces sit exactly where they started. Their shared edges are the creases you see in the finished shape.</p>
+<p><a class="btn" href="/apps/fold-and-snip/" style="text-decoration: none; display: inline-block;">Open Fold and Snip →</a></p>  <section class="related" aria-labelledby="related-heading" data-related data-here="/blog/fold-and-snip"><h2 id="related-heading">Also on MotleyTech</h2><ul class="related-list"><li class="related-item"><a href="/blog/watch-movement"><img class="related-thumb" src="/images/demos/watch-movement.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2026-09-27T00:00:00.000Z">2026.09.27</time><span aria-hidden="true">&middot;</span><span>35 min read</span></span><span class="related-title">Mechanical wrist watch</span><span class="related-text">The seconds hand moves because a balance wheel is vibrating, and for no other reason. Wind the crown, pull it out to set the…</span></span></a></li><li class="related-item"><a href="/blog/reacttodolist"><img class="related-thumb" src="/images/demos/todo-board.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2020-01-26T00:00:00.000Z">2020.01.26</time><span aria-hidden="true">&middot;</span><span>1 min read</span></span><span class="related-title">Todo list with React and LocalStorage</span><span class="related-text">A todo list that lives entirely in your browser: React for the interface, localStorage for memory. Close the tab, come back next…</span></span></a></li><li class="related-item"><a href="/blog/task-management"><img class="related-thumb" src="/images/demos/task-board.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2026-03-22T00:00:00.000Z">2026.03.22</time><span aria-hidden="true">&middot;</span><span>1 min read</span></span><span class="related-title">Task management app</span><span class="related-text">A lightweight, visual task board that runs entirely in the browser. Move work between columns, track what is in flight, and keep…</span></span></a></li><li class="related-item"><a href="/blog/balanced-tree"><img class="related-thumb" src="/images/demos/balanced-tree.webp" alt="" loading="lazy" decoding="async"><span class="related-body"><span class="related-meta"><time datetime="2020-04-09T00:00:00.000Z">2020.04.09</time><span aria-hidden="true">&middot;</span><span>2 min read</span></span><span class="related-title">Balanced binary tree animated</span><span class="related-text">Balanced binary trees promise fast inserts, finds and deletes, and rotations are what keep the promise: they stop the tree from…</span></span></a></li></ul></section><script>(function(){const count = 4;
+
+  (function () {
+    const section = document.querySelector('[data-related]');
+    const list = section && section.querySelector('.related-list');
+    if (!list) return;
+
+    const trim = (path) => path.replace(/\/+$/, '');
+    const here = trim(section.dataset.here || location.pathname);
+
+    function draw(items) {
+      const pool = items.filter((item) => trim(item.href) !== here);
+      for (let i = pool.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      const chosen = pool.slice(0, count);
+      if (chosen.length < count) return;
+
+      const fresh = document.createDocumentFragment();
+      for (const item of chosen) {
+        const li = document.createElement('li');
+        li.className = 'related-item';
+
+        const link = document.createElement('a');
+        link.href = item.href;
+
+        if (item.image) {
+          const img = document.createElement('img');
+          img.className = 'related-thumb';
+          img.src = item.image;
+          img.alt = '';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          link.appendChild(img);
+        } else {
+          const badge = document.createElement('span');
+          badge.className = 'related-thumb related-thumb--empty';
+          badge.setAttribute('aria-hidden', 'true');
+          badge.textContent = item.title.slice(0, 2).toUpperCase();
+          link.appendChild(badge);
+        }
+
+        const body = document.createElement('span');
+        body.className = 'related-body';
+
+        const meta = document.createElement('span');
+        meta.className = 'related-meta';
+        const time = document.createElement('time');
+        time.dateTime = item.isoDate;
+        time.textContent = item.stamp;
+        const dot = document.createElement('span');
+        dot.setAttribute('aria-hidden', 'true');
+        dot.innerHTML = '&middot;';
+        const read = document.createElement('span');
+        read.textContent = item.readMinutes + ' min read';
+        meta.append(time, dot, read);
+
+        const title = document.createElement('span');
+        title.className = 'related-title';
+        title.textContent = item.title;
+
+        const text = document.createElement('span');
+        text.className = 'related-text';
+        text.textContent = item.snippet;
+
+        body.append(meta, title, text);
+        link.appendChild(body);
+        li.appendChild(link);
+        fresh.appendChild(li);
+      }
+
+      list.replaceChildren(fresh);
+    }
+
+    // The build already picked a set. Only swap it while the list is out of
+    // sight, so nothing shifts under someone who is reading it.
+    function onScreen() {
+      const box = section.getBoundingClientRect();
+      return box.top < window.innerHeight && box.bottom > 0;
+    }
+
+    fetch('/api/related.json')
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!data || !Array.isArray(data.items) || onScreen()) return;
+        draw(data.items);
+      })
+      .catch(() => {
+        /* the server-rendered set is already on the page */
+      });
+  })();
+})();</script> <section id="comments" style="margin-top:2rem;"> <h2>Comments</h2> <div id="disqus_thread"></div> <script>(function(){const identifier = "foldAndSnip";
+const title = "Fold and snip";
+const canonical = "https://motleytech.net/blog/fold-and-snip/";
+
+    /*
+     * This has to be `window.disqus_config`, not a bare `var`: embed.js reads it
+     * off the global object, and `define:vars` compiles this block into an IIFE,
+     * so a `var` here stays local and Disqus silently falls back to keying the
+     * thread by URL. That loses every comment made before the page moved.
+     */
+    window.disqus_config = function () {
+      this.page.identifier = identifier;
+      this.page.title = title;
+      this.page.url = canonical;
+    };
+    (function () {
+      var d = document;
+      var s = d.createElement('script');
+      s.src = 'https://motleytech.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', String(+new Date()));
+      (d.head || d.body).appendChild(s);
+    })();
+  })();</script> </section> </article>  </main> <footer class="shell site-footer"> <p>&copy; 2017&ndash;2026 Nagarajan</p> <p><a href="/rss.xml">RSS</a> &middot; <a href="/archives">Archive</a></p> </footer> <script>
+      (function () {
+        const select = document.getElementById('theme-select');
+        if (select) {
+          select.value = document.documentElement.getAttribute('data-theme');
+          select.addEventListener('change', function (event) {
+            const theme = event.target.value;
+            document.documentElement.setAttribute('data-theme', theme);
+            try {
+              window.localStorage.setItem('motleytech-theme', theme);
+            } catch (error) {
+              /* private browsing: the theme simply will not persist */
+            }
+          });
+        }
+
+        const header = document.querySelector('.site-header');
+        const menu = document.getElementById('menu-panel');
+        const button = document.getElementById('nav-toggle');
+        if (!header || !menu || !button) {
+          return;
+        }
+
+        function closeMenu() {
+          header.classList.remove('menu-open');
+          button.setAttribute('aria-expanded', 'false');
+        }
+
+        button.addEventListener('click', function () {
+          const isOpen = header.classList.toggle('menu-open');
+          button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        menu.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', closeMenu);
+        });
+
+        document.addEventListener('click', function (event) {
+          if (!header.classList.contains('menu-open')) {
+            return;
+          }
+          const target = event.target;
+          if (target instanceof Node && (menu.contains(target) || button.contains(target))) {
+            return;
+          }
+          closeMenu();
+        });
+
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') {
+            closeMenu();
+          }
+        });
+      })();
+    </script> </body> </html>
