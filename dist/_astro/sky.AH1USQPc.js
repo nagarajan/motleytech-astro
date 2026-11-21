@@ -1,4 +1,4 @@
-import{G as C,s as P,g as b,q as R,B as _,i as w,j as G,t as I,T as B,r as E,k as F}from"./OrbitControls.Di2eJ3qb.js";const g=900,m=[{weight:.76,colour:[1,.72,.52],size:.55},{weight:.12,colour:[1,.86,.68],size:.75},{weight:.076,colour:[1,.97,.9],size:.95},{weight:.03,colour:[.86,.92,1],size:1.3},{weight:.014,colour:[.68,.79,1],size:1.9}];function $(t){let e=t();for(const u of m)if(e-=u.weight,e<=0)return u;return m[0]}function k(t){let e=t>>>0;return()=>(e=e*1664525+1013904223>>>0,e/4294967296)}const j=`
+import{G as C,n as P,f as b,o as R,B as _,r as w,g as G,t as I,T as B,p as E,i as F}from"./OrbitControls.C8S5MDQe.js";const g=900,m=[{weight:.76,colour:[1,.72,.52],size:.55},{weight:.12,colour:[1,.86,.68],size:.75},{weight:.076,colour:[1,.97,.9],size:.95},{weight:.03,colour:[.86,.92,1],size:1.3},{weight:.014,colour:[.68,.79,1],size:1.9}];function $(t){let e=t();for(const u of m)if(e-=u.weight,e<=0)return u;return m[0]}function k(t){let e=t>>>0;return()=>(e=e*1664525+1013904223>>>0,e/4294967296)}const j=`
   attribute float size;
   attribute vec3 tint;
   varying vec3 vTint;
